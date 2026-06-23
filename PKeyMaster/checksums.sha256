@@ -1,0 +1,140 @@
+9d5d40c09a2358aa63dc895c9ef4189fc9ead943b4599af8393a72a7294576cc *BIN\icon.ico
+8af34350c30bb85e1e93075da07dc023fe72be608bf43166d8217fdaced998b8 *BIN\pidgenx32.dll
+e4593a7b96339023f55bab9f1f45b2b1706dbcc81f71b8626f30c9bed17f6017 *BIN\pidgenx64.dll
+a59f045cf4ddd530c378739f99a2cd4cfefb4147cb4039d2c4c9938394925b06 *BIN\PKeyConfigs\Dynamics CRM\Production\Dynamics 365 v9.X\Crm9PKConfig.xml
+f83acc25135689eb1354b7dd1efcf7621a496f7a7a1f9363632f9979702d73d8 *BIN\PKeyConfigs\Dynamics CRM\Production\Dynamics CRM 2011\CrmPKConfig.xml
+0415537cfdfebbc1f20291ed50068ac6c7e28238b3b031c2f25e58183e2f99b7 *BIN\PKeyConfigs\Dynamics CRM\Production\Dynamics CRM 2013\CrmRtm6PKConfig.xml
+7108ad9108ec79eb4b152d821eb8c0da334bbd50a1e5d061507eb26a14bfc24b *BIN\PKeyConfigs\Dynamics CRM\Production\Dynamics CRM 2015\CrmRtm7PKConfig.xml
+8e6895d6d04f931df7b26ce975da9e0a35a7fe88f1f93aa571773e7dce065b5e *BIN\PKeyConfigs\Dynamics CRM\Production\Dynamics CRM 2016 - Dynamics 365 v8.X\Crm8PKConfig.xml
+774ff469a76edda509ba7288d7a8c720cc2efcb0c3da589f38bd40679a1757a3 *BIN\PKeyConfigs\Dynamics CRM\Production\Dynamics CRM 2016\Crm8PKConfig.xml
+f0c47a235f0477d174d1e95c6aab27f7f58caa450bc9ee97415fa03422b0b246 *BIN\PKeyConfigs\Embedded\Production\7600 - Windows Thin PC\pkeyconfig.xrm-ms
+ad1d41b4b81d64cd3510a8597052c6b50dde373ec36d22578ddb5dee7a75fe82 *BIN\PKeyConfigs\Embedded\Production\7601 - Windows Embedded POSReady 7\pkeyconfig.xrm-ms
+efb9680e12d0d8eda47bb6d683fb87194f82346e45ea8d9dad59765d981f5d87 *BIN\PKeyConfigs\Embedded\Production\7601 - Windows Embedded Standard 7\pkeyconfig.xrm-ms
+b7a97a0f5a87f3b55d5f6b513d7e14f9117e0b2cd88a4291465df1bd5ebafdbd *BIN\PKeyConfigs\Embedded\Production\9200 - Windows Embedded Standard 8\pkeyconfig.xrm-ms
+fd745ff60586b6ab559e092c609b4a768bfd805e4b9b9844362479d43b310a19 *BIN\PKeyConfigs\Exchange Server\Production\Exchange Server 2010\ProductKeyConfig.xml
+a2cc02ea0a8ff3d9dce5b82492776b71cfdb3e0a504686839285b35387dca741 *BIN\PKeyConfigs\Exchange Server\Production\Exchange Server 2013\ProductKeyConfig.xml
+86b3a395606d09cbde979be432b6b070800769155c26bf8bfa012f52b02cbdc3 *BIN\PKeyConfigs\Exchange Server\Production\Exchange Server 2016\productkeyconfig.xml
+8dbb0e4536af9a7a7681a5e0ff8cf49723b12072f72d3e731a1b59139abe5f40 *BIN\PKeyConfigs\Exchange Server\Production\Exchange Server 2019\ProductKeyConfig.xml
+8dbb0e4536af9a7a7681a5e0ff8cf49723b12072f72d3e731a1b59139abe5f40 *BIN\PKeyConfigs\Exchange Server\Production\Exchange Server Subscription Edition\ProductKeyConfig.xml
+84c37a6f378f2596386785d9aa7d5f2d997b59c8d1ec0aea72144c437764ff98 *BIN\PKeyConfigs\Notes.txt
+cedcc90fd7aefb46350cf40101cf16c537acfe369ba12f1153805bfec41fd4ed *BIN\PKeyConfigs\Office KMS Host\Production\Office 2010 KMS Host\prs-pkeyconfig-o14-rtm.xrm-ms
+6ee85d2c519f3397f23cadba31ebec0feac2686a4720fe72c5684182c3abc0a0 *BIN\PKeyConfigs\Office KMS Host\Production\Office 2013 KMS Host\pkeyconfig-office-kmshost.xrm-ms
+629b2224103186a1eb6a5ed4ddf2fb1da46707d3770802348c59e6e265f0f830 *BIN\PKeyConfigs\Office KMS Host\Production\Office 2016-2019-2021-2024 KMS Host\pkeyconfig-office-kmshost.xrm-ms
+51e01ed73d315e5c73a367e8edae64d0c998d75e6410239ba8c71d4250cf6881 *BIN\PKeyConfigs\Office\Beta\14.0.4417.1000 - Beta - Office 2010\pkeyconfig-office.xrm-ms
+d278ce4228552f4de79bab18ffb394a73ff3705f9b3bfe9433b81b3b78147b82 *BIN\PKeyConfigs\Office\Beta\15.0.4025.1000 - Beta - Office 2013\pkeyconfig-office.xrm-ms
+edfb49cd35fe352a1d29db39baa949ac23b06795c31f417816185b0c04c82f07 *BIN\PKeyConfigs\Office\Production\Office 2010\pkeyconfig-office.xrm-ms
+9419c202c24ad00f07f4521f7f8a9efbf9b449d068f4175698647f187769475c *BIN\PKeyConfigs\Office\Production\Office 2011 For Mac\retail_pkeyconfig.xml
+12321543ed69de70de79cf9066ae68160f8d4375ff8dea1360ae1e41fbe7f357 *BIN\PKeyConfigs\Office\Production\Office 2013-O365\pkeyconfig-office.xrm-ms
+91a4b0ec0869d1649dadb269e5033ed8c5e3341dbcc69d47d0217b7e74fe9080 *BIN\PKeyConfigs\Office\Production\Office 2016-2019-2021-2024-O365 Subscription For Mac\subscription_pkeyconfig.xml
+adc4173b64f1b85b3c92f720b994ef2d758d1702f7728f650f93ada21ae3a802 *BIN\PKeyConfigs\Office\Production\Office 2016-2019-2021-2024-O365\pkeyconfig-office.xrm-ms
+3cde6eea590b6be555e7c01035b1f1e0ab9c0bef45638ce6767b2f8ef6b62b84 *BIN\PKeyConfigs\Pre-Vista Custom Made\Pre-Vista (Windows 98 to XP - Office 2000 to 2007 - etc)\pkeyconfig-custom-made.xrm-ms
+5ceb4f442bf3e045a7821ba998eb25093aadc7e9833899e266377d2341ca3273 *BIN\PKeyConfigs\Sharepoint Server\Production\Sharepoint Server 2010\pkeyconfig-office.xrm-ms
+9fbf92e355c13213e014f4456f7c244144feb096f6aab74ada0c6fdc2912ec4e *BIN\PKeyConfigs\Sharepoint Server\Production\Sharepoint Server 2013\pkeyconfig-office.xrm-ms
+37c7bc84a350375a4e176f36779ecbf4e4e48dad988cf1e373713ab7267397b4 *BIN\PKeyConfigs\Sharepoint Server\Production\Sharepoint Server 2016\pkeyconfig-office.xrm-ms
+1181d4090211fd021cf4ea2ddf0f6ca0768973d0b808adb96371bf09232f8c77 *BIN\PKeyConfigs\Sharepoint Server\Production\Sharepoint Server 2019\pkeyconfig-office.xrm-ms
+2280786500901fc2e6e65eb378a093d17b65b2bc43363a4de23fbb00e3aced95 *BIN\PKeyConfigs\Sharepoint Server\Production\SharePoint Server Subscription Edition\pkeyconfig-office.xrm-ms
+d87d959f0baf299e72e467e2e7c45feb9ccbaac8fb04cc2a859b1b9c3fde549a *BIN\PKeyConfigs\SQL Server\Production\SQL Server 2012\PidPrivateConfigObjectMaps.xml
+bb57cc33baff745199541ebcde06de4215bc5ed8199b0d9beae69848e344aa75 *BIN\PKeyConfigs\SQL Server\Production\SQL Server 2014\PidPrivateConfigObjectMaps.xml
+54070e495168b15837d00cb7b446685fbb547e81fdebc0d3e3bb04a044ec3c8e *BIN\PKeyConfigs\SQL Server\Production\SQL Server 2016\PidPrivateConfigObjectMaps.xml
+4fe9189ad8ba7868524c47836e6065a49545c53c3c345ab5e3a26497d043c766 *BIN\PKeyConfigs\SQL Server\Production\SQL Server 2017\PidPrivateConfigObjectMaps.xml
+24bbbc37ced8703538f5b367c0f430ad77dac21b0386432f13cc10007a578ac6 *BIN\PKeyConfigs\SQL Server\Production\SQL Server 2019\PidPrivateConfigObjectMaps.xml
+5752407b302b11e72cd5bda6ebe8e8d0d09115893b9433f26297110437627313 *BIN\PKeyConfigs\SQL Server\Production\SQL Server 2022\PidPrivateConfigObjectMaps.xml
+d339b49971ff869f902a91d398ada86ad8d264631ce8c344248cd553e95db393 *BIN\PKeyConfigs\SQL Server\Production\SQL Server 2025\PidPrivateConfigObjectMaps.xml
+c186a107fb2dac0e9eea5663e1ef089cdbebfd9c63cae0d0e1394e468ce4a32e *BIN\PKeyConfigs\System Center\Production\System Center 2012 and Later\PKConfig.xml
+49466684efeb94d2901c4c1c58ddca1dc6c13378d13d50338127ac2cfd67f5bc *BIN\PKeyConfigs\Visual Studio\Production\Visual Studio 2010\pkconfig.xrm-ms
+7543560cd4bae31bf6e65ae06d81f3ef9777fb98aa209c07342b13e035257c9e *BIN\PKeyConfigs\Visual Studio\Production\Visual Studio 2012\pkconfig.xrm-ms
+b1e0a83a95fdbb0cd2ddc0c36523311e9f8b26833c4788ca59bd3a5f500f6bd1 *BIN\PKeyConfigs\Visual Studio\Production\Visual Studio 2013\pkconfig.xrm-ms
+71e3d253b681b897a80863d24880a271bee72b65cecb310380102f4c83ef3e97 *BIN\PKeyConfigs\Visual Studio\Production\Visual Studio 2015\pkconfig.xrm-ms
+f4a4cceb8b72815fb20a42e79cd7e8af1419ff3ebe59463c9232a4721ad07b51 *BIN\PKeyConfigs\Visual Studio\Production\Visual Studio 2017\pkconfig.xrm-ms
+e46936571e2552bb7a73f4b54b2a1ff493c179c89b957230bd60b7cae263204a *BIN\PKeyConfigs\Visual Studio\Production\Visual Studio 2019\pkconfig.xrm-ms
+13f78e597ccfcea4f15958ca8ea48173f05005345324d4aecd8e1519f605e3a8 *BIN\PKeyConfigs\Visual Studio\Production\Visual Studio 2022\pkconfig.xrm-ms
+10218049e8a23e3a6530ffb0a24d7285b3351ed4182598070095861c23929959 *BIN\PKeyConfigs\Visual Studio\Production\Visual Studio 2026\pkconfig.xrm-ms
+406e0092b5d4a60e2278940477a9f617333ba0b70204a9d4f6ddd55f2dc7cc25 *BIN\PKeyConfigs\Windows - Server\Beta\Csvlk\10143 - Beta - Csvlk - Windows 10\pkeyconfig-csvlk.xrm-ms
+bc898a8e4479e66e6785e26da2bb2a8a26af1d7aec3d8a08f1d0e2b0d7f2a4bb *BIN\PKeyConfigs\Windows - Server\Beta\Csvlk\29531 - Beta - Csvlk - Windows 11\pkeyconfig-csvlk.xrm-ms
+4491f9a083cf45d452bca2478df4374f237954aff99f97698f631fdbc0188446 *BIN\PKeyConfigs\Windows - Server\Beta\Csvlk\8032 - Beta - Csvlk - Windows 8\pkeyconfig-csvlk.xrm-ms
+6d3208547497b0494de42007315d7990c6f1e78545749f8b48ea6f20f644e16b *BIN\PKeyConfigs\Windows - Server\Beta\Csvlk\8288 - Beta - Csvlk - Windows 8\pkeyconfig-csvlk.xrm-ms
+bc6f879c7bc2ecc42c0d9846af83b968a8010697c6c3064c6a21827c93801efe *BIN\PKeyConfigs\Windows - Server\Beta\Main\10143 - Beta - Windows 10\pkeyconfig.xrm-ms
+8873f9bb7890876060d68d8037a01b25803d1c1f11588a8cd7f710c999afc2f1 *BIN\PKeyConfigs\Windows - Server\Beta\Main\15035 - Beta - Windows 10\pkeyconfig.xrm-ms
+d1a90daa6674fadb4c5c3752fd5d11000f04956b44995946fba631e601bda8ce *BIN\PKeyConfigs\Windows - Server\Beta\Main\17000 - Beta - Windows 10\pkeyconfig.xrm-ms
+9c4b3724f726a84bc0606dfcb4a73fa95f01d1d9fb1c121362bb4a73acf2aca4 *BIN\PKeyConfigs\Windows - Server\Beta\Main\29531 - Beta - Windows 11\pkeyconfig.xrm-ms
+59799417673458d13ae8a2965f12fe963e37b5d1ed3af331913b2639017393f2 *BIN\PKeyConfigs\Windows - Server\Beta\Main\5098 - Beta - Windows Vista\pkeyconfig.xml
+5cd3ed3041025ca3c70fcc8b5a969263ed692f667c3e65036262ec19b7de202b *BIN\PKeyConfigs\Windows - Server\Beta\Main\5231 - Beta - Windows Vista\pkeyconfig.xml
+9e7278ce97670b4a5cba85a80062faf3a4f227785a20986df24cbd27de46a98a *BIN\PKeyConfigs\Windows - Server\Beta\Main\5308 - Beta - Windows Vista\pkeyconfig.xrm-ms
+521a23f3979ee901fd39a9d59cc255e405a2339d4aac7281c3c5b018ad468727 *BIN\PKeyConfigs\Windows - Server\Beta\Main\5356 - Beta - Windows Vista\pkeyconfig.xrm-ms
+dbb5a2bcb84abe0dd638c907445508e8dc6700f2144cd6792bc95d80743742f7 *BIN\PKeyConfigs\Windows - Server\Beta\Main\5757 - Beta - Windows Vista\pkeyconfig.xrm-ms
+7f083db6346e68ad16645df097c5a8ee57aa2a35a69824eab2e2dea031be5786 *BIN\PKeyConfigs\Windows - Server\Beta\Main\6519 - Beta - Windows 7\pkeyconfig.xrm-ms
+e8dcefe530635ee7bef6ac417b8bd54a4f943bd02a4a5ac640c09039155f2c30 *BIN\PKeyConfigs\Windows - Server\Beta\Main\6574 - Beta - Windows 7\pkeyconfig.xrm-ms
+f56eeb0506bcb01b6daf609cbb0245416a783e12bc180d77b311101770735851 *BIN\PKeyConfigs\Windows - Server\Beta\Main\6926 - Beta - Windows 7\pkeyconfig.xrm-ms
+da81d82b12d3c1f4775df7bab0a91840221311bee18d17c02a1d9771c08f7939 *BIN\PKeyConfigs\Windows - Server\Beta\Main\6936 - Beta - Windows 7\pkeyconfig.xrm-ms
+40b5e27d52d8d2540fcd6082c158f278b008adfc1904ea99efeba5e16b4e0a09 *BIN\PKeyConfigs\Windows - Server\Beta\Main\7262 - Beta - Windows 7\pkeyconfig.xrm-ms
+ab80ad5a0e69748ab5d2fb577187620ef777006f845b9d9174bf84c3168475a7 *BIN\PKeyConfigs\Windows - Server\Beta\Main\7887 - Beta - Windows 8\pkeyconfig.xrm-ms
+b2039b91d46b484935de9606f6528ff874fa82b5dd4abe220ca2effb443607fe *BIN\PKeyConfigs\Windows - Server\Beta\Main\8019 - Beta - Windows 8\pkeyconfig.xrm-ms
+6bcf79d9a5bff2b4c26761543805faca1ae7b0b294a3ad9600d15d50a40574c5 *BIN\PKeyConfigs\Windows - Server\Beta\Main\8288 - Beta - Windows 8\pkeyconfig.xrm-ms
+0f78403483c1c47cb5b020a3e6cbcdb8abb1e4f92ef5cd15893bf9c905f60044 *BIN\PKeyConfigs\Windows - Server\Beta\Main\9385 - Beta - Windows 8.1\pkeyconfig.xrm-ms
+df38da5f5d3e87405f9166e902498371b56bf608f87a54878f0c0476020ce2e3 *BIN\PKeyConfigs\Windows - Server\Production\Csvlk\10240 - Csvlk - Windows 10 1507\pkeyconfig-csvlk.xrm-ms
+5292629b2dc3b1339f00952abe8feae073a284f0b1039f621ad51af7ff5d5e58 *BIN\PKeyConfigs\Windows - Server\Production\Csvlk\10586 - Csvlk - Windows 10 1511\pkeyconfig-csvlk.xrm-ms
+1d10b64104ef57a766c2f29643e1cab6d8dfef1dda7971d89144ad27f3aec20c *BIN\PKeyConfigs\Windows - Server\Production\Csvlk\14393 - Csvlk - Windows 10 1607 - Server 2016\pkeyconfig-csvlk.xrm-ms
+12f541117a9d4c930fe888d3500c65487b64e1234e09cfcc75c80e3bb6e5c914 *BIN\PKeyConfigs\Windows - Server\Production\Csvlk\15063 - Csvlk - Windows 10 1703\pkeyconfig-csvlk.xrm-ms
+e9a742d5b9fcc40078fd45001ef7f2f4372d53bde0a62adfa78077998ff5780a *BIN\PKeyConfigs\Windows - Server\Production\Csvlk\16299 - Csvlk - Windows 10 1709 - Server 1709\pkeyconfig-csvlk.xrm-ms
+fb153d59ce0136a3c4b256acfe055e3d380066eff630b87619c10101a8de698d *BIN\PKeyConfigs\Windows - Server\Production\Csvlk\17134 - Csvlk - Windows 10 1803 - Server 1803\pkeyconfig-csvlk.xrm-ms
+42797e4c108d72c91c615458d62007c53f22b7f7c25f0415922bfb8725ef2ab7 *BIN\PKeyConfigs\Windows - Server\Production\Csvlk\17763 - Csvlk - Windows 10 1809 - Server 2019-1809\pkeyconfig-csvlk.xrm-ms
+e78200148368a6ca08866acf1ed9c08c23cc88975695f95699055fd139f62079 *BIN\PKeyConfigs\Windows - Server\Production\Csvlk\17784 - Csvlk - Azure Stack HCI 20H2\pkeyconfig-csvlk.xrm-ms
+53e97c9bbd8ce317791f3a2f7eab1aeb44e4d62ab89b2a0dfd6fc54b9179a46b *BIN\PKeyConfigs\Windows - Server\Production\Csvlk\18363 - Csvlk - Windows 10 1903-1909 - Server 1903-1909\pkeyconfig-csvlk.xrm-ms
+53e97c9bbd8ce317791f3a2f7eab1aeb44e4d62ab89b2a0dfd6fc54b9179a46b *BIN\PKeyConfigs\Windows - Server\Production\Csvlk\19045 - Csvlk - Windows 10 2004-20H2-21H1-21H2-22H2 - Server 2004-20H2\pkeyconfig-csvlk.xrm-ms
+7efcd5ba0fd7a4d81ddc513928de2d2439eee4ba4f2560ddf436298d6f6a4981 *BIN\PKeyConfigs\Windows - Server\Production\Csvlk\20348 - Csvlk - Server 2022 - Azure Stack HCI 21H2-22H2\pkeyconfig-csvlk.xrm-ms
+77b1fd3611ebd95046856b2d0a7d113979a2fd86f3b61187895402931c1f58a2 *BIN\PKeyConfigs\Windows - Server\Production\Csvlk\22000 - Csvlk - Windows 11 21H2\pkeyconfig-csvlk.xrm-ms
+77b1fd3611ebd95046856b2d0a7d113979a2fd86f3b61187895402931c1f58a2 *BIN\PKeyConfigs\Windows - Server\Production\Csvlk\22631 - Csvlk - Windows 11 22H2-23H2\pkeyconfig-csvlk.xrm-ms
+77b1fd3611ebd95046856b2d0a7d113979a2fd86f3b61187895402931c1f58a2 *BIN\PKeyConfigs\Windows - Server\Production\Csvlk\25398 - Csvlk - Server 23H2 - Azure Stack HCI 23H2\pkeyconfig-csvlk.xrm-ms
+1ca39d1b65304eca82005025e5172378f99529bc1c7562430c2148172c2717df *BIN\PKeyConfigs\Windows - Server\Production\Csvlk\28000 - Csvlk - Windows 11 24H2-25H2-26H2 - Server 2025 - Azure Local 24H2\pkeyconfig-csvlk.xrm-ms
+3d4c5a69c56dc2e30890e5aef974d514b3ef9df082feab3529f3c20f84111ff1 *BIN\PKeyConfigs\Windows - Server\Production\Csvlk\9200 - Csvlk - Windows 8 - Server 2012\pkeyconfig-csvlk.xrm-ms
+2f90a7c91b1e4f0bf0b92d037719f77edc4008eed78e31a73de2e48321eae452 *BIN\PKeyConfigs\Windows - Server\Production\Csvlk\9600 - Csvlk - Windows 8.1 - Server 2012 R2\pkeyconfig-csvlk.xrm-ms
+4fa94107249aa13665ec8920df651e1e5d55bc9b1227a90ea1777347f1a37229 *BIN\PKeyConfigs\Windows - Server\Production\Downlevel\22631 - Downlevel - Windows 11 23H2\pkeyconfig-downlevel.xrm-ms
+9bcf33c8cc9ebc248d7411903f24acc6bdcd9feef50b8c7e35cfbf03bc684282 *BIN\PKeyConfigs\Windows - Server\Production\Main\10240 - Windows 10 1507\pkeyconfig.xrm-ms
+6fabae0f260fd3a4194f7eaf95215c12462e6b3013c9b575cbe4a7eea1f87567 *BIN\PKeyConfigs\Windows - Server\Production\Main\10586 - Windows 10 1511\pkeyconfig.xrm-ms
+92caa6cc01a2c9ea5a6721991ef4da5729eb8262cbd43e81ddd673c6bed9f09e *BIN\PKeyConfigs\Windows - Server\Production\Main\14393 - Windows 10 1607 - Server 2016\pkeyconfig.xrm-ms
+fe5b77dbbf0c32006b1be815405026a69fa9b234702c8455c21eee666069961c *BIN\PKeyConfigs\Windows - Server\Production\Main\15063 - Windows 10 1703\pkeyconfig.xrm-ms
+0e1e7f5eed1653254adbaa3b1705ad841bab7d7952a77d30de20c36f3f73c0d7 *BIN\PKeyConfigs\Windows - Server\Production\Main\16299 - Windows 10 1709 - Server 1709\pkeyconfig.xrm-ms
+ef5c5e3f6b071f998f569931aaca43db277597675cb34548452ab35cef7ae30f *BIN\PKeyConfigs\Windows - Server\Production\Main\17134 - Windows 10 1803 - Server 1803\pkeyconfig.xrm-ms
+6c118315e498207817c11ccac5ad4a2d5415c9bb3fd2cbc1bd48bb7ce6ada6fc *BIN\PKeyConfigs\Windows - Server\Production\Main\17763 - Windows 10 1809 - Server 2019-1809\pkeyconfig.xrm-ms
+16c863b4671ec6b0a8d837e374b34c1d20a0d63e5360b84b833ac0e36b2543cb *BIN\PKeyConfigs\Windows - Server\Production\Main\17784 - Azure Stack HCI 20H2\pkeyconfig.xrm-ms
+126fcabc3c239dd31765de878d1b2b3d08496af17557f2dcb1bf493395d2ec7d *BIN\PKeyConfigs\Windows - Server\Production\Main\18363 - Windows 10 1903-1909 - Server 1903-1909\pkeyconfig.xrm-ms
+c9078d397c043c42daefdda8bf0f7746269ed7e50779679461ccc92b274b7f31 *BIN\PKeyConfigs\Windows - Server\Production\Main\19045 - Windows 10 2004-20H2-21H1-21H2-22H2 - Server 2004-20H2\pkeyconfig.xrm-ms
+0ed8b8b69f33da4125b704d5a99d4f496f913e53c239fcd3fc965ff7657b9433 *BIN\PKeyConfigs\Windows - Server\Production\Main\20348 - Server 2022 - Azure Stack HCI 21H2-22H2\pkeyconfig.xrm-ms
+6a8f669552b29e81027038f3cf68832c98de19d0e4ab56a040edfe6dc95c0da3 *BIN\PKeyConfigs\Windows - Server\Production\Main\22000 - Windows 11 21H2\pkeyconfig.xrm-ms
+3819e0a90377b7f558799d1870d0831c56dea5947d6e0a70fd9ad7e533d185d2 *BIN\PKeyConfigs\Windows - Server\Production\Main\22631 - Windows 11 22H2-23H2\pkeyconfig.xrm-ms
+d74dfb370a19a2adb41bb9880935c0a8db9d475b81edf383427023bd81d15c55 *BIN\PKeyConfigs\Windows - Server\Production\Main\25398 - Server 23H2 - Azure Stack HCI 23H2\pkeyconfig.xrm-ms
+3a97b8f7b9b2afb2e416dee609339c6a7eaac56d1e5837928e3b4f187c6832c6 *BIN\PKeyConfigs\Windows - Server\Production\Main\28000 - Windows 11 24H2-25H2-26H2 - Server 2025 - Azure Local 24H2\pkeyconfig.xrm-ms
+792455ee1f192dd77ec6dec882742ddabfa873f222b2456e152f9263b557de10 *BIN\PKeyConfigs\Windows - Server\Production\Main\6002 - Windows Vista - Server 2008\pkeyconfig.xrm-ms
+d758ff8c9511aad5648b429bc74c076438cee26a8778a8b0db53b498cd4bcbf4 *BIN\PKeyConfigs\Windows - Server\Production\Main\7601 - Windows 7 - Server 2008 R2\pkeyconfig.xrm-ms
+d310e0c0e45d08db12a6010954ffd6400154a206060cb7910af52697aef31be0 *BIN\PKeyConfigs\Windows - Server\Production\Main\9200 - Windows 8 - Server 2012\pkeyconfig.xrm-ms
+b8e8b0ff5c1066562497aede3702089c248382c5d38cd26a70ecfbc8fea90aeb *BIN\PKeyConfigs\Windows - Server\Production\Main\9600 - Windows 8.1 - Server 2012 R2\pkeyconfig.xrm-ms
+5ad7b1d000356509782d1d270945dbe40db68eb355c89d127c86324fa2edb472 *BIN\PKeyConfigsMap.csv
+89bc2d22e2d162a3981d224702f6c2ffe9fdfe13be58282d0d16a98d15f37034 *BIN\PreVistaRanges.csv
+c622301660b0f5568d81dffe24a156866643b5f3da89b070f471db21ac1e636d *BIN\PublishLicense.xml
+8c8a5ac162fa323d64bcc63e31c39a8c110452ba6ee278c6d5d5fb4aa8ae00c2 *BIN\Scripts\DecodePKey2009.ps1
+effb79ba1626b91bf89fe58312ec2f952b45fdd3cf773b54306fae9ae4cf2333 *BIN\Scripts\DecodePKey980-PKey986.ps1
+f78122f42b904a0359d6f44ed36333e95fa74d935e89d39648a7d2fbfd3bef28 *BIN\Scripts\DepositCID.ps1
+d4cc551215da7ecf534168aeddc8f41ef9afdf7370f8ba647ff4efc2273f7b95 *BIN\Scripts\GetCID.ps1
+9693a81e9917f51f1375da9893378bff6dd012578a7b580febb240dad1a6555f *BIN\Scripts\GetCidBatchApi.ps1
+a049a14138739dfaa2db2c95a2dddb0c07a3be4d202c852d8ada79fb42a39a00 *BIN\Scripts\GetCidVisualApi.ps1
+62e6fabecacc714258c92f4dce47c3cb31fd4ab1c25ee1d5ead61139350141ef *BIN\Scripts\GetIidCid.ps1
+e9d2042adce8e35ee5abad6e53356da8750ce3e4f114712d0b4982809fb8a532 *BIN\Scripts\GetMSDMKey.ps1
+1fb3a43fb64f1222e2733b0c3b522836284749990e033e44dc8b56bb494a769b *BIN\Scripts\GUI.ps1
+31b05acbf2248d39e707835f3428b69b072017e8bb3413cac81ff7a8d6baef9c *BIN\Scripts\KeyActivation.ps1
+8737d5de91cdb7b03caa636ed885ab36293c3626bf6d671c11c918abf19a7986 *BIN\Scripts\KeyCertification.ps1
+3a3410eebcafb3c41339d175691abe0b0e9c085cfd5c6ef41ce675d722b5e9da *BIN\Scripts\KeyChecker.ps1
+2861a56e21d68d5ffa4b2f0312d3454430559ccdc65fa2c97ff3b8e0fa70b532 *BIN\Scripts\KeyCheckerPidGenX.ps1
+a9f437d5b595bced34028f900acdd4fcc37e88b6fc4662499cdfa0d4288c3acd *BIN\Scripts\KeyCheckerPre98.ps1
+9d641775a09006594d302bc1bce39c7b393fe2be3ac3bba34baaabc4f26cfb8a *BIN\Scripts\Launcher.ps1
+63777c2380c22b44189db4e65cd2afc5d8a55279b123dad47c79710bce5c9439 *BIN\Scripts\Libs\Common.ps1
+6abe1786172c1f4f311a6706de6835754c69451aea076f53a462cb34b815210f *BIN\Scripts\Libs\DigitalProductId.ps1
+48cc7a7e6403a02c75559ea33f90ec1098fdb72f90008a1042e7aa1901079675 *BIN\Scripts\Libs\Network.ps1
+c3c10e9bd94538a8f3254855abe24843a95d2f9815c1270cf1156933606e7745 *BIN\Scripts\Libs\WmiSppError.ps1
+0705532c6bc731c34397f768f8470e3c026cb07057efe5dabc7b010f6e08a77d *BIN\Scripts\MakCount.ps1
+301abdbe15be778a6062155d3b6fd2045a29070e3b216d13083546bb4e4c9d1d *BIN\Scripts\PKeyConfigReader.ps1
+5d1160aa43ea48a61de835d714964bbddb9520bc83e489786d2159a9edaf73aa *BIN\Scripts\ScanKeysInDPID.ps1
+515f0413d1f729b818034d326e7a26c09d309d11ec06a7144d57997fe76c33c4 *BIN\Scripts\ScanKeysInFiles.ps1
+1cce5f9d37f70b6e7c8b42b868c61ba811965ea8876d046626a7f91c1c41af0b *BIN\Scripts\ScanKeysInRegistry.ps1
+20f618c1091c3b4db3c247bfcdabfe9bd143b88cb91fb26963fe080afd62fc8a *BIN\Scripts\ScanKeysInSppTrustedStore.ps1
+ae300e3b416b5738c0a590e1442ce781c4be6306841533d516a210b692cc44d8 *PKeyMaster.cmd
+62cd83bec7ec28ef1bf2387afa5dff4e1a2275493dcf64894d721c0dfa17b5a5 *ReadMe.html

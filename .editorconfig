@@ -1,0 +1,18 @@
+# Enforce CRLF and basic formatting rules on save.
+# Git preserves files as-is (see .gitattributes);
+# formatting is handled by the editor.
+
+root = true
+
+[*.{ps1,cmd,py,csv,txt,xml,json}]
+charset = utf-8
+end_of_line = crlf
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.md]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = false
+trim_trailing_whitespace = false

@@ -1,0 +1,7 @@
+PKeyConfigs\Windows - Server\Beta\Main:
+Following folders are added just because of extra key ranges, not because of extra Act IDs:
+5098
+6574
+6936
+7887
+15035

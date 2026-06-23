@@ -1,0 +1,13 @@
+# Disable automatic line ending conversion for all file types.
+# With "* -text", Git does not normalize or convert line endings,
+# ensuring Git Raw and ZIP downloads preserve CRLF.
+
+* -text
+
+# Exclude files from generated archives.
+
+.editorconfig export-ignore
+.gitattributes export-ignore
+.gitignore export-ignore
+README.md export-ignore
+LICENSE export-ignore

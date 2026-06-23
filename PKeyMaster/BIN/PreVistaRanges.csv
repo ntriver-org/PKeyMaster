@@ -1,0 +1,910 @@
+Edition,License,Stage,Channel_Min,Sequence_Min,Channel_Max,Sequence_Max,BinkID_Hex,BinkID_Dec
+Windows 98,Retail,FE,000,000000,999,999999,02,2
+Windows 98,Retail,SE,000,000000,999,999999,02,2
+Windows 98,OEM,FE,000,000000,999,999999,03,3
+Windows 98,OEM,SE,000,000000,999,999999,03,3
+Windows Millennium Edition (Me),Retail,N/A,000,000000,999,999999,1C,28
+Windows Millennium Edition (Me),OEM,N/A,000,000000,999,999999,1D,29
+Windows 2000 Professional,Retail,N/A,000,000000,999,999999,12,18
+Windows 2000 Professional,OEM,N/A,000,000000,999,999999,13,19
+Windows 2000 Server,Retail,N/A,000,000000,999,999999,0A,10
+Windows 2000 Server,OEM,N/A,000,000000,999,999999,13,19
+Windows 2000 Advanced Server,Retail,N/A,000,000000,999,999999,0A,10
+Windows 2000 Advanced Server,OEM,N/A,000,000000,999,999999,13,19
+Windows 2000 Datacenter Server,Retail,N/A,000,000000,999,999999,0A,10
+Windows 2000 Datacenter Server,OEM,N/A,000,000000,999,999999,13,19
+Windows XP Embedded,OEM,N/A,200,000000,619,999999,0D,13
+Windows XP Home Edition,Retail,RTM,005,000000,085,999999,2A,42
+Windows XP Home Edition,Retail,RTM,337,000000,359,999999,2A,42
+Windows XP Home Edition,Retail,SP1,005,000000,085,999999,2A,42
+Windows XP Home Edition,Retail,SP1,337,000000,359,999999,2A,42
+Windows XP Home Edition,Retail,SP1,755,000000,779,999999,2A,42
+Windows XP Home Edition,Retail,SP2,005,000000,085,999999,2A,42
+Windows XP Home Edition,Retail,SP2,337,000000,359,999999,2A,42
+Windows XP Home Edition,Retail,SP2,755,000000,779,999999,2A,42
+Windows XP Home Edition,Retail,SP3,005,000000,085,999999,2A,42
+Windows XP Home Edition,Retail,SP3,106,000000,106,999999,2A,42
+Windows XP Home Edition,Retail,SP3,337,000000,359,999999,2A,42
+Windows XP Home Edition,Retail,SP3,362,000000,376,999999,2A,42
+Windows XP Home Edition,Retail,SP3,377,000000,377,999999,2A,42
+Windows XP Home Edition,Retail,SP3,755,000000,779,999999,2A,42
+Windows XP Home Edition,Retail,SP3,984,000000,984,999999,2A,42
+Windows XP Home Edition,OEM,RTM,120,000000,169,999999,2B,43
+Windows XP Home Edition,OEM,RTM,400,000000,699,999999,2B,43
+Windows XP Home Edition,OEM,SP1,120,000000,169,999999,2B,43
+Windows XP Home Edition,OEM,SP1,400,000000,699,999999,2B,43
+Windows XP Home Edition,OEM,SP1,700,000000,754,999999,2B,43
+Windows XP Home Edition,OEM,SP2,120,000000,169,999999,2B,43
+Windows XP Home Edition,OEM,SP2,400,000000,665,999999,2B,43
+Windows XP Home Edition,OEM,SP2,667,000000,699,999999,2B,43
+Windows XP Home Edition,OEM,SP2,700,000000,754,999999,2B,43
+Windows XP Home Edition,OEM,SP3,085,000000,085,999999,2B,43
+Windows XP Home Edition,OEM,SP3,086,000000,095,999999,2B,43
+Windows XP Home Edition,OEM,SP3,096,000000,105,999999,2B,43
+Windows XP Home Edition,OEM,SP3,107,000000,118,999999,2B,43
+Windows XP Home Edition,OEM,SP3,120,000000,169,999999,2B,43
+Windows XP Home Edition,OEM,SP3,170,000000,186,999999,2B,43
+Windows XP Home Edition,OEM,SP3,189,000000,189,999999,2B,43
+Windows XP Home Edition,OEM,SP3,192,000000,336,999999,2B,43
+Windows XP Home Edition,OEM,SP3,400,000000,665,999999,2B,43
+Windows XP Home Edition,OEM,SP3,667,000000,699,999999,2B,43
+Windows XP Home Edition,OEM,SP3,700,000000,754,999999,2B,43
+Windows XP Home Edition,OEM,SP3,755,000000,899,999999,2B,43
+Windows XP Home Edition,OEM,SP3,921,000000,979,999999,2B,43
+Windows XP Home Edition,OEM-SLP,RTM,119,000100,119,000299,2B,43
+Windows XP Home Edition,OEM-SLP,SP1,119,000100,119,000299,2B,43
+Windows XP Home Edition,OEM-SLP,SP2,119,000100,119,000299,2B,43
+Windows XP Home Edition,OEM-SLP,SP3,119,000100,119,000299,2B,43
+Windows XP Home Edition K,Retail,N/A,085,020000,085,101999,2A,42
+Windows XP Home Edition K,Retail,N/A,106,000000,106,099999,2A,42
+Windows XP Home Edition K,Retail,N/A,106,100000,106,199999,2A,42
+Windows XP Home Edition K,Retail,N/A,377,000000,377,404999,2A,42
+Windows XP Home Edition K,Retail,N/A,377,568000,377,666999,2A,42
+Windows XP Home Edition K,Retail,N/A,377,668000,377,999999,2A,42
+Windows XP Home Edition K,Retail,N/A,984,000000,984,199999,2A,42
+Windows XP Home Edition K,OEM,N/A,170,000000,186,699999,2B,43
+Windows XP Home Edition K,OEM-SLP,N/A,190,000000,190,002499,2B,43
+Windows XP Home Edition KN,Retail,N/A,085,102000,085,201999,2A,42
+Windows XP Home Edition KN,Retail,N/A,085,302000,085,401999,2A,42
+Windows XP Home Edition KN,Retail,N/A,187,000000,187,999999,2A,42
+Windows XP Home Edition KN,Retail,N/A,377,405000,377,566999,2A,42
+Windows XP Home Edition KN,Retail,N/A,984,200000,984,399999,2A,42
+Windows XP Home Edition KN,OEM,N/A,189,000000,189,699999,2B,43
+Windows XP Home Edition KN,OEM-SLP,N/A,191,000000,191,002499,2B,43
+Windows XP Media Center Edition,Retail,N/A,365,000000,369,999999,2C,44
+Windows XP Media Center Edition,OEM,N/A,803,000000,899,999999,2D,45
+Windows XP Media Center Edition,OEM-SLP,N/A,119,000800,119,000899,2D,45
+Windows XP Professional,Retail,RTM,005,000000,085,999999,2C,44
+Windows XP Professional,Retail,RTM,337,000000,359,999999,2C,44
+Windows XP Professional,Retail,RTM,755,000000,779,999999,2C,44
+Windows XP Professional,Retail,RTM,785,000000,789,999999,2C,44
+Windows XP Professional,Retail,SP1,005,000000,085,999999,2C,44
+Windows XP Professional,Retail,SP1,337,000000,359,999999,2C,44
+Windows XP Professional,Retail,SP1,755,000000,779,999999,2C,44
+Windows XP Professional,Retail,SP1,785,000000,789,999999,2C,44
+Windows XP Professional,Retail,SP2,005,000000,085,999999,2C,44
+Windows XP Professional,Retail,SP2,085,000000,089,999999,2C,44
+Windows XP Professional,Retail,SP2,095,000000,099,999999,2C,44
+Windows XP Professional,Retail,SP2,337,000000,359,999999,2C,44
+Windows XP Professional,Retail,SP2,755,000000,779,999999,2C,44
+Windows XP Professional,Retail,SP2,785,000000,789,999999,2C,44
+Windows XP Professional,Retail,SP3,005,000000,085,999999,2C,44
+Windows XP Professional,Retail,SP3,085,000000,089,999999,2C,44
+Windows XP Professional,Retail,SP3,090,000000,090,999999,2C,44
+Windows XP Professional,Retail,SP3,095,000000,099,999999,2C,44
+Windows XP Professional,Retail,SP3,114,000000,116,999999,2C,44
+Windows XP Professional,Retail,SP3,311,000000,334,999999,2C,44
+Windows XP Professional,Retail,SP3,336,000000,336,999999,2C,44
+Windows XP Professional,Retail,SP3,337,000000,359,999999,2C,44
+Windows XP Professional,Retail,SP3,385,000000,385,999999,2C,44
+Windows XP Professional,Retail,SP3,755,000000,779,999999,2C,44
+Windows XP Professional,Retail,SP3,785,000000,789,999999,2C,44
+Windows XP Professional,OEM,RTM,120,000000,169,999999,2D,45
+Windows XP Professional,OEM,RTM,170,000000,269,999999,2D,45
+Windows XP Professional,OEM,RTM,400,000000,699,999999,2D,45
+Windows XP Professional,OEM,SP1,120,000000,169,999999,2D,45
+Windows XP Professional,OEM,SP1,170,000000,269,999999,2D,45
+Windows XP Professional,OEM,SP1,400,000000,699,999999,2D,45
+Windows XP Professional,OEM,SP1,700,000000,754,999999,2D,45
+Windows XP Professional,OEM,SP2,120,000000,169,999999,2D,45
+Windows XP Professional,OEM,SP2,170,000000,269,999999,2D,45
+Windows XP Professional,OEM,SP2,400,000000,665,999999,2D,45
+Windows XP Professional,OEM,SP2,667,000000,699,999999,2D,45
+Windows XP Professional,OEM,SP2,700,000000,754,999999,2D,45
+Windows XP Professional,OEM,SP3,090,000000,090,999999,2D,45
+Windows XP Professional,OEM,SP3,100,000000,110,999999,2D,45
+Windows XP Professional,OEM,SP3,120,000000,169,999999,2D,45
+Windows XP Professional,OEM,SP3,170,000000,269,999999,2D,45
+Windows XP Professional,OEM,SP3,271,000000,336,999999,2D,45
+Windows XP Professional,OEM,SP3,385,000000,385,999999,2D,45
+Windows XP Professional,OEM,SP3,400,000000,665,999999,2D,45
+Windows XP Professional,OEM,SP3,667,000000,699,999999,2D,45
+Windows XP Professional,OEM,SP3,700,000000,754,999999,2D,45
+Windows XP Professional,OEM,SP3,755,000000,779,999999,2D,45
+Windows XP Professional,OEM,SP3,780,000000,784,999999,2D,45
+Windows XP Professional,OEM,SP3,790,000000,799,999999,2D,45
+Windows XP Professional,OEM,SP3,900,000000,979,999999,2D,45
+Windows XP Professional,OEM-SLP,RTM,119,000100,119,000299,2D,45
+Windows XP Professional,OEM-SLP,SP1,119,000100,119,000299,2D,45
+Windows XP Professional,OEM-SLP,SP2,119,000100,119,000299,2D,45
+Windows XP Professional,OEM-SLP,SP3,119,000100,119,000299,2D,45
+Windows XP Professional,VLK,RTM,640,000000,698,999999,2E,46
+Windows XP Professional,VLK,SP1,640,000000,698,999999,2E,46
+Windows XP Professional,VLK,SP2,640,000000,698,999999,2E,46
+Windows XP Professional,VLK,SP3,640,000000,698,999999,2E,46
+Windows XP Professional,VLK,SP3,700,000000,701,999999,2E,46
+Windows XP Professional,VLK,SP3,704,000000,705,999999,2E,46
+Windows XP Professional K,Retail,N/A,090,000000,090,099999,2C,44
+Windows XP Professional K,Retail,N/A,090,100000,090,199999,2C,44
+Windows XP Professional K,Retail,N/A,090,500000,090,599999,2C,44
+Windows XP Professional K,Retail,N/A,112,000000,112,999999,2C,44
+Windows XP Professional K,Retail,N/A,114,100000,116,449999,2C,44
+Windows XP Professional K,Retail,N/A,116,450000,116,529999,2C,44
+Windows XP Professional K,Retail,N/A,116,530000,116,599999,2C,44
+Windows XP Professional K,Retail,N/A,336,000000,336,604999,2C,44
+Windows XP Professional K,Retail,N/A,700,000000,701,999999,2C,44
+Windows XP Professional K,OEM,N/A,100,000000,110,999999,2D,45
+Windows XP Professional K,OEM-SLP,N/A,113,000000,113,002499,2D,45
+Windows XP Professional KN,Retail,N/A,090,200000,090,299999,2C,44
+Windows XP Professional KN,Retail,N/A,090,400000,090,499999,2C,44
+Windows XP Professional KN,Retail,N/A,111,000000,111,999999,2C,44
+Windows XP Professional KN,Retail,N/A,336,605000,336,844999,2C,44
+Windows XP Professional KN,Retail,N/A,336,846000,336,999999,2C,44
+Windows XP Professional KN,Retail,N/A,385,000000,385,129999,2C,44
+Windows XP Professional KN,Retail,N/A,704,000000,705,999999,2C,44
+Windows XP Professional KN,OEM,N/A,090,602500,090,604999,2D,45
+Windows XP Professional KN,OEM-SLP,N/A,114,000000,114,099999,2D,45
+Windows XP Tablet PC Edition,Retail,N/A,360,000000,364,999999,2C,44
+Windows XP Tablet PC Edition,OEM,N/A,170,000000,269,999999,2D,45
+Windows XP Tablet PC Edition,OEM-SLP,N/A,119,000300,119,000399,2D,45
+Windows XP Tablet PC Edition,VLK,N/A,699,000000,699,999999,2E,46
+Windows XP For Legacy PCs,VLK,N/A,640,000000,698,999999,2E,46
+Windows XP Starter Edition,OEM,N/A,120,000000,169,999999,33,51
+Windows XP x64 Edition,Retail,N/A,306,000000,370,999999,66,102
+Windows XP x64 Edition,OEM,N/A,005,000000,118,999999,67,103
+Windows XP x64 Edition,OEM-SLP,N/A,119,003000,119,003999,67,103
+Windows XP x64 Edition,VLK,N/A,652,000000,657,999999,64,100
+Windows Server 2003 Web,Retail,RTM,005,000000,006,999999,54,84
+Windows Server 2003 Web,Retail,RTM,337,000000,341,999999,54,84
+Windows Server 2003 Web,Retail,RTM,755,000000,758,999999,54,84
+Windows Server 2003 Web,Retail,RTM,781,000000,781,999999,54,84
+Windows Server 2003 Web,Retail,SP1,005,000000,006,999999,54,84
+Windows Server 2003 Web,Retail,SP1,337,000000,341,999999,54,84
+Windows Server 2003 Web,Retail,SP1,755,000000,758,999999,54,84
+Windows Server 2003 Web,Retail,SP1,781,000000,781,999999,54,84
+Windows Server 2003 Web,Retail,SP2,005,000000,006,999999,54,84
+Windows Server 2003 Web,Retail,SP2,337,000000,341,999999,54,84
+Windows Server 2003 Web,Retail,SP2,755,000000,758,999999,54,84
+Windows Server 2003 Web,Retail,SP2,781,000000,781,999999,54,84
+Windows Server 2003 Web,Retail,R2,005,000000,006,999999,58,88
+Windows Server 2003 Web,Retail,R2,306,000000,310,999999,58,88
+Windows Server 2003 Web,Retail,R2,720,000000,729,999999,58,88
+Windows Server 2003 Web,Retail,R2,781,000000,781,999999,58,88
+Windows Server 2003 Web,OEM,RTM,120,000000,121,999999,55,85
+Windows Server 2003 Web,OEM,SP1,120,000000,121,999999,55,85
+Windows Server 2003 Web,OEM,SP2,120,000000,121,999999,55,85
+Windows Server 2003 Web,OEM,R2,120,000000,121,999999,59,89
+Windows Server 2003 Web,OEM-SLP,RTM,119,000000,119,000999,55,85
+Windows Server 2003 Web,OEM-SLP,SP1,119,000000,119,000999,55,85
+Windows Server 2003 Web,OEM-SLP,SP2,119,000000,119,000999,55,85
+Windows Server 2003 Web,OEM-SLP,R2,119,000000,119,000999,59,89
+Windows Server 2003 Web,VLK,RTM,640,000000,642,999999,5A,90
+Windows Server 2003 Web,VLK,SP1,640,000000,649,999999,5A,90
+Windows Server 2003 Web,VLK,SP2,640,000000,649,999999,5A,90
+Windows Server 2003 Web,VLK,R2,650,000000,654,999999,5A,90
+Windows Server 2003 Web,VLK,R2,655,000000,656,999999,5A,90
+Windows Home Server 2003,Retail,RTM,007,000000,011,999999,54,84
+Windows Home Server 2003,Retail,RTM,301,000000,305,999999,54,84
+Windows Home Server 2003,Retail,RTM,782,000000,782,999999,54,84
+Windows Home Server 2003,Retail,SP1,007,000000,011,999999,54,84
+Windows Home Server 2003,Retail,SP1,301,000000,305,999999,54,84
+Windows Home Server 2003,Retail,SP1,782,000000,782,999999,54,84
+Windows Home Server 2003,Retail,SP2,007,000000,011,999999,54,84
+Windows Home Server 2003,Retail,SP2,301,000000,305,999999,54,84
+Windows Home Server 2003,Retail,SP2,782,000000,782,999999,54,84
+Windows Home Server 2003,Retail,R2,007,000000,011,999999,58,88
+Windows Home Server 2003,Retail,R2,119,000000,119,999999,58,88
+Windows Home Server 2003,Retail,R2,342,000000,346,999999,58,88
+Windows Home Server 2003,Retail,R2,389,000000,389,999999,58,88
+Windows Home Server 2003,Retail,R2,759,000000,762,999999,58,88
+Windows Home Server 2003,Retail,R2,782,000000,782,999999,58,88
+Windows Home Server 2003,OEM,RTM,122,000000,126,999999,55,85
+Windows Home Server 2003,OEM,SP1,122,000000,126,999999,55,85
+Windows Home Server 2003,OEM,SP2,122,000000,126,999999,55,85
+Windows Home Server 2003,OEM,R2,122,000000,126,999999,59,89
+Windows Home Server 2003,OEM,R2,393,000000,395,999999,59,89
+Windows Home Server 2003,OEM-SLP,RTM,119,001000,119,001999,55,85
+Windows Home Server 2003,OEM-SLP,RTM,119,600000,119,609999,55,85
+Windows Home Server 2003,OEM-SLP,SP1,119,001000,119,001999,59,89
+Windows Server 2003 Standard,Retail,RTM,012,000000,065,999999,54,84
+Windows Server 2003 Standard,Retail,RTM,084,000000,084,999999,54,84
+Windows Server 2003 Standard,Retail,RTM,347,000000,351,999999,54,84
+Windows Server 2003 Standard,Retail,RTM,367,000000,369,999999,54,84
+Windows Server 2003 Standard,Retail,RTM,763,000000,766,999999,54,84
+Windows Server 2003 Standard,Retail,RTM,779,000000,780,999999,54,84
+Windows Server 2003 Standard,Retail,RTM,783,000000,784,999999,54,84
+Windows Server 2003 Standard,Retail,RTM,789,000000,789,999999,54,84
+Windows Server 2003 Standard,Retail,SP1,012,000000,065,999999,54,84
+Windows Server 2003 Standard,Retail,SP1,084,000000,084,999999,54,84
+Windows Server 2003 Standard,Retail,SP1,347,000000,351,999999,54,84
+Windows Server 2003 Standard,Retail,SP1,367,000000,369,999999,54,84
+Windows Server 2003 Standard,Retail,SP1,763,000000,766,999999,54,84
+Windows Server 2003 Standard,Retail,SP1,779,000000,780,999999,54,84
+Windows Server 2003 Standard,Retail,SP1,783,000000,784,999999,54,84
+Windows Server 2003 Standard,Retail,SP1,789,000000,789,999999,54,84
+Windows Server 2003 Standard,Retail,SP2,012,000000,065,999999,54,84
+Windows Server 2003 Standard,Retail,SP2,084,000000,084,999999,54,84
+Windows Server 2003 Standard,Retail,SP2,347,000000,351,999999,54,84
+Windows Server 2003 Standard,Retail,SP2,367,000000,369,999999,54,84
+Windows Server 2003 Standard,Retail,SP2,763,000000,766,999999,54,84
+Windows Server 2003 Standard,Retail,SP2,779,000000,780,999999,54,84
+Windows Server 2003 Standard,Retail,SP2,783,000000,784,999999,54,84
+Windows Server 2003 Standard,Retail,SP2,789,000000,789,999999,54,84
+Windows Server 2003 Standard,Retail,R2,012,000000,065,999999,58,88
+Windows Server 2003 Standard,Retail,R2,085,000000,086,999999,58,88
+Windows Server 2003 Standard,Retail,R2,087,000000,088,999999,58,88
+Windows Server 2003 Standard,Retail,R2,089,000000,090,999999,58,88
+Windows Server 2003 Standard,Retail,R2,099,000000,100,999999,58,88
+Windows Server 2003 Standard,Retail,R2,103,000000,104,999999,58,88
+Windows Server 2003 Standard,Retail,R2,296,000000,300,999999,58,88
+Windows Server 2003 Standard,Retail,R2,783,000000,784,999999,58,88
+Windows Server 2003 Standard,Retail,R2,792,000000,792,999999,58,88
+Windows Server 2003 Standard,Retail,R2,794,000000,794,999999,58,88
+Windows Server 2003 Standard,OEM,RTM,163,000000,163,999999,55,85
+Windows Server 2003 Standard,OEM,RTM,170,000000,269,999999,55,85
+Windows Server 2003 Standard,OEM,SP1,163,000000,163,999999,55,85
+Windows Server 2003 Standard,OEM,SP1,170,000000,269,999999,55,85
+Windows Server 2003 Standard,OEM,SP2,163,000000,163,999999,55,85
+Windows Server 2003 Standard,OEM,SP2,170,000000,269,999999,55,85
+Windows Server 2003 Standard,OEM,R2,170,000000,171,999999,59,89
+Windows Server 2003 Standard,OEM,R2,172,000000,173,999999,59,89
+Windows Server 2003 Standard,OEM,R2,174,000000,175,999999,59,89
+Windows Server 2003 Standard,OEM,R2,178,000000,179,999999,59,89
+Windows Server 2003 Standard,OEM,R2,180,000000,269,999999,59,89
+Windows Server 2003 Standard,OEM,R2,271,000000,280,999999,59,89
+Windows Server 2003 Standard,OEM-SLP,RTM,119,002000,119,002999,55,85
+Windows Server 2003 Standard,OEM-SLP,RTM,119,006000,119,006999,55,85
+Windows Server 2003 Standard,OEM-SLP,SP1,119,002000,119,002999,55,85
+Windows Server 2003 Standard,OEM-SLP,SP1,119,006000,119,006999,55,85
+Windows Server 2003 Standard,OEM-SLP,SP2,119,002000,119,002999,55,85
+Windows Server 2003 Standard,OEM-SLP,SP2,119,006000,119,006999,55,85
+Windows Server 2003 Standard,OEM-SLP,R2,119,002000,119,002999,59,89
+Windows Server 2003 Standard,OEM-SLP,R2,119,007000,119,007999,59,89
+Windows Server 2003 Standard,OEM-SLP,R2,119,008000,119,008999,59,89
+Windows Server 2003 Standard,OEM-SLP,R2,119,009000,119,009999,59,89
+Windows Server 2003 Standard,OEM-SLP,R2,119,011000,119,011999,59,89
+Windows Server 2003 Standard,VLK,RTM,640,000000,642,999999,5A,90
+Windows Server 2003 Standard,VLK,SP1,640,000000,649,999999,5A,90
+Windows Server 2003 Standard,VLK,SP2,640,000000,649,999999,5A,90
+Windows Server 2003 Standard,VLK,R2,650,000000,654,999999,5A,90
+Windows Server 2003 Standard,VLK,R2,655,000000,656,999999,5A,90
+Windows Small Business Server 2003,Retail,RTM,066,000000,070,999999,54,84
+Windows Small Business Server 2003,Retail,RTM,352,000000,356,999999,54,84
+Windows Small Business Server 2003,Retail,RTM,767,000000,770,999999,54,84
+Windows Small Business Server 2003,Retail,RTM,785,000000,785,999999,54,84
+Windows Small Business Server 2003,Retail,SP1,066,000000,070,999999,54,84
+Windows Small Business Server 2003,Retail,SP1,352,000000,356,999999,54,84
+Windows Small Business Server 2003,Retail,SP1,767,000000,770,999999,54,84
+Windows Small Business Server 2003,Retail,SP1,785,000000,785,999999,54,84
+Windows Small Business Server 2003,Retail,SP2,066,000000,070,999999,54,84
+Windows Small Business Server 2003,Retail,SP2,352,000000,356,999999,54,84
+Windows Small Business Server 2003,Retail,SP2,767,000000,770,999999,54,84
+Windows Small Business Server 2003,Retail,SP2,785,000000,785,999999,54,84
+Windows Small Business Server 2003,Retail,R2,066,000000,070,999999,58,88
+Windows Small Business Server 2003,Retail,R2,291,000000,295,999999,58,88
+Windows Small Business Server 2003,Retail,R2,785,000000,785,999999,58,88
+Windows Small Business Server 2003,OEM,RTM,127,000000,131,999999,55,85
+Windows Small Business Server 2003,OEM,SP1,127,000000,131,999999,55,85
+Windows Small Business Server 2003,OEM,SP2,127,000000,131,999999,55,85
+Windows Small Business Server 2003,OEM,R2,127,000000,131,999999,59,89
+Windows Small Business Server 2003,OEM-SLP,RTM,119,003000,119,003999,55,85
+Windows Small Business Server 2003,OEM-SLP,SP1,119,003000,119,003999,55,85
+Windows Small Business Server 2003,OEM-SLP,SP2,119,003000,119,003999,55,85
+Windows Small Business Server 2003,OEM-SLP,R2,119,003000,119,003999,59,89
+Windows Server 2003 Enterprise,Retail,RTM,071,000000,082,999999,54,84
+Windows Server 2003 Enterprise,Retail,RTM,084,000000,084,999999,54,84
+Windows Server 2003 Enterprise,Retail,RTM,357,000000,361,999999,54,84
+Windows Server 2003 Enterprise,Retail,RTM,367,000000,369,999999,54,84
+Windows Server 2003 Enterprise,Retail,RTM,771,000000,774,999999,54,84
+Windows Server 2003 Enterprise,Retail,RTM,779,000000,780,999999,54,84
+Windows Server 2003 Enterprise,Retail,RTM,786,000000,787,999999,54,84
+Windows Server 2003 Enterprise,Retail,RTM,789,000000,789,999999,54,84
+Windows Server 2003 Enterprise,Retail,SP1,071,000000,082,999999,54,84
+Windows Server 2003 Enterprise,Retail,SP1,084,000000,084,999999,54,84
+Windows Server 2003 Enterprise,Retail,SP1,357,000000,361,999999,54,84
+Windows Server 2003 Enterprise,Retail,SP1,367,000000,369,999999,54,84
+Windows Server 2003 Enterprise,Retail,SP1,771,000000,774,999999,54,84
+Windows Server 2003 Enterprise,Retail,SP1,779,000000,780,999999,54,84
+Windows Server 2003 Enterprise,Retail,SP1,786,000000,787,999999,54,84
+Windows Server 2003 Enterprise,Retail,SP1,789,000000,789,999999,54,84
+Windows Server 2003 Enterprise,Retail,SP2,071,000000,082,999999,54,84
+Windows Server 2003 Enterprise,Retail,SP2,084,000000,084,999999,54,84
+Windows Server 2003 Enterprise,Retail,SP2,357,000000,361,999999,54,84
+Windows Server 2003 Enterprise,Retail,SP2,367,000000,369,999999,54,84
+Windows Server 2003 Enterprise,Retail,SP2,771,000000,774,999999,54,84
+Windows Server 2003 Enterprise,Retail,SP2,779,000000,780,999999,54,84
+Windows Server 2003 Enterprise,Retail,SP2,786,000000,787,999999,54,84
+Windows Server 2003 Enterprise,Retail,SP2,789,000000,789,999999,54,84
+Windows Server 2003 Enterprise,Retail,R2,071,000000,082,999999,58,88
+Windows Server 2003 Enterprise,Retail,R2,091,000000,092,999999,58,88
+Windows Server 2003 Enterprise,Retail,R2,101,000000,102,999999,58,88
+Windows Server 2003 Enterprise,Retail,R2,286,000000,290,999999,58,88
+Windows Server 2003 Enterprise,Retail,R2,786,000000,787,999999,58,88
+Windows Server 2003 Enterprise,Retail,R2,793,000000,793,999999,58,88
+Windows Server 2003 Enterprise,OEM,RTM,132,000000,161,999999,55,85
+Windows Server 2003 Enterprise,OEM,RTM,163,000000,163,999999,55,85
+Windows Server 2003 Enterprise,OEM,SP1,132,000000,161,999999,55,85
+Windows Server 2003 Enterprise,OEM,SP1,163,000000,163,999999,55,85
+Windows Server 2003 Enterprise,OEM,SP2,132,000000,161,999999,55,85
+Windows Server 2003 Enterprise,OEM,SP2,163,000000,163,999999,55,85
+Windows Server 2003 Enterprise,OEM,R2,132,000000,161,999999,59,89
+Windows Server 2003 Enterprise,OEM,R2,176,000000,177,999999,59,89
+Windows Server 2003 Enterprise,OEM-SLP,RTM,119,004000,119,004999,55,85
+Windows Server 2003 Enterprise,OEM-SLP,RTM,119,006000,119,006999,55,85
+Windows Server 2003 Enterprise,OEM-SLP,SP1,119,004000,119,004999,55,85
+Windows Server 2003 Enterprise,OEM-SLP,SP1,119,006000,119,006999,55,85
+Windows Server 2003 Enterprise,OEM-SLP,SP2,119,004000,119,004999,55,85
+Windows Server 2003 Enterprise,OEM-SLP,SP2,119,006000,119,006999,55,85
+Windows Server 2003 Enterprise,OEM-SLP,R2,119,004000,119,004999,59,89
+Windows Server 2003 Enterprise,OEM-SLP,R2,119,010000,119,010999,59,89
+Windows Server 2003 Enterprise,VLK,RTM,640,000000,642,999999,5A,90
+Windows Server 2003 Enterprise,VLK,SP1,640,000000,649,999999,5A,90
+Windows Server 2003 Enterprise,VLK,SP2,640,000000,649,999999,5A,90
+Windows Server 2003 Enterprise,VLK,R2,650,000000,654,999999,5A,90
+Windows Server 2003 Enterprise,VLK,R2,655,000000,656,999999,5A,90
+Windows Server 2003 Datacenter,Retail,RTM,083,000000,083,999999,54,84
+Windows Server 2003 Datacenter,Retail,RTM,362,000000,366,999999,54,84
+Windows Server 2003 Datacenter,Retail,RTM,775,000000,778,999999,54,84
+Windows Server 2003 Datacenter,Retail,SP1,083,000000,083,999999,54,84
+Windows Server 2003 Datacenter,Retail,SP1,362,000000,366,999999,54,84
+Windows Server 2003 Datacenter,Retail,SP1,775,000000,778,999999,54,84
+Windows Server 2003 Datacenter,Retail,SP2,083,000000,083,999999,54,84
+Windows Server 2003 Datacenter,Retail,SP2,362,000000,366,999999,54,84
+Windows Server 2003 Datacenter,Retail,SP2,775,000000,778,999999,54,84
+Windows Server 2003 Datacenter,Retail,R2,083,000000,083,999999,58,88
+Windows Server 2003 Datacenter,Retail,R2,281,000000,285,999999,58,88
+Windows Server 2003 Datacenter,Retail,R2,788,000000,788,999999,58,88
+Windows Server 2003 Datacenter,OEM,RTM,162,000000,162,999999,55,85
+Windows Server 2003 Datacenter,OEM,SP1,162,000000,162,999999,55,85
+Windows Server 2003 Datacenter,OEM,SP2,162,000000,162,999999,55,85
+Windows Server 2003 Datacenter,OEM,R2,162,000000,162,999999,59,89
+Windows Server 2003 Datacenter,OEM-SLP,RTM,119,005000,119,005999,55,85
+Windows Server 2003 Datacenter,OEM-SLP,SP1,119,005000,119,005999,55,85
+Windows Server 2003 Datacenter,OEM-SLP,SP2,119,005000,119,005999,55,85
+Windows Server 2003 Datacenter,OEM-SLP,R2,119,005000,119,005999,59,89
+Windows Server 2003 Datacenter,VLK,RTM,640,000000,642,999999,5A,90
+Windows Server 2003 Datacenter,VLK,SP1,640,000000,649,999999,5A,90
+Windows Server 2003 Datacenter,VLK,SP2,640,000000,649,999999,5A,90
+Windows Server 2003 Datacenter,VLK,R2,650,000000,654,999999,5A,90
+Windows Server 2003 Datacenter,VLK,R2,655,000000,656,999999,5A,90
+Windows Server 2003 Standard x64 Edition,Retail,SP2,012,000000,065,999999,6C,108
+Windows Server 2003 Standard x64 Edition,Retail,SP2,117,000000,117,999999,6C,108
+Windows Server 2003 Standard x64 Edition,Retail,SP2,300,000000,309,999999,6C,108
+Windows Server 2003 Standard x64 Edition,Retail,R2,012,000000,065,999999,68,104
+Windows Server 2003 Standard x64 Edition,Retail,R2,085,000000,086,999999,68,104
+Windows Server 2003 Standard x64 Edition,Retail,R2,087,000000,088,999999,68,104
+Windows Server 2003 Standard x64 Edition,Retail,R2,091,000000,092,999999,68,104
+Windows Server 2003 Standard x64 Edition,Retail,R2,291,000000,295,999999,68,104
+Windows Server 2003 Standard x64 Edition,Retail,R2,311,000000,312,999999,68,104
+Windows Server 2003 Standard x64 Edition,Retail,R2,319,000000,320,999999,68,104
+Windows Server 2003 Standard x64 Edition,Retail,R2,321,000000,330,999999,68,104
+Windows Server 2003 Standard x64 Edition,Retail,R2,783,000000,784,999999,68,104
+Windows Server 2003 Standard x64 Edition,Retail,R2,792,000000,792,999999,68,104
+Windows Server 2003 Standard x64 Edition,OEM,SP2,127,000000,226,999999,6D,109
+Windows Server 2003 Standard x64 Edition,OEM,R2,127,000000,226,999999,69,105
+Windows Server 2003 Standard x64 Edition,OEM,R2,271,000000,272,999999,69,105
+Windows Server 2003 Standard x64 Edition,OEM,R2,273,000000,274,999999,69,105
+Windows Server 2003 Standard x64 Edition,OEM,R2,275,000000,276,999999,69,105
+Windows Server 2003 Standard x64 Edition,OEM,R2,279,000000,280,999999,69,105
+Windows Server 2003 Standard x64 Edition,OEM-SLP,SP2,119,002000,119,002999,6D,109
+Windows Server 2003 Standard x64 Edition,OEM-SLP,R2,119,002000,119,002999,69,105
+Windows Server 2003 Standard x64 Edition,OEM-SLP,R2,119,006000,119,006999,69,105
+Windows Server 2003 Standard x64 Edition,OEM-SLP,R2,119,007000,119,007999,69,105
+Windows Server 2003 Standard x64 Edition,OEM-SLP,R2,119,008000,119,008999,69,105
+Windows Server 2003 Standard x64 Edition,OEM-SLP,R2,119,010000,119,010999,69,105
+Windows Server 2003 Standard x64 Edition,VLK,SP2,640,000000,642,999999,64,100
+Windows Server 2003 Standard x64 Edition,VLK,R2,643,000000,649,999999,64,100
+Windows Server 2003 Enterprise x64 Edition,Retail,SP2,071,000000,082,999999,6C,108
+Windows Server 2003 Enterprise x64 Edition,Retail,SP2,090,000000,092,999999,6C,108
+Windows Server 2003 Enterprise x64 Edition,Retail,SP2,300,000000,309,999999,6C,108
+Windows Server 2003 Enterprise x64 Edition,Retail,R2,071,000000,082,999999,68,104
+Windows Server 2003 Enterprise x64 Edition,Retail,R2,089,000000,090,999999,68,104
+Windows Server 2003 Enterprise x64 Edition,Retail,R2,095,000000,095,999999,68,104
+Windows Server 2003 Enterprise x64 Edition,Retail,R2,301,000000,305,999999,68,104
+Windows Server 2003 Enterprise x64 Edition,Retail,R2,313,000000,314,999999,68,104
+Windows Server 2003 Enterprise x64 Edition,Retail,R2,321,000000,330,999999,68,104
+Windows Server 2003 Enterprise x64 Edition,Retail,R2,786,000000,787,999999,68,104
+Windows Server 2003 Enterprise x64 Edition,OEM,SP2,232,000000,261,999999,6D,109
+Windows Server 2003 Enterprise x64 Edition,OEM,R2,232,000000,261,999999,69,105
+Windows Server 2003 Enterprise x64 Edition,OEM,R2,277,000000,278,999999,69,105
+Windows Server 2003 Enterprise x64 Edition,OEM-SLP,SP2,119,004000,119,004999,6D,109
+Windows Server 2003 Enterprise x64 Edition,OEM-SLP,R2,119,004000,119,004999,69,105
+Windows Server 2003 Enterprise x64 Edition,OEM-SLP,R2,119,009000,119,009999,69,105
+Windows Server 2003 Enterprise x64 Edition,VLK,SP2,640,000000,642,999999,64,100
+Windows Server 2003 Enterprise x64 Edition,VLK,R2,643,000000,649,999999,64,100
+Windows Server 2003 Datacenter x64 Edition,Retail,SP2,083,000000,084,999999,6C,108
+Windows Server 2003 Datacenter x64 Edition,Retail,SP2,094,000000,094,999999,6C,108
+Windows Server 2003 Datacenter x64 Edition,Retail,SP2,300,000000,309,999999,6C,108
+Windows Server 2003 Datacenter x64 Edition,Retail,R2,083,000000,084,999999,68,104
+Windows Server 2003 Datacenter x64 Edition,Retail,R2,306,000000,310,999999,68,104
+Windows Server 2003 Datacenter x64 Edition,Retail,R2,321,000000,330,999999,68,104
+Windows Server 2003 Datacenter x64 Edition,Retail,R2,788,000000,789,999999,68,104
+Windows Server 2003 Datacenter x64 Edition,OEM,SP2,262,000000,263,999999,6D,109
+Windows Server 2003 Datacenter x64 Edition,OEM,R2,262,000000,263,999999,69,105
+Windows Server 2003 Datacenter x64 Edition,OEM-SLP,SP2,119,005000,119,005999,6D,109
+Windows Server 2003 Datacenter x64 Edition,OEM-SLP,R2,119,005000,119,005999,69,105
+Windows Server 2003 Datacenter x64 Edition,VLK,SP2,640,000000,642,999999,64,100
+Windows Server 2003 Datacenter x64 Edition,VLK,R2,643,000000,649,999999,64,100
+Office 2000,Retail,N/A,000,000000,999,999999,04,4
+Office 2000,OEM,N/A,000,000000,999,999999,05,5
+Office 2002 Applications,Retail,N/A,750,000000,799,999999,20,32
+Office 2002 Applications,OEM,N/A,900,000000,959,999999,21,33
+Office 2002 Applications,VLK,N/A,640,000000,699,999999,20,32
+Office 2002 Standard Edition,Retail,N/A,750,000000,799,999999,22,34
+Office 2002 Standard Edition,OEM,N/A,900,000000,959,999999,23,35
+Office 2002 Standard Edition,VLK,N/A,640,000000,699,999999,22,34
+Office 2002 Small Business Edition,OEM,N/A,900,000000,959,999999,23,35
+Office 2002 Professional Edition,Retail,N/A,750,000000,799,999999,22,34
+Office 2002 Professional Edition,OEM,N/A,900,000000,959,999999,23,35
+Office 2002 Professional Edition,VLK,N/A,640,000000,699,999999,22,34
+Office 2003 Applications,Retail,Trial,100,000000,199,999999,6E,110
+Office 2003 Applications,Retail,Trial,400,000000,464,999999,6E,110
+Office 2003 Applications,Retail,Trial,502,000000,581,999999,6E,110
+Office 2003 Applications,Retail,Bypass,582,000000,611,999999,6E,110
+Office 2003 Applications,Retail,Bypass,612,000000,619,999999,6E,110
+Office 2003 Applications,Retail,Perpetual,700,000000,720,999999,6E,110
+Office 2003 Applications,Retail,Perpetual,745,000000,760,999999,6E,110
+Office 2003 Applications,Retail,Perpetual,761,000000,776,999999,6E,110
+Office 2003 Applications,Retail,Perpetual,777,000000,797,999999,6E,110
+Office 2003 Applications,Retail,Perpetual,798,000000,798,999999,6E,110
+Office 2003 Applications,Retail,Perpetual,799,000000,799,999999,6E,110
+Office 2003 Applications,Retail,Premium,361,000000,399,999999,6E,110
+Office 2003 Applications,Retail,Premium,501,000000,501,999999,6E,110
+Office 2003 Applications,Retail,Academic,049,000000,099,999999,6E,110
+Office 2003 Applications,Retail,MSDN,336,000000,360,999999,6E,110
+Office 2003 Applications,Retail,HomeUse,470,000000,499,999999,6E,110
+Office 2003 Applications,Retail,HomeUse,721,000000,744,999999,6E,110
+Office 2003 Applications,OEM,Trial,200,000000,209,999999,6F,111
+Office 2003 Applications,OEM,Trial,311,000000,335,999999,6F,111
+Office 2003 Applications,OEM,Trial,800,000000,886,999999,6F,111
+Office 2003 Applications,OEM,Perpetual,500,000000,500,999999,6F,111
+Office 2003 Applications,OEM,Perpetual,900,000000,998,999999,6F,111
+Office 2003 Applications,VLK,N/A,620,000000,624,999999,6E,110
+Office 2003 Applications,VLK,N/A,626,000000,639,999999,6E,110
+Office 2003 Applications,VLK,N/A,640,000000,699,999999,6E,110
+Office 2003 Basic Edition,Retail,Trial,100,000000,199,999999,70,112
+Office 2003 Basic Edition,Retail,Trial,400,000000,464,999999,70,112
+Office 2003 Basic Edition,Retail,Trial,502,000000,581,999999,70,112
+Office 2003 Basic Edition,Retail,Bypass,582,000000,611,999999,70,112
+Office 2003 Basic Edition,Retail,Bypass,612,000000,619,999999,70,112
+Office 2003 Basic Edition,Retail,Perpetual,700,000000,720,999999,70,112
+Office 2003 Basic Edition,Retail,Perpetual,745,000000,760,999999,70,112
+Office 2003 Basic Edition,Retail,Perpetual,761,000000,776,999999,70,112
+Office 2003 Basic Edition,Retail,Perpetual,777,000000,797,999999,70,112
+Office 2003 Basic Edition,Retail,Perpetual,798,000000,798,999999,70,112
+Office 2003 Basic Edition,Retail,Perpetual,799,000000,799,999999,70,112
+Office 2003 Basic Edition,Retail,Premium,361,000000,399,999999,70,112
+Office 2003 Basic Edition,Retail,Premium,501,000000,501,999999,70,112
+Office 2003 Basic Edition,Retail,Academic,049,000000,099,999999,70,112
+Office 2003 Basic Edition,Retail,MSDN,336,000000,360,999999,70,112
+Office 2003 Basic Edition,Retail,HomeUse,470,000000,499,999999,70,112
+Office 2003 Basic Edition,Retail,HomeUse,721,000000,744,999999,70,112
+Office 2003 Basic Edition,OEM,Trial,200,000000,209,999999,71,113
+Office 2003 Basic Edition,OEM,Trial,311,000000,335,999999,71,113
+Office 2003 Basic Edition,OEM,Trial,800,000000,886,999999,71,113
+Office 2003 Basic Edition,OEM,Perpetual,500,000000,500,999999,71,113
+Office 2003 Basic Edition,OEM,Perpetual,900,000000,998,999999,71,113
+Office 2003 Small Business Edition,Retail,Trial,100,000000,199,999999,70,112
+Office 2003 Small Business Edition,Retail,Trial,400,000000,464,999999,70,112
+Office 2003 Small Business Edition,Retail,Trial,502,000000,581,999999,70,112
+Office 2003 Small Business Edition,Retail,Bypass,582,000000,611,999999,70,112
+Office 2003 Small Business Edition,Retail,Bypass,612,000000,619,999999,70,112
+Office 2003 Small Business Edition,Retail,Perpetual,700,000000,720,999999,70,112
+Office 2003 Small Business Edition,Retail,Perpetual,745,000000,760,999999,70,112
+Office 2003 Small Business Edition,Retail,Perpetual,761,000000,776,999999,70,112
+Office 2003 Small Business Edition,Retail,Perpetual,777,000000,797,999999,70,112
+Office 2003 Small Business Edition,Retail,Perpetual,798,000000,798,999999,70,112
+Office 2003 Small Business Edition,Retail,Perpetual,799,000000,799,999999,70,112
+Office 2003 Small Business Edition,Retail,Premium,361,000000,399,999999,70,112
+Office 2003 Small Business Edition,Retail,Premium,501,000000,501,999999,70,112
+Office 2003 Small Business Edition,Retail,Academic,049,000000,099,999999,70,112
+Office 2003 Small Business Edition,Retail,MSDN,336,000000,360,999999,70,112
+Office 2003 Small Business Edition,Retail,HomeUse,470,000000,499,999999,70,112
+Office 2003 Small Business Edition,Retail,HomeUse,721,000000,744,999999,70,112
+Office 2003 Small Business Edition,OEM,Trial,200,000000,209,999999,71,113
+Office 2003 Small Business Edition,OEM,Trial,311,000000,335,999999,71,113
+Office 2003 Small Business Edition,OEM,Trial,800,000000,886,999999,71,113
+Office 2003 Small Business Edition,OEM,Perpetual,500,000000,500,999999,71,113
+Office 2003 Small Business Edition,OEM,Perpetual,900,000000,998,999999,71,113
+Office 2003 Standard Edition,Retail,Trial,100,000000,199,999999,70,112
+Office 2003 Standard Edition,Retail,Trial,400,000000,464,999999,70,112
+Office 2003 Standard Edition,Retail,Trial,502,000000,581,999999,70,112
+Office 2003 Standard Edition,Retail,Bypass,582,000000,611,999999,70,112
+Office 2003 Standard Edition,Retail,Bypass,612,000000,619,999999,70,112
+Office 2003 Standard Edition,Retail,Perpetual,700,000000,720,999999,70,112
+Office 2003 Standard Edition,Retail,Perpetual,745,000000,760,999999,70,112
+Office 2003 Standard Edition,Retail,Perpetual,761,000000,776,999999,70,112
+Office 2003 Standard Edition,Retail,Perpetual,777,000000,797,999999,70,112
+Office 2003 Standard Edition,Retail,Perpetual,798,000000,798,999999,70,112
+Office 2003 Standard Edition,Retail,Perpetual,799,000000,799,999999,70,112
+Office 2003 Standard Edition,Retail,Premium,361,000000,399,999999,70,112
+Office 2003 Standard Edition,Retail,Premium,501,000000,501,999999,70,112
+Office 2003 Standard Edition,Retail,Academic,049,000000,099,999999,70,112
+Office 2003 Standard Edition,Retail,MSDN,336,000000,360,999999,70,112
+Office 2003 Standard Edition,Retail,HomeUse,470,000000,499,999999,70,112
+Office 2003 Standard Edition,Retail,HomeUse,721,000000,744,999999,70,112
+Office 2003 Standard Edition,OEM,Trial,200,000000,209,999999,71,113
+Office 2003 Standard Edition,OEM,Trial,311,000000,335,999999,71,113
+Office 2003 Standard Edition,OEM,Trial,800,000000,886,999999,71,113
+Office 2003 Standard Edition,OEM,Perpetual,500,000000,500,999999,71,113
+Office 2003 Standard Edition,OEM,Perpetual,900,000000,998,999999,71,113
+Office 2003 Standard Edition,VLK,N/A,620,000000,624,999999,70,112
+Office 2003 Standard Edition,VLK,N/A,626,000000,639,999999,70,112
+Office 2003 Standard Edition,VLK,N/A,640,000000,699,999999,70,112
+Office 2003 Professional Edition,Retail,Trial,100,000000,199,999999,72,114
+Office 2003 Professional Edition,Retail,Trial,400,000000,464,999999,72,114
+Office 2003 Professional Edition,Retail,Trial,502,000000,581,999999,72,114
+Office 2003 Professional Edition,Retail,Bypass,582,000000,611,999999,72,114
+Office 2003 Professional Edition,Retail,Bypass,612,000000,619,999999,72,114
+Office 2003 Professional Edition,Retail,Perpetual,700,000000,720,999999,72,114
+Office 2003 Professional Edition,Retail,Perpetual,745,000000,760,999999,72,114
+Office 2003 Professional Edition,Retail,Perpetual,761,000000,776,999999,72,114
+Office 2003 Professional Edition,Retail,Perpetual,777,000000,797,999999,72,114
+Office 2003 Professional Edition,Retail,Perpetual,798,000000,798,999999,72,114
+Office 2003 Professional Edition,Retail,Perpetual,799,000000,799,999999,72,114
+Office 2003 Professional Edition,Retail,Premium,361,000000,399,999999,72,114
+Office 2003 Professional Edition,Retail,Premium,501,000000,501,999999,72,114
+Office 2003 Professional Edition,Retail,Academic,049,000000,099,999999,72,114
+Office 2003 Professional Edition,Retail,MSDN,336,000000,360,999999,72,114
+Office 2003 Professional Edition,Retail,HomeUse,470,000000,499,999999,72,114
+Office 2003 Professional Edition,Retail,HomeUse,721,000000,744,999999,72,114
+Office 2003 Professional Edition,OEM,Trial,200,000000,209,999999,73,115
+Office 2003 Professional Edition,OEM,Trial,311,000000,335,999999,73,115
+Office 2003 Professional Edition,OEM,Trial,800,000000,886,999999,73,115
+Office 2003 Professional Edition,OEM,Perpetual,500,000000,500,999999,73,115
+Office 2003 Professional Edition,OEM,Perpetual,900,000000,998,999999,73,115
+Office 2003 Professional Edition,VLK,N/A,620,000000,624,999999,72,114
+Office 2003 Professional Edition,VLK,N/A,626,000000,639,999999,72,114
+Office 2003 Professional Edition,VLK,N/A,640,000000,699,999999,72,114
+Office 2007 Applications,Retail,Trial,301,000000,497,999999,7E,126
+Office 2007 Applications,Retail,Trial,518,000000,557,999999,7E,126
+Office 2007 Applications,Retail,Trial,573,000000,582,999999,7E,126
+Office 2007 Applications,Retail,Trial,583,000000,642,999999,7E,126
+Office 2007 Applications,Retail,Trial,643,000000,693,999999,7E,126
+Office 2007 Applications,Retail,Bypass,694,000000,703,999999,7E,126
+Office 2007 Applications,Retail,Perpetual,777,000000,811,999999,7E,126
+Office 2007 Applications,Retail,Perpetual,852,000000,853,999999,7E,126
+Office 2007 Applications,Retail,Perpetual,901,000000,955,999999,7E,126
+Office 2007 Applications,Retail,Perpetual,956,000000,975,999999,7E,126
+Office 2007 Applications,Retail,Perpetual,976,000000,999,999999,7E,126
+Office 2007 Applications,Retail,Premium,706,000000,706,999999,7E,126
+Office 2007 Applications,Retail,Premium,812,000000,851,999999,7E,126
+Office 2007 Applications,Retail,Academic,854,000000,857,999999,7E,126
+Office 2007 Applications,Retail,MSDN,858,000000,860,999999,7E,126
+Office 2007 Applications,Retail,MSDN,861,000000,870,999999,7E,126
+Office 2007 Applications,Retail,HomeUse,871,000000,900,999999,7E,126
+Office 2007 Applications,OEM,Trial,001,000000,300,999999,7F,127
+Office 2007 Applications,OEM,Trial,498,000000,517,999999,7F,127
+Office 2007 Applications,OEM,Trial,563,000000,572,999999,7F,127
+Office 2007 Applications,OEM,Perpetual,705,000000,705,999999,7F,127
+Office 2007 Applications,OEM,Perpetual,727,000000,776,999999,7F,127
+Office 2007 Applications,VLK,N/A,707,000000,726,999999,7E,126
+Office 2007 Basic Edition,Retail,Trial,301,000000,497,999999,80,128
+Office 2007 Basic Edition,Retail,Trial,518,000000,557,999999,80,128
+Office 2007 Basic Edition,Retail,Trial,573,000000,582,999999,80,128
+Office 2007 Basic Edition,Retail,Trial,583,000000,642,999999,80,128
+Office 2007 Basic Edition,Retail,Trial,643,000000,693,999999,80,128
+Office 2007 Basic Edition,Retail,Bypass,694,000000,703,999999,80,128
+Office 2007 Basic Edition,Retail,Perpetual,777,000000,811,999999,80,128
+Office 2007 Basic Edition,Retail,Perpetual,852,000000,853,999999,80,128
+Office 2007 Basic Edition,Retail,Perpetual,901,000000,955,999999,80,128
+Office 2007 Basic Edition,Retail,Perpetual,956,000000,975,999999,80,128
+Office 2007 Basic Edition,Retail,Perpetual,976,000000,999,999999,80,128
+Office 2007 Basic Edition,Retail,Premium,706,000000,706,999999,80,128
+Office 2007 Basic Edition,Retail,Premium,812,000000,851,999999,80,128
+Office 2007 Basic Edition,Retail,Academic,854,000000,857,999999,80,128
+Office 2007 Basic Edition,Retail,MSDN,858,000000,860,999999,80,128
+Office 2007 Basic Edition,Retail,MSDN,861,000000,870,999999,80,128
+Office 2007 Basic Edition,Retail,HomeUse,871,000000,900,999999,80,128
+Office 2007 Basic Edition,OEM,Trial,001,000000,300,999999,81,129
+Office 2007 Basic Edition,OEM,Trial,498,000000,517,999999,81,129
+Office 2007 Basic Edition,OEM,Trial,563,000000,572,999999,81,129
+Office 2007 Basic Edition,OEM,Perpetual,705,000000,705,999999,81,129
+Office 2007 Basic Edition,OEM,Perpetual,727,000000,776,999999,81,129
+Office 2007 Home & Student Edition,Retail,Trial,301,000000,497,999999,88,136
+Office 2007 Home & Student Edition,Retail,Trial,518,000000,557,999999,88,136
+Office 2007 Home & Student Edition,Retail,Trial,573,000000,582,999999,88,136
+Office 2007 Home & Student Edition,Retail,Trial,583,000000,642,999999,88,136
+Office 2007 Home & Student Edition,Retail,Trial,643,000000,693,999999,88,136
+Office 2007 Home & Student Edition,Retail,Bypass,694,000000,703,999999,88,136
+Office 2007 Home & Student Edition,Retail,Perpetual,777,000000,811,999999,88,136
+Office 2007 Home & Student Edition,Retail,Perpetual,852,000000,853,999999,88,136
+Office 2007 Home & Student Edition,Retail,Perpetual,901,000000,955,999999,88,136
+Office 2007 Home & Student Edition,Retail,Perpetual,956,000000,975,999999,88,136
+Office 2007 Home & Student Edition,Retail,Perpetual,976,000000,999,999999,88,136
+Office 2007 Home & Student Edition,Retail,Premium,706,000000,706,999999,88,136
+Office 2007 Home & Student Edition,Retail,Premium,812,000000,851,999999,88,136
+Office 2007 Home & Student Edition,Retail,Academic,854,000000,857,999999,88,136
+Office 2007 Home & Student Edition,Retail,MSDN,858,000000,860,999999,88,136
+Office 2007 Home & Student Edition,Retail,MSDN,861,000000,870,999999,88,136
+Office 2007 Home & Student Edition,Retail,HomeUse,871,000000,900,999999,88,136
+Office 2007 Home & Student Edition,OEM,Trial,001,000000,300,999999,89,137
+Office 2007 Home & Student Edition,OEM,Trial,498,000000,517,999999,89,137
+Office 2007 Home & Student Edition,OEM,Trial,563,000000,572,999999,89,137
+Office 2007 Home & Student Edition,OEM,Perpetual,705,000000,705,999999,89,137
+Office 2007 Home & Student Edition,OEM,Perpetual,727,000000,776,999999,89,137
+Office 2007 Small Business Edition,Retail,Trial,301,000000,497,999999,80,128
+Office 2007 Small Business Edition,Retail,Trial,518,000000,557,999999,80,128
+Office 2007 Small Business Edition,Retail,Trial,573,000000,582,999999,80,128
+Office 2007 Small Business Edition,Retail,Trial,583,000000,642,999999,80,128
+Office 2007 Small Business Edition,Retail,Trial,643,000000,693,999999,80,128
+Office 2007 Small Business Edition,Retail,Bypass,694,000000,703,999999,80,128
+Office 2007 Small Business Edition,Retail,Perpetual,777,000000,811,999999,80,128
+Office 2007 Small Business Edition,Retail,Perpetual,852,000000,853,999999,80,128
+Office 2007 Small Business Edition,Retail,Perpetual,901,000000,955,999999,80,128
+Office 2007 Small Business Edition,Retail,Perpetual,956,000000,975,999999,80,128
+Office 2007 Small Business Edition,Retail,Perpetual,976,000000,999,999999,80,128
+Office 2007 Small Business Edition,Retail,Premium,706,000000,706,999999,80,128
+Office 2007 Small Business Edition,Retail,Premium,812,000000,851,999999,80,128
+Office 2007 Small Business Edition,Retail,Academic,854,000000,857,999999,80,128
+Office 2007 Small Business Edition,Retail,MSDN,858,000000,860,999999,80,128
+Office 2007 Small Business Edition,Retail,MSDN,861,000000,870,999999,80,128
+Office 2007 Small Business Edition,Retail,HomeUse,871,000000,900,999999,80,128
+Office 2007 Small Business Edition,OEM,Trial,001,000000,300,999999,81,129
+Office 2007 Small Business Edition,OEM,Trial,498,000000,517,999999,81,129
+Office 2007 Small Business Edition,OEM,Trial,563,000000,572,999999,81,129
+Office 2007 Small Business Edition,OEM,Perpetual,705,000000,705,999999,81,129
+Office 2007 Small Business Edition,OEM,Perpetual,727,000000,776,999999,81,129
+Office 2007 Standard Edition,Retail,Trial,301,000000,497,999999,80,128
+Office 2007 Standard Edition,Retail,Trial,518,000000,557,999999,80,128
+Office 2007 Standard Edition,Retail,Trial,573,000000,582,999999,80,128
+Office 2007 Standard Edition,Retail,Trial,583,000000,642,999999,80,128
+Office 2007 Standard Edition,Retail,Trial,643,000000,693,999999,80,128
+Office 2007 Standard Edition,Retail,Bypass,694,000000,703,999999,80,128
+Office 2007 Standard Edition,Retail,Perpetual,777,000000,811,999999,80,128
+Office 2007 Standard Edition,Retail,Perpetual,852,000000,853,999999,80,128
+Office 2007 Standard Edition,Retail,Perpetual,901,000000,955,999999,80,128
+Office 2007 Standard Edition,Retail,Perpetual,956,000000,975,999999,80,128
+Office 2007 Standard Edition,Retail,Perpetual,976,000000,999,999999,80,128
+Office 2007 Standard Edition,Retail,Premium,706,000000,706,999999,80,128
+Office 2007 Standard Edition,Retail,Premium,812,000000,851,999999,80,128
+Office 2007 Standard Edition,Retail,Academic,854,000000,857,999999,80,128
+Office 2007 Standard Edition,Retail,MSDN,858,000000,860,999999,80,128
+Office 2007 Standard Edition,Retail,MSDN,861,000000,870,999999,80,128
+Office 2007 Standard Edition,Retail,HomeUse,871,000000,900,999999,80,128
+Office 2007 Standard Edition,OEM,Trial,001,000000,300,999999,81,129
+Office 2007 Standard Edition,OEM,Trial,498,000000,517,999999,81,129
+Office 2007 Standard Edition,OEM,Trial,563,000000,572,999999,81,129
+Office 2007 Standard Edition,OEM,Perpetual,705,000000,705,999999,81,129
+Office 2007 Standard Edition,OEM,Perpetual,727,000000,776,999999,81,129
+Office 2007 Standard Edition,VLK,N/A,707,000000,726,999999,80,128
+Office 2007 Professional Edition,Retail,Trial,301,000000,497,999999,82,130
+Office 2007 Professional Edition,Retail,Trial,518,000000,557,999999,82,130
+Office 2007 Professional Edition,Retail,Trial,573,000000,582,999999,82,130
+Office 2007 Professional Edition,Retail,Trial,583,000000,642,999999,82,130
+Office 2007 Professional Edition,Retail,Trial,643,000000,693,999999,82,130
+Office 2007 Professional Edition,Retail,Bypass,694,000000,703,999999,82,130
+Office 2007 Professional Edition,Retail,Perpetual,777,000000,811,999999,82,130
+Office 2007 Professional Edition,Retail,Perpetual,852,000000,853,999999,82,130
+Office 2007 Professional Edition,Retail,Perpetual,901,000000,955,999999,82,130
+Office 2007 Professional Edition,Retail,Perpetual,956,000000,975,999999,82,130
+Office 2007 Professional Edition,Retail,Perpetual,976,000000,999,999999,82,130
+Office 2007 Professional Edition,Retail,Premium,706,000000,706,999999,82,130
+Office 2007 Professional Edition,Retail,Premium,812,000000,851,999999,82,130
+Office 2007 Professional Edition,Retail,Academic,854,000000,857,999999,82,130
+Office 2007 Professional Edition,Retail,MSDN,858,000000,860,999999,82,130
+Office 2007 Professional Edition,Retail,MSDN,861,000000,870,999999,82,130
+Office 2007 Professional Edition,Retail,HomeUse,871,000000,900,999999,82,130
+Office 2007 Professional Edition,OEM,Trial,001,000000,300,999999,83,131
+Office 2007 Professional Edition,OEM,Trial,498,000000,517,999999,83,131
+Office 2007 Professional Edition,OEM,Trial,563,000000,572,999999,83,131
+Office 2007 Professional Edition,OEM,Perpetual,705,000000,705,999999,83,131
+Office 2007 Professional Edition,OEM,Perpetual,727,000000,776,999999,83,131
+Office 2007 Professional Edition,VLK,N/A,707,000000,726,999999,82,130
+Office 2007 Professional Hybrid Edition,Retail,Trial,301,000000,497,999999,84,132
+Office 2007 Professional Hybrid Edition,Retail,Trial,518,000000,557,999999,84,132
+Office 2007 Professional Hybrid Edition,Retail,Trial,573,000000,582,999999,84,132
+Office 2007 Professional Hybrid Edition,Retail,Trial,583,000000,642,999999,84,132
+Office 2007 Professional Hybrid Edition,Retail,Trial,643,000000,693,999999,84,132
+Office 2007 Professional Hybrid Edition,Retail,Bypass,694,000000,703,999999,84,132
+Office 2007 Professional Hybrid Edition,Retail,Perpetual,777,000000,811,999999,84,132
+Office 2007 Professional Hybrid Edition,Retail,Perpetual,852,000000,853,999999,84,132
+Office 2007 Professional Hybrid Edition,Retail,Perpetual,901,000000,955,999999,84,132
+Office 2007 Professional Hybrid Edition,Retail,Perpetual,956,000000,975,999999,84,132
+Office 2007 Professional Hybrid Edition,Retail,Perpetual,976,000000,999,999999,84,132
+Office 2007 Professional Hybrid Edition,Retail,Premium,706,000000,706,999999,84,132
+Office 2007 Professional Hybrid Edition,Retail,Premium,812,000000,851,999999,84,132
+Office 2007 Professional Hybrid Edition,Retail,Academic,854,000000,857,999999,84,132
+Office 2007 Professional Hybrid Edition,Retail,MSDN,858,000000,860,999999,84,132
+Office 2007 Professional Hybrid Edition,Retail,MSDN,861,000000,870,999999,84,132
+Office 2007 Professional Hybrid Edition,Retail,HomeUse,871,000000,900,999999,84,132
+Office 2007 Professional Hybrid Edition,OEM,Trial,001,000000,300,999999,85,133
+Office 2007 Professional Hybrid Edition,OEM,Trial,498,000000,517,999999,85,133
+Office 2007 Professional Hybrid Edition,OEM,Trial,563,000000,572,999999,85,133
+Office 2007 Professional Hybrid Edition,OEM,Perpetual,705,000000,705,999999,85,133
+Office 2007 Professional Hybrid Edition,OEM,Perpetual,727,000000,776,999999,85,133
+Office 2007 Professional Plus Edition,Retail,Trial,301,000000,497,999999,82,130
+Office 2007 Professional Plus Edition,Retail,Trial,518,000000,557,999999,82,130
+Office 2007 Professional Plus Edition,Retail,Trial,573,000000,582,999999,82,130
+Office 2007 Professional Plus Edition,Retail,Trial,583,000000,642,999999,82,130
+Office 2007 Professional Plus Edition,Retail,Trial,643,000000,693,999999,82,130
+Office 2007 Professional Plus Edition,Retail,Bypass,694,000000,703,999999,82,130
+Office 2007 Professional Plus Edition,Retail,Perpetual,777,000000,811,999999,82,130
+Office 2007 Professional Plus Edition,Retail,Perpetual,852,000000,853,999999,82,130
+Office 2007 Professional Plus Edition,Retail,Perpetual,901,000000,955,999999,82,130
+Office 2007 Professional Plus Edition,Retail,Perpetual,956,000000,975,999999,82,130
+Office 2007 Professional Plus Edition,Retail,Perpetual,976,000000,999,999999,82,130
+Office 2007 Professional Plus Edition,Retail,Premium,706,000000,706,999999,82,130
+Office 2007 Professional Plus Edition,Retail,Premium,812,000000,851,999999,82,130
+Office 2007 Professional Plus Edition,Retail,Academic,854,000000,857,999999,82,130
+Office 2007 Professional Plus Edition,Retail,MSDN,858,000000,860,999999,82,130
+Office 2007 Professional Plus Edition,Retail,MSDN,861,000000,870,999999,82,130
+Office 2007 Professional Plus Edition,Retail,HomeUse,871,000000,900,999999,82,130
+Office 2007 Professional Plus Edition,OEM,Trial,001,000000,300,999999,83,131
+Office 2007 Professional Plus Edition,OEM,Trial,498,000000,517,999999,83,131
+Office 2007 Professional Plus Edition,OEM,Trial,563,000000,572,999999,83,131
+Office 2007 Professional Plus Edition,OEM,Perpetual,705,000000,705,999999,83,131
+Office 2007 Professional Plus Edition,OEM,Perpetual,727,000000,776,999999,83,131
+Office 2007 Professional Plus Edition,VLK,N/A,707,000000,726,999999,82,130
+Office 2007 Ultimate Edition,Retail,Trial,301,000000,497,999999,82,130
+Office 2007 Ultimate Edition,Retail,Trial,518,000000,557,999999,82,130
+Office 2007 Ultimate Edition,Retail,Trial,573,000000,582,999999,82,130
+Office 2007 Ultimate Edition,Retail,Trial,583,000000,642,999999,82,130
+Office 2007 Ultimate Edition,Retail,Trial,643,000000,693,999999,82,130
+Office 2007 Ultimate Edition,Retail,Bypass,694,000000,703,999999,82,130
+Office 2007 Ultimate Edition,Retail,Perpetual,777,000000,811,999999,82,130
+Office 2007 Ultimate Edition,Retail,Perpetual,852,000000,853,999999,82,130
+Office 2007 Ultimate Edition,Retail,Perpetual,901,000000,955,999999,82,130
+Office 2007 Ultimate Edition,Retail,Perpetual,956,000000,975,999999,82,130
+Office 2007 Ultimate Edition,Retail,Perpetual,976,000000,999,999999,82,130
+Office 2007 Ultimate Edition,Retail,Premium,706,000000,706,999999,82,130
+Office 2007 Ultimate Edition,Retail,Premium,812,000000,851,999999,82,130
+Office 2007 Ultimate Edition,Retail,Academic,854,000000,857,999999,82,130
+Office 2007 Ultimate Edition,Retail,MSDN,858,000000,860,999999,82,130
+Office 2007 Ultimate Edition,Retail,MSDN,861,000000,870,999999,82,130
+Office 2007 Ultimate Edition,Retail,HomeUse,871,000000,900,999999,82,130
+Office 2007 Ultimate Edition,OEM,Trial,001,000000,300,999999,83,131
+Office 2007 Ultimate Edition,OEM,Trial,498,000000,517,999999,83,131
+Office 2007 Ultimate Edition,OEM,Trial,563,000000,572,999999,83,131
+Office 2007 Ultimate Edition,OEM,Perpetual,705,000000,705,999999,83,131
+Office 2007 Ultimate Edition,OEM,Perpetual,727,000000,776,999999,83,131
+Office 2007 Enterprise Edition,Retail,Trial,301,000000,497,999999,82,130
+Office 2007 Enterprise Edition,Retail,Trial,518,000000,557,999999,82,130
+Office 2007 Enterprise Edition,Retail,Trial,573,000000,582,999999,82,130
+Office 2007 Enterprise Edition,Retail,Trial,583,000000,642,999999,82,130
+Office 2007 Enterprise Edition,Retail,Trial,643,000000,693,999999,82,130
+Office 2007 Enterprise Edition,Retail,Bypass,694,000000,703,999999,82,130
+Office 2007 Enterprise Edition,Retail,Perpetual,777,000000,811,999999,82,130
+Office 2007 Enterprise Edition,Retail,Perpetual,852,000000,853,999999,82,130
+Office 2007 Enterprise Edition,Retail,Perpetual,901,000000,955,999999,82,130
+Office 2007 Enterprise Edition,Retail,Perpetual,956,000000,975,999999,82,130
+Office 2007 Enterprise Edition,Retail,Perpetual,976,000000,999,999999,82,130
+Office 2007 Enterprise Edition,Retail,Premium,706,000000,706,999999,82,130
+Office 2007 Enterprise Edition,Retail,Premium,812,000000,851,999999,82,130
+Office 2007 Enterprise Edition,Retail,Academic,854,000000,857,999999,82,130
+Office 2007 Enterprise Edition,Retail,MSDN,858,000000,860,999999,82,130
+Office 2007 Enterprise Edition,Retail,MSDN,861,000000,870,999999,82,130
+Office 2007 Enterprise Edition,Retail,HomeUse,871,000000,900,999999,82,130
+Office 2007 Enterprise Edition,VLK,N/A,707,000000,726,999999,82,130
+Plus! Windows XP Edition,Retail,N/A,980,000000,980,999999,08,8
+Plus! Windows XP Edition,OEM,N/A,000,000000,000,000000,09,9
+Age of Empires III,Retail,N/A,001,000000,001,999999,50,80
+Age of Empires III,Retail,N/A,142,000000,142,999999,50,80
+Age of Empires III,Retail,N/A,144,000000,144,999999,50,80
+Age of Empires III,Retail,N/A,340,000000,340,999999,50,80
+Age of Empires III,OEM,N/A,001,000000,001,999999,51,81
+Age of Empires III,OEM,N/A,142,000000,142,999999,51,81
+Age of Empires III,OEM,N/A,144,000000,144,999999,51,81
+Age of Empires III,OEM,N/A,340,000000,340,999999,51,81
+Commerce Server 2002,Retail,N/A,000,000000,999,999999,0E,14
+Commerce Server 2002,OEM,N/A,000,000000,999,999999,0F,15
+CRM 3.0 Professional,Retail,0 Users,114,000000,114,099999,52,82
+CRM 3.0 Professional,Retail,10 Users,007,426000,007,426999,52,82
+CRM 3.0 Professional,Retail,100K Users,114,800000,114,849999,52,82
+CRM 3.0 Professional,Retail,100K Users,115,000000,115,999999,52,82
+CRM 3.0 Professional,Retail,1 CAL,114,100000,114,199999,52,82
+CRM 3.0 Professional,Retail,5 CAL,114,200000,114,299999,52,82
+CRM 3.0 Professional,Retail,10 CAL,119,500000,119,999999,52,82
+CRM 3.0 Professional,Retail,20 CAL,114,300000,114,399999,52,82
+CRM 3.0 Professional,OEM,0 Users,114,000000,114,099999,53,83
+CRM 3.0 Professional,OEM,10 Users,007,426000,007,426999,53,83
+CRM 3.0 Professional,OEM,100K Users,114,800000,114,849999,53,83
+CRM 3.0 Professional,OEM,100K Users,115,000000,115,999999,53,83
+CRM 3.0 Professional,OEM,1 CAL,114,100000,114,199999,53,83
+CRM 3.0 Professional,OEM,5 CAL,114,200000,114,299999,53,83
+CRM 3.0 Professional,OEM,10 CAL,119,500000,119,999999,53,83
+CRM 3.0 Professional,OEM,20 CAL,114,300000,114,399999,53,83
+CRM 3.0 Small Business,Retail,0 Users,114,500000,114,599999,52,82
+CRM 3.0 Small Business,Retail,0 Users,118,000000,118,999999,52,82
+CRM 3.0 Small Business,Retail,10 Users,425,425000,425,425999,52,82
+CRM 3.0 Small Business,Retail,10 Users,113,500000,113,999999,52,82
+CRM 3.0 Small Business,Retail,20 Users,114,850000,114,899999,52,82
+CRM 3.0 Small Business,Retail,75 Users,114,600000,114,699999,52,82
+CRM 3.0 Small Business,Retail,75 Users,114,700000,114,799999,52,82
+CRM 3.0 Small Business,Retail,1 CAL,117,000000,117,999999,52,82
+CRM 3.0 Small Business,Retail,5 CAL,116,000000,116,999999,52,82
+CRM 3.0 Small Business,Retail,20 CAL,114,400000,114,499999,52,82
+CRM 3.0 Small Business,OEM,0 Users,114,500000,114,599999,53,83
+CRM 3.0 Small Business,OEM,0 Users,118,000000,118,999999,53,83
+CRM 3.0 Small Business,OEM,10 Users,425,425000,425,425999,53,83
+CRM 3.0 Small Business,OEM,10 Users,113,500000,113,999999,53,83
+CRM 3.0 Small Business,OEM,20 Users,114,850000,114,899999,53,83
+CRM 3.0 Small Business,OEM,75 Users,114,700000,114,799999,53,83
+CRM 3.0 Small Business,OEM,1 CAL,117,000000,117,999999,53,83
+CRM 3.0 Small Business,OEM,5 CAL,116,000000,116,999999,53,83
+CRM 3.0 Small Business,OEM,20 CAL,114,400000,114,499999,53,83
+CRM 4.0,Retail,N/A,335,885000,335,885999,0A,10
+CRM 4.0,OEM,N/A,000,000000,999,999999,13,19
+Exchange Server 2007 Standard,Retail,N/A,047,000000,047,999999,0A,10
+Exchange Server 2007 Standard,OEM,N/A,000,000000,999,999999,13,19
+Exchange Server 2007 Enterprise,Retail,N/A,046,000000,046,999999,0A,10
+Exchange Server 2007 Enterprise,OEM,N/A,000,000000,999,999999,13,19
+Forms Server 2007,Retail,N/A,000,000000,999,999999,76,118
+Forms Server 2007,OEM,N/A,000,000000,999,999999,77,119
+Groove Server 2007,Retail,N/A,718,000000,718,999999,76,118
+Groove Server 2007,OEM,N/A,000,000000,999,999999,77,119
+Halo Combat Evolved,Retail,N/A,035,000000,035,999999,50,80
+Halo Combat Evolved,Retail,N/A,084,000000,084,999999,50,80
+Halo Combat Evolved,Retail,N/A,090,000000,090,999999,50,80
+Halo Combat Evolved,Retail,N/A,099,000000,099,999999,50,80
+Halo Combat Evolved,OEM,N/A,035,000000,035,999999,51,81
+Halo Combat Evolved,OEM,N/A,084,000000,084,999999,51,81
+Halo Combat Evolved,OEM,N/A,090,000000,090,999999,51,81
+Halo Combat Evolved,OEM,N/A,099,000000,099,999999,51,81
+Identity Lifecycle Manager 2007,Retail,N/A,000,000000,999,999999,78,120
+Identity Lifecycle Manager 2007,OEM,N/A,000,000000,999,999999,79,121
+InterConnect 2004,Retail,N/A,336,000000,336,999999,6E,110
+InterConnect 2004,OEM,N/A,000,000000,999,999999,6F,111
+ISA Server 2004,Retail,N/A,000,000000,999,999999,06,6
+ISA Server 2004,OEM,N/A,000,000000,999,999999,07,7
+Office Communicator 2005,Retail,N/A,000,000000,999,999999,00,0
+Office Communicator 2005,OEM,N/A,000,000000,999,999999,01,1
+Office Communicator 2007,Retail,N/A,000,000000,999,999999,0C,12
+Office Communicator 2007,OEM,N/A,000,000000,999,999999,0D,13
+Office for Mac 2004,Retail,N/A,000,000000,999,999999,18,24
+Office for Mac 2004,OEM,N/A,000,000000,999,999999,19,25
+Office for Mac 2004,VLK,N/A,270,000000,270,999999,18,24
+Office for Mac 2008,Retail,N/A,000,000000,999,999999,18,24
+Office for Mac 2008,OEM,N/A,000,000000,999,999999,19,25
+Office for Mac 2008,VLK,N/A,270,000000,270,999999,18,24
+Office Sharepoint Server 2007,Retail,N/A,777,000000,999,999999,74,116
+Office Sharepoint Server 2007,OEM,N/A,727,000000,776,999999,75,117
+Office Sharepoint Server 2007,VLK,N/A,707,000000,726,999999,74,116
+Project Portfolio Server 2007,Retail,N/A,717,000000,717,999999,78,120
+Project Portfolio Server 2007,OEM,N/A,000,000000,999,999999,79,121
+Project Server 2007,Retail,N/A,726,000000,726,999999,76,118
+Project Server 2007,OEM,N/A,000,000000,999,999999,77,119
+Rise of Legends,Retail,N/A,124,000000,124,999999,52,82
+Rise of Legends,Retail,N/A,133,000000,133,999999,52,82
+Rise of Legends,Retail,N/A,245,000000,245,999999,52,82
+Rise of Legends,OEM,N/A,124,000000,124,999999,53,83
+Rise of Legends,OEM,N/A,133,000000,133,999999,53,83
+Rise of Legends,OEM,N/A,245,000000,245,999999,53,83
+Search Server 2008,Retail,N/A,720,000000,720,999999,76,118
+Search Server 2008,OEM,N/A,000,000000,999,999999,77,119
+Services for Unix 2.0,Retail,N/A,335,000000,335,999999,06,6
+Services for Unix 2.0,OEM,N/A,000,000000,999,999999,07,7
+SharePoint Portal Server 2001,Retail,N/A,335,000000,335,999999,0A,10
+SharePoint Portal Server 2001,OEM,N/A,000,000000,999,999999,13,19
+SharePoint Server 2007 Standard,Retail,N/A,722,000000,722,999999,76,118
+SharePoint Server 2007 Standard,OEM,N/A,000,000000,999,999999,77,119
+SharePoint Server 2007 Enterprise,Retail,N/A,724,000000,724,999999,76,118
+SharePoint Server 2007 Enterprise,OEM,N/A,000,000000,999,999999,77,119
+SharePoint Server 2007 Search Standard,Retail,N/A,719,000000,719,999999,76,118
+SharePoint Server 2007 Search Standard,OEM,N/A,000,000000,999,999999,77,119
+SharePoint Server 2007 Search Enterprise,Retail,N/A,720,000000,720,999999,76,118
+SharePoint Server 2007 Search Enterprise,OEM,N/A,000,000000,999,999999,77,119
+Virtual PC for Mac 7.0,Retail,N/A,111,000000,111,999999,18,24
+Virtual PC for Mac 7.0,OEM,N/A,000,000000,999,999999,19,25
+Visual Studio .NET 2002,Retail,N/A,652,000000,652,999999,24,36
+Visual Studio .NET 2002,OEM,N/A,000,000000,999,999999,25,37
+Visual Studio .NET 2003,Retail,N/A,335,000000,335,999999,24,36
+Visual Studio .NET 2003,OEM,N/A,000,000000,999,999999,25,37
+Visual Studio 2005,Retail,N/A,113,000000,113,999999,52,82
+Visual Studio 2005,OEM,N/A,000,000000,999,999999,53,83
+Visual Studio 2008,Retail,N/A,335,000000,335,999999,78,120
+Visual Studio 2008,OEM,N/A,000,000000,999,999999,79,121
+Windows XP Professional Evaluation,Retail,N/A,005,000000,110,999999,28,40
+Windows XP Professional Evaluation,OEM,N/A,005,000000,110,999999,29,41
+Windows Server 2003 Standard Evaluation,Retail,N/A,005,000000,014,999999,56,86
+Windows Server 2003 Standard Evaluation,OEM,N/A,000,000000,999,999999,57,87
