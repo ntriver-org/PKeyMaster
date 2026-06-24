@@ -30,8 +30,8 @@
 
 ---
 
-**Latest version**: 0.1  
-**Release date**: 23-June-2026  
+**Latest version**: 0.2  
+**Release date**: 24-June-2026  
 **Git Mirrors**:  [GitHub](https://github.com/ntriver-org/PKeyMaster) / [Codeberg](https://codeberg.org/ntriver-org/PKeyMaster) / [Tangled](https://tangled.org/windowsaddict.ntriver.org/PKeyMaster)
 
 ---

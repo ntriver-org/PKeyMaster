@@ -29,7 +29,7 @@ $GuiPath = Join-Path $ScriptRoot 'BIN\Scripts\GUI.ps1'
 $ChecksumFile = Join-Path $ScriptRoot 'checksums.sha256'
 $BaseUrl = 'https://ntriver.org/'
 $GitUrl = 'https://github.com/ntriver-org/PKeyMaster'
-$Version = '0.1'
+$Version = '0.2'
 
 # Pick the right system folder - avoids 32-bit emulation on 64-bit systems
 $SysPath = if (Test-Path "$env:SystemRoot\Sysnative") { "$env:SystemRoot\Sysnative" } else { "$env:SystemRoot\System32" }
