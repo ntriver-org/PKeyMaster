@@ -28,7 +28,7 @@ function Get-Bytes {
 function Get-Ascii {
     # Decode a null-terminated ASCII string from bytes.
     param([byte[]]$Blob, [int]$Offset, [int]$MaxLen)
-    return [System.Text.Encoding]::ASCII.GetString($Blob, $Offset, $MaxLen).Split([char]0)[0].Trim()
+    return [System.Text.Encoding]::ASCII.GetString($Blob, $Offset, $MaxLen).Split("`0")[0].Trim()
 }
 
 # ===============================================================================================================================
@@ -36,7 +36,7 @@ function Get-Ascii {
 function Get-Unicode {
     # Decode a null-terminated Unicode string from bytes.
     param([byte[]]$Blob, [int]$Offset, [int]$MaxLen)
-    return [System.Text.Encoding]::Unicode.GetString($Blob, $Offset, $MaxLen).Split([char]0)[0].Trim()
+    return [System.Text.Encoding]::Unicode.GetString($Blob, $Offset, $MaxLen).Split("`0")[0].Trim()
 }
 
 # ===============================================================================================================================
