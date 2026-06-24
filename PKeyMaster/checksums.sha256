@@ -22,6 +22,8 @@ cedcc90fd7aefb46350cf40101cf16c537acfe369ba12f1153805bfec41fd4ed *BIN\PKeyConfig
 629b2224103186a1eb6a5ed4ddf2fb1da46707d3770802348c59e6e265f0f830 *BIN\PKeyConfigs\Office KMS Host\Production\Office 2016-2019-2021-2024 KMS Host\pkeyconfig-office-kmshost.xrm-ms
 51e01ed73d315e5c73a367e8edae64d0c998d75e6410239ba8c71d4250cf6881 *BIN\PKeyConfigs\Office\Beta\14.0.4417.1000 - Beta - Office 2010\pkeyconfig-office.xrm-ms
 d278ce4228552f4de79bab18ffb394a73ff3705f9b3bfe9433b81b3b78147b82 *BIN\PKeyConfigs\Office\Beta\15.0.4025.1000 - Beta - Office 2013\pkeyconfig-office.xrm-ms
+b61edf9f8bc242e9cefc594031a2ebcf938e2caed762a780e40c6a2be40131de *BIN\PKeyConfigs\Office\Beta\16.0.10224.20004 - Beta - Office 2019\pkeyconfig-office.xrm-ms
+1092f13fcc6b08aa2dc5fcab54f5966724bb86598f0b1c2a88c3eb6a45a29666 *BIN\PKeyConfigs\Office\Beta\16.0.14326.20454 - Beta - Office 2021\pkeyconfig-office.xrm-ms
 edfb49cd35fe352a1d29db39baa949ac23b06795c31f417816185b0c04c82f07 *BIN\PKeyConfigs\Office\Production\Office 2010\pkeyconfig-office.xrm-ms
 9419c202c24ad00f07f4521f7f8a9efbf9b449d068f4175698647f187769475c *BIN\PKeyConfigs\Office\Production\Office 2011 For Mac\retail_pkeyconfig.xml
 12321543ed69de70de79cf9066ae68160f8d4375ff8dea1360ae1e41fbe7f357 *BIN\PKeyConfigs\Office\Production\Office 2013-O365\pkeyconfig-office.xrm-ms
@@ -108,7 +110,7 @@ d74dfb370a19a2adb41bb9880935c0a8db9d475b81edf383427023bd81d15c55 *BIN\PKeyConfig
 d758ff8c9511aad5648b429bc74c076438cee26a8778a8b0db53b498cd4bcbf4 *BIN\PKeyConfigs\Windows - Server\Production\Main\7601 - Windows 7 - Server 2008 R2\pkeyconfig.xrm-ms
 d310e0c0e45d08db12a6010954ffd6400154a206060cb7910af52697aef31be0 *BIN\PKeyConfigs\Windows - Server\Production\Main\9200 - Windows 8 - Server 2012\pkeyconfig.xrm-ms
 b8e8b0ff5c1066562497aede3702089c248382c5d38cd26a70ecfbc8fea90aeb *BIN\PKeyConfigs\Windows - Server\Production\Main\9600 - Windows 8.1 - Server 2012 R2\pkeyconfig.xrm-ms
-5ad7b1d000356509782d1d270945dbe40db68eb355c89d127c86324fa2edb472 *BIN\PKeyConfigsMap.csv
+5146c0d22957d25f2d315216f8e38df4cbd97e4829ff1f8a587875dc7a42a179 *BIN\PKeyConfigsMap.csv
 89bc2d22e2d162a3981d224702f6c2ffe9fdfe13be58282d0d16a98d15f37034 *BIN\PreVistaRanges.csv
 c622301660b0f5568d81dffe24a156866643b5f3da89b070f471db21ac1e636d *BIN\PublishLicense.xml
 8c8a5ac162fa323d64bcc63e31c39a8c110452ba6ee278c6d5d5fb4aa8ae00c2 *BIN\Scripts\DecodePKey2009.ps1
