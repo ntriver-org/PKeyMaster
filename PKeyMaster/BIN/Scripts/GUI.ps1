@@ -902,7 +902,7 @@ function Show-PKeyMasterGui {
         Set-IntroText -OutputBox $iidCidOutputBox -Text $iidCidText
 
         $readerText = "PKeyConfig Catalog Reader`r`n" +
-        "`r`nExtracts metadata from .xrm-ms and .xml catalogs.`r`n" +
+        "`r`nExtracts metadata from .xrm-ms, .xml, and .xrm catalogs.`r`n" +
         "`r`nFeatures:" +
         "`r`n  - Batch Export: Processes files or directories." +
         "`r`n  - CSV Output: Generates product spreadsheets." +
@@ -1220,7 +1220,7 @@ function Show-PKeyMasterGui {
 
     $readerTopPanel = New-FormPanel -Height 84
     $readerFileLabel = New-FormLabel -Text 'File'
-    $readerFileTextBox = New-FormTextBox -ReadOnly $true -Tooltip 'Select a PKeyConfig file (.xrm-ms or .xml) to export as CSV.' -Placeholder $browsePlaceholder
+    $readerFileTextBox = New-FormTextBox -ReadOnly $true -Tooltip 'Select a PKeyConfig file (.xrm-ms, .xml, or .xrm) to export as CSV.' -Placeholder $browsePlaceholder
     $readerFolderLabel = New-FormLabel -Text 'Folder'
     $readerFolderTextBox = New-FormTextBox -ReadOnly $true -Tooltip 'Select a folder containing PKeyConfig files to export as CSV.' -Placeholder $browsePlaceholder
     $readerRecurseCheckBox = New-FormCheckBox -Text 'Recurse' -Tooltip 'When checked, searches subfolders recursively for PKeyConfig files.' -AutoSize $false
@@ -1504,7 +1504,7 @@ function Show-PKeyMasterGui {
 
                 if ($selectedProfile.Mode -eq 'Custom') {
                     $dialog = New-Object System.Windows.Forms.OpenFileDialog
-                    $dialog.Filter = 'Pkeyconfig files (*.xrm-ms;*.xml)|*.xrm-ms;*.xml|All files (*.*)|*.*'
+                    $dialog.Filter = 'Pkeyconfig files (*.xrm-ms;*.xml;*.xrm)|*.xrm-ms;*.xml;*.xrm|All files (*.*)|*.*'
                     $dialog.InitialDirectory = if ($profileState['CustomPath']) {
                         Split-Path -Parent $profileState['CustomPath']
                     }
@@ -1673,7 +1673,7 @@ function Show-PKeyMasterGui {
     $readerFileTextBox.Add_MouseDown({
             Invoke-UiAction {
                 $dialog = New-Object System.Windows.Forms.OpenFileDialog
-                $dialog.Filter = 'Pkeyconfig files (*.xrm-ms;*.xml)|*.xrm-ms;*.xml|All files (*.*)|*.*'
+                $dialog.Filter = 'Pkeyconfig files (*.xrm-ms;*.xml;*.xrm)|*.xrm-ms;*.xml;*.xrm|All files (*.*)|*.*'
                 $dialog.InitialDirectory = Get-DefaultConfigRoot
                 if ((Show-OwnedDialog -Dialog $dialog -OwnerWindow $mainWindow) -eq [System.Windows.Forms.DialogResult]::OK) {
                     $readerFileTextBox.Text = [System.IO.Path]::GetFullPath($dialog.FileName)

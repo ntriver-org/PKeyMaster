@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Reads PKeyConfig (.xrm-ms / .xml) files and either looks up key metadata or exports data to CSV.
+    Reads PKeyConfig (.xrm-ms / .xml / .xrm) files and either looks up key metadata or exports data to CSV.
 
 .DESCRIPTION
     Two modes:
@@ -321,7 +321,7 @@ elseif ($Folder) {
     $basePath = $resolvedPath.TrimEnd('\') + '\'
     
     $files += @(Get-ChildItem -LiteralPath $resolvedPath -Recurse:$Recurse -ErrorAction SilentlyContinue |
-        Where-Object { (-not $_.PSIsContainer) -and ($_.Name -like '*.xrm-ms' -or $_.Name -like '*.xml') -and (Test-PKeyConfigFile $_.FullName) } |
+        Where-Object { (-not $_.PSIsContainer) -and ($_.Name -like '*.xrm-ms' -or $_.Name -like '*.xml' -or $_.Name -like '*.xrm') -and (Test-PKeyConfigFile $_.FullName) } |
         Sort-Object FullName)
 }
 
