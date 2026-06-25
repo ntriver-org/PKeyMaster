@@ -7,12 +7,13 @@ f83acc25135689eb1354b7dd1efcf7621a496f7a7a1f9363632f9979702d73d8 *BIN\PKeyConfig
 7108ad9108ec79eb4b152d821eb8c0da334bbd50a1e5d061507eb26a14bfc24b *BIN\PKeyConfigs\Dynamics CRM\Production\Dynamics CRM 2015\CrmRtm7PKConfig.xml
 8e6895d6d04f931df7b26ce975da9e0a35a7fe88f1f93aa571773e7dce065b5e *BIN\PKeyConfigs\Dynamics CRM\Production\Dynamics CRM 2016 - Dynamics 365 v8.X\Crm8PKConfig.xml
 774ff469a76edda509ba7288d7a8c720cc2efcb0c3da589f38bd40679a1757a3 *BIN\PKeyConfigs\Dynamics CRM\Production\Dynamics CRM 2016\Crm8PKConfig.xml
+b7a97a0f5a87f3b55d5f6b513d7e14f9117e0b2cd88a4291465df1bd5ebafdbd *BIN\PKeyConfigs\Embedded\Beta\9200 - Beta - Windows Embedded Standard 8\pkeyconfig.xrm-ms
 f0c47a235f0477d174d1e95c6aab27f7f58caa450bc9ee97415fa03422b0b246 *BIN\PKeyConfigs\Embedded\Production\7600 - Windows Thin PC\pkeyconfig.xrm-ms
 ad1d41b4b81d64cd3510a8597052c6b50dde373ec36d22578ddb5dee7a75fe82 *BIN\PKeyConfigs\Embedded\Production\7601 - Windows Embedded POSReady 7\pkeyconfig.xrm-ms
 d780f2b7b8b42d35e21e4f65a6b4270dc8495343d6aec73ec2d1840e6d60e82a *BIN\PKeyConfigs\Embedded\Production\7601 - Windows Embedded Standard 7 Toolkit\PKConfig-2010-03-04-07-43-28-4328.xml
 efb9680e12d0d8eda47bb6d683fb87194f82346e45ea8d9dad59765d981f5d87 *BIN\PKeyConfigs\Embedded\Production\7601 - Windows Embedded Standard 7\pkeyconfig.xrm-ms
 899458b6e7ef6f2953ed4f27955ecc153f9815428482ca7734265cfed9e53822 *BIN\PKeyConfigs\Embedded\Production\9200 - Windows Embedded Standard 8 Toolkit\PKConfig-2012-07-12-06-09-08-98.xml
-b7a97a0f5a87f3b55d5f6b513d7e14f9117e0b2cd88a4291465df1bd5ebafdbd *BIN\PKeyConfigs\Embedded\Production\9200 - Windows Embedded Standard 8\pkeyconfig.xrm-ms
+82db5afc999eec80d67b455e5f24c620bd53a97758d75b5dea4ba97dde5421ef *BIN\PKeyConfigs\Embedded\Production\9200 - Windows Embedded Standard 8\pkeyconfig.xrm-ms
 fd745ff60586b6ab559e092c609b4a768bfd805e4b9b9844362479d43b310a19 *BIN\PKeyConfigs\Exchange Server\Production\Exchange Server 2010\ProductKeyConfig.xml
 a2cc02ea0a8ff3d9dce5b82492776b71cfdb3e0a504686839285b35387dca741 *BIN\PKeyConfigs\Exchange Server\Production\Exchange Server 2013\ProductKeyConfig.xml
 86b3a395606d09cbde979be432b6b070800769155c26bf8bfa012f52b02cbdc3 *BIN\PKeyConfigs\Exchange Server\Production\Exchange Server 2016\productkeyconfig.xml
@@ -111,7 +112,7 @@ d74dfb370a19a2adb41bb9880935c0a8db9d475b81edf383427023bd81d15c55 *BIN\PKeyConfig
 d758ff8c9511aad5648b429bc74c076438cee26a8778a8b0db53b498cd4bcbf4 *BIN\PKeyConfigs\Windows - Server\Production\Main\7601 - Windows 7 - Server 2008 R2\pkeyconfig.xrm-ms
 d310e0c0e45d08db12a6010954ffd6400154a206060cb7910af52697aef31be0 *BIN\PKeyConfigs\Windows - Server\Production\Main\9200 - Windows 8 - Server 2012\pkeyconfig.xrm-ms
 b8e8b0ff5c1066562497aede3702089c248382c5d38cd26a70ecfbc8fea90aeb *BIN\PKeyConfigs\Windows - Server\Production\Main\9600 - Windows 8.1 - Server 2012 R2\pkeyconfig.xrm-ms
-aece54b53c305c4f3736ac031c856fa5a2c05e45f8aaba269aa12ffb7d23415f *BIN\PKeyConfigsMap.csv
+d2614db392d0c4decdd0f21fbf995217487ed0035652b62efdafe90912424a5d *BIN\PKeyConfigsMap.csv
 89bc2d22e2d162a3981d224702f6c2ffe9fdfe13be58282d0d16a98d15f37034 *BIN\PreVistaRanges.csv
 c622301660b0f5568d81dffe24a156866643b5f3da89b070f471db21ac1e636d *BIN\PublishLicense.xml
 8c8a5ac162fa323d64bcc63e31c39a8c110452ba6ee278c6d5d5fb4aa8ae00c2 *BIN\Scripts\DecodePKey2009.ps1
