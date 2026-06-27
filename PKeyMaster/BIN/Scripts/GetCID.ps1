@@ -273,6 +273,8 @@ else {
 
 $passThruObjects = @()
 
+$randNum = Get-Random -Minimum 1000 -Maximum 10000
+
 foreach ($iid in $iidsToCheck) {
     if (-not $IidFile) {
         Write-Output ($f -f "Checking IID", $iid)
@@ -354,7 +356,7 @@ foreach ($iid in $iidsToCheck) {
         # In batch file mode, also append to the combined all-IIDs summary files
         if ($IidFile) {
             $allTxt = Join-Path $logRoot "CidInfoAll.txt"
-            $allCsv = Join-Path $logRoot "CidInfoAll.csv"
+            $allCsv = Join-Path $logRoot ("CidInfoAll-Random{0}.csv" -f $randNum)
             $cleanLines | Out-File $allTxt -Encoding UTF8 -Append
 
             # Write one CSV row per API used - BatchApi always, VisualApi only when it was a fallback

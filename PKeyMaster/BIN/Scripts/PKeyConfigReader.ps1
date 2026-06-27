@@ -364,7 +364,8 @@ foreach ($f in $files) {
         }
     }
 
-    $targetPath = Join-Path $targetDir ('{0}.csv' -f [System.IO.Path]::GetFileNameWithoutExtension($f.Name))
+    $randNum = Get-Random -Minimum 1000 -Maximum 10000
+    $targetPath = Join-Path $targetDir ('{0}-Random{1}.csv' -f [System.IO.Path]::GetFileNameWithoutExtension($f.Name), $randNum)
 
     try {
         $res = Invoke-ExportCsv $f.FullName $targetPath

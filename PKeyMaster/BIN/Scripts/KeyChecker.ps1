@@ -381,6 +381,8 @@ if ($GetConfirmationId) { $pidGenXParams['GetConfirmationId'] = $true }
 # Main processing loop
 # ===============================================================================================================================
 
+$randNum = Get-Random -Minimum 1000 -Maximum 10000
+
 foreach ($rawKey in $keysToCheck) {
     $route = Resolve-KeyRoute $rawKey $KeyCheckMode
     $k = $route.Key
@@ -459,7 +461,7 @@ foreach ($rawKey in $keysToCheck) {
             # In batch mode, also append to combined summary files
             if ($KeyFile) {
                 $targetTxt = Join-Path $logRoot "KeyInfo$ExecutedType.txt"
-                $targetCsv = Join-Path $logRoot "KeyInfo$ExecutedType.csv"
+                $targetCsv = Join-Path $logRoot ("KeyInfo{0}-Random{1}.csv" -f $ExecutedType, $randNum)
                 
                 $cleanDisplayOutput | Out-File -FilePath $targetTxt -Encoding UTF8 -Append
                 
