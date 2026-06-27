@@ -212,7 +212,7 @@ function Get-DigitalProductIdV3 {
         CDKeyBytes_Offset               = '[52-67]'
         CloneStatus                     = Get-UInt32 $Blob 68
         CloneStatus_Offset              = '[68-71]'
-        Time                            = [System.DateTime]::new(1970, 1, 1, 0, 0, 0, [System.DateTimeKind]::Utc).AddSeconds((Get-UInt32 $Blob 72)).ToString('yyyy-MM-dd HH:mm:ss')
+        Time                            = (New-Object System.DateTime -ArgumentList @(1970, 1, 1, 0, 0, 0, [System.DateTimeKind]::Utc)).AddSeconds((Get-UInt32 $Blob 72)).ToString('yyyy-MM-dd HH:mm:ss')
         Time_Offset                     = '[72-75]'
         Random                          = Get-UInt32 $Blob 76
         Random_Offset                   = '[76-79]'
