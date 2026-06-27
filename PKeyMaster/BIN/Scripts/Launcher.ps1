@@ -111,6 +111,7 @@ if ($UpdateAvail) {
 # Path validation
 # ===============================================================================================================================
 
+Clear-Host
 # Make sure the path only has safe ASCII characters
 $SafePathPattern = '^[a-zA-Z0-9 \\:\._\-]+$'
 if ($ScriptRoot -notmatch $SafePathPattern) {
@@ -260,6 +261,7 @@ if (-not $Tls12Available -and -not (Test-Path $WgetPath)) {
 # Integrity Validation
 # ===============================================================================================================================
 
+Clear-Host
 Write-Host "Verifying files integrity..."
 $ChecksumLines = Get-Content -LiteralPath $ChecksumFile | Where-Object { $_.Trim() -ne '' }
 $Mismatches = @()
