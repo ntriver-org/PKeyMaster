@@ -9,7 +9,7 @@
 
 .NOTES
     Compatible with PowerShell 2.0 and later.
-    Requires Administrator rights to stop the sppsvc service if the store is locked.
+    Requires Administrator rights to stop the Software licensing service if the store is locked.
     Requires Libs\WmiSppError.ps1 for error handling.
     Requires Libs\Common.ps1 for shared helper functions.
 
@@ -107,6 +107,14 @@ if (-not $scriptDir) { $scriptDir = "." }
 $commonPath = Join-Path $scriptDir "libs\Common.ps1"
 if (Test-Path $commonPath) { . $commonPath }
 
+$script:Build = [System.Environment]::OSVersion.Version.Build
+$script:SysPath = "$env:SystemRoot\System32"
+if (Test-Path "$env:SystemRoot\Sysnative\reg.exe") {
+    $script:SysPath = "$env:SystemRoot\Sysnative"
+}
+$script:IsVista = $script:Build -lt 7600 -and (Test-Path (Join-Path $script:SysPath 'slsvc.exe'))
+$script:SvcName = if ($script:IsVista) { 'slsvc' } else { 'sppsvc' }
+
 # ===============================================================================================================================
 # Helper functions
 # ===============================================================================================================================
@@ -115,20 +123,8 @@ function Get-StorePath {
     # Find the tokens.dat/data.dat path based on Windows version.
     $script:Script_StorePath = $null
 
-    $build = [System.Environment]::OSVersion.Version.Build
-
-    $sysPath = "$env:SystemRoot\System32"
-    if (Test-Path "$env:SystemRoot\Sysnative\reg.exe") {
-        $sysPath = "$env:SystemRoot\Sysnative"
-    }
-
-    if ($build -lt 7600 -and (Test-Path (Join-Path $sysPath 'slsvc.exe'))) {
-        Write-Color 'Script is not supported on Windows Vista and older versions.' "BgRed"
-        return
-    }
-
     foreach ($relativePath in @('spp\store\2.0', 'spp\store_test\2.0', 'spp\store', 'spp\store_test')) {
-        $path = Join-Path (Join-Path $sysPath $relativePath) 'data.dat'
+        $path = Join-Path (Join-Path $script:SysPath $relativePath) 'data.dat'
         if (Test-Path -LiteralPath $path) {
             $script:Script_StorePath = $path
             return
@@ -136,7 +132,7 @@ function Get-StorePath {
     }
 
     $files = [System.IO.Directory]::GetFiles(
-        $sysPath,
+        $script:SysPath,
         '7B296FB0-376B-497e-B012-9C450E1B7327-*.C7483456-A289-439d-8115-601632D005A0'
     )
 
@@ -152,7 +148,7 @@ function Get-StorePath {
         return
     }
 
-    Write-Color "Failed to locate trusted store (Build - $build)." "BgRed"
+    Write-Color "Failed to locate trusted store (Build - $script:Build)." "BgRed"
 }
 
 # ===============================================================================================================================
@@ -197,6 +193,44 @@ function Read-StoreBytes([string]$Path) {
 
 # ===============================================================================================================================
 
+function Invoke-SpSysControl([bool]$Start) {
+    # https://github.com/InvoxiPlayGames/vistaspctl 
+    # On Windows Vista / Server 2008, token store files are locked by the spsys kernel driver, so we need to unlock them.
+
+    if (-not ([System.Management.Automation.PSTypeName]'SpSysHelper').Type) {
+        Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
+
+public class SpSysHelper {
+    [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+    private static extern IntPtr CreateFile(string lpFileName, uint dwDesiredAccess, uint dwShareMode, IntPtr lpSecurityAttributes, uint dwCreationDisposition, uint dwFlagsAndAttributes, IntPtr hTemplateFile);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern bool DeviceIoControl(SafeFileHandle hDevice, uint dwIoControlCode, IntPtr lpInBuffer, int nInBufferSize, IntPtr lpOutBuffer, int nOutBufferSize, out int lpBytesReturned, IntPtr lpOverlapped);
+
+    private static SafeFileHandle OpenDevice() {
+        return new SafeFileHandle(CreateFile(@"\\.\SpDevice", 0xC0000000, 0, IntPtr.Zero, 3, 0, IntPtr.Zero), true);
+    }
+
+    public static void ControlSpSys(bool start) {
+        using (SafeFileHandle file = OpenDevice()) {
+            IntPtr buf = Marshal.AllocHGlobal(4);
+            int ret;
+            DeviceIoControl(file, start ? 0x8000a000u : 0x8000a004u, IntPtr.Zero, 0, buf, 4, out ret, IntPtr.Zero);
+            Marshal.FreeHGlobal(buf);
+        }
+    }
+}
+'@
+    }
+
+    [SpSysHelper]::ControlSpSys($Start)
+}
+
+# ===============================================================================================================================
+
 function Get-TrustedStoreBytes([string]$Path) {
     # Try to read the store directly; stop sppsvc if that fails.
     $script:Script_StoreBytes = $null
@@ -212,11 +246,12 @@ function Get-TrustedStoreBytes([string]$Path) {
     $isAdmin = (New-Object System.Security.Principal.WindowsPrincipal([System.Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)
 
     if (-not $isAdmin) {
-        Write-Color 'sppsvc service needs to stop. Please run the script with admin rights.' "BgRed"
+        Write-Color 'Software licensing service needs to stop. Please run the script with admin rights.' "BgRed"
         return
     }
 
-    Stop-Service sppsvc -Force -ErrorAction SilentlyContinue
+    Stop-Service $script:SvcName -Force -ErrorAction SilentlyContinue
+    if ($script:IsVista) { Invoke-SpSysControl $false }
 
     try {
         Read-StoreBytes $Path
@@ -305,12 +340,44 @@ if (-not $script:Script_StorePath) {
     return
 }
 
-$_scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$wmiSppError = Join-Path $_scriptDir "Libs\WmiSppError.ps1"
 $storePath = $script:Script_StorePath
+
+Get-TrustedStoreBytes $storePath
+if (-not $script:Script_StoreBytes) {
+    return
+}
+$raw = $script:Script_StoreBytes
+$store = $null
+foreach ($rsaKey in @($PROD_KEY_BYTES, $TEST_KEY_BYTES)) {
+    $store = ConvertFrom-EncryptedTrustedStore $raw $rsaKey
+    if ($store) {
+        break
+    }
+}
+
+if (-not $store) {
+    Write-Color 'Failed to decrypt trusted store.' "BgRed"
+    return
+}
+
+$keyMatches = [regex]::Matches(
+    [System.Text.Encoding]::Unicode.GetString($store),
+    '[BCDFGHJKMPQRTVWXY2346789N]{5}(-[BCDFGHJKMPQRTVWXY2346789N]{5}){4}'
+)
+
+if ($keyMatches.Count -eq 0) {
+    Write-Color 'No keys found in trusted store.' "BgRed"
+    return
+}
+
+# ===============================================================================================================================
+
+$wmiSppError = Join-Path $scriptDir "Libs\WmiSppError.ps1"
 
 $productMap = @{}
 $wmiErrors = New-Object System.Collections.Generic.List[object]
+
+Start-Service $script:SvcName -ErrorAction SilentlyContinue
 
 try {
     $searcher = [wmisearcher]'SELECT * FROM SoftwareLicensingProduct WHERE PartialProductKey IS NOT NULL'
@@ -341,35 +408,6 @@ catch {
     }
 }
 
-# ===============================================================================================================================
-
-Get-TrustedStoreBytes $storePath
-if (-not $script:Script_StoreBytes) {
-    return
-}
-$raw = $script:Script_StoreBytes
-$store = $null
-foreach ($rsaKey in @($PROD_KEY_BYTES, $TEST_KEY_BYTES)) {
-    $store = ConvertFrom-EncryptedTrustedStore $raw $rsaKey
-    if ($store) {
-        break
-    }
-}
-
-if (-not $store) {
-    Write-Color 'Failed to decrypt trusted store.' "BgRed"
-    return
-}
-
-$keyMatches = [regex]::Matches(
-    [System.Text.Encoding]::Unicode.GetString($store),
-    '[BCDFGHJKMPQRTVWXY2346789N]{5}(-[BCDFGHJKMPQRTVWXY2346789N]{5}){4}'
-)
-
-if ($keyMatches.Count -eq 0) {
-    Write-Color 'No keys found in trusted store.' "BgRed"
-    return
-}
 
 # ===============================================================================================================================
 # Key matching & display
