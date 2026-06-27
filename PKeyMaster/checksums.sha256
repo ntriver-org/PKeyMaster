@@ -19,7 +19,26 @@ a2cc02ea0a8ff3d9dce5b82492776b71cfdb3e0a504686839285b35387dca741 *BIN\PKeyConfig
 86b3a395606d09cbde979be432b6b070800769155c26bf8bfa012f52b02cbdc3 *BIN\PKeyConfigs\Exchange Server\Production\Exchange Server 2016\productkeyconfig.xml
 8dbb0e4536af9a7a7681a5e0ff8cf49723b12072f72d3e731a1b59139abe5f40 *BIN\PKeyConfigs\Exchange Server\Production\Exchange Server 2019\ProductKeyConfig.xml
 8dbb0e4536af9a7a7681a5e0ff8cf49723b12072f72d3e731a1b59139abe5f40 *BIN\PKeyConfigs\Exchange Server\Production\Exchange Server Subscription Edition\ProductKeyConfig.xml
-84c37a6f378f2596386785d9aa7d5f2d997b59c8d1ec0aea72144c437764ff98 *BIN\PKeyConfigs\Notes.txt
+1ef6ade8dbb56f0c3474c2eb8ec4ecc0aa998d6afcdb8f0cffa459cb75763f02 *BIN\PKeyConfigs\Flight Simulator\Production\Flight Simulator X\pkeyconfig.xrm-ms
+e50172f7f90cdff2278f720ff2478dbbb85a5bf76403dcb1ecf05d07dca47c4e *BIN\PKeyConfigs\Forefront\Production\Forefront Protection 2010 for Exchange Server\PKeyConfigExchange.xml
+aa8e4216de715f5a9f9a386077676e082e3745d9a8c0de717dc49876fcae806d *BIN\PKeyConfigs\Forefront\Production\Forefront Protection 2010 for SharePoint\PKeyConfigSharepoint.xml
+9dcf4ba720eedeca238edb8628657a39c90ce6f4595352415cfa8c3763387249 *BIN\PKeyConfigs\Forefront\Production\Forefront Threat Management Gateway 2010\PKConfigTMG.xml
+108f77fad2be14c4e48d08863dea263fc47b4eccbd6fbb1c4611adfcae621efb *BIN\PKeyConfigs\MapPoint - AutoRoute - Streets and Trips\Production\AutoRoute 2010 - Volume\pkcfg.xrm
+053112cfc8f89fc86bfade16e044a4d9d6a8bb3f505dc2a4f0eadeeb0bd9e470 *BIN\PKeyConfigs\MapPoint - AutoRoute - Streets and Trips\Production\AutoRoute 2011 - Retail - Volume\pkcfg.xrm
+b21dbd31eb8c03c197e4ed83ea5f8ebe62f74b8212662df4b7094f753a167ed0 *BIN\PKeyConfigs\MapPoint - AutoRoute - Streets and Trips\Production\MapPoint 2009 Europe - Volume\vlcfg.xrm
+65e1e28aee54a1d0d0b483eac9e5a86635a83055d2bd80474088de4ada5c0c9a *BIN\PKeyConfigs\MapPoint - AutoRoute - Streets and Trips\Production\MapPoint 2009 North America - Volume\vlcfg.xrm
+8374dea7f1ce6228efcd0bbdb366afb006a13add3ec93b76e3364bb5e9dc1702 *BIN\PKeyConfigs\MapPoint - AutoRoute - Streets and Trips\Production\MapPoint 2010 Europe - Volume\pkcfg.xrm
+c42142d652f3928d77c0a81b15bd3a0980786ef00799011874efd085983247dc *BIN\PKeyConfigs\MapPoint - AutoRoute - Streets and Trips\Production\MapPoint 2010 North America - Volume\pkcfg.xrm
+de0468e473272d83bb8166ba109d3bda4e0b083cc4a9eef6f89df3fb0f955a43 *BIN\PKeyConfigs\MapPoint - AutoRoute - Streets and Trips\Production\MapPoint 2011 Europe - Volume\pkcfg.xrm
+bc768bc60573496e89f73b1f31222b88814536a0199933244f3f1f15e6f0a540 *BIN\PKeyConfigs\MapPoint - AutoRoute - Streets and Trips\Production\MapPoint 2011 North America - Volume\pkcfg.xrm
+23c5251234672ab806cd63777c46e05d162b0605a14682d304045cd983541ff0 *BIN\PKeyConfigs\MapPoint - AutoRoute - Streets and Trips\Production\MapPoint 2013 - AutoRoute 2013 - Streets and Trips 2013 - Retail - Volume\pkcfg.xrm
+ca8e1e889e9d27a8a5f6737ceef8c581f75b231b739b2f5adde77617d4076f93 *BIN\PKeyConfigs\MapPoint - AutoRoute - Streets and Trips\Production\Streets and Trips 2008 - Retail\pkcfg.xrm
+36662b5896dd2d68e89f423e00f25d4b470ef4adb00130feb515a863ed39f78e *BIN\PKeyConfigs\MapPoint - AutoRoute - Streets and Trips\Production\Streets and Trips 2008 - Volume\pkcfg.xrm
+290c2abc426d907dbad37cb51764daed72aa2d04fc8fd7b68c3bd1d676deeb57 *BIN\PKeyConfigs\MapPoint - AutoRoute - Streets and Trips\Production\Streets and Trips 2009 - Volume\vlcfg.xrm
+6690b7a84466aa88a30953f59503632fdeb88db9aec66c152748b24991be9afc *BIN\PKeyConfigs\MapPoint - AutoRoute - Streets and Trips\Production\Streets and Trips 2010 - Volume\pkcfg.xrm
+30a0c81c53f5c046dcc924f4a46bb2c0a3ce2a76422cf687c09c44825725d185 *BIN\PKeyConfigs\MapPoint - AutoRoute - Streets and Trips\Production\Streets and Trips 2011 - Retail\pkcfg.xrm
+b40e3ba86a88d3aa82959fce10dc1eba6a2be26e1d6098cf5b046897f0c3b487 *BIN\PKeyConfigs\MapPoint - AutoRoute - Streets and Trips\Production\Streets and Trips 2011 - Volume\pkcfg.xrm
+726fff6e989bc26cf8a4c8db0d4e29b763ca6949f9955187acf6d63c7eaa61ab *BIN\PKeyConfigs\Notes.txt
 cedcc90fd7aefb46350cf40101cf16c537acfe369ba12f1153805bfec41fd4ed *BIN\PKeyConfigs\Office KMS Host\Production\Office 2010 KMS Host\prs-pkeyconfig-o14-rtm.xrm-ms
 6ee85d2c519f3397f23cadba31ebec0feac2686a4720fe72c5684182c3abc0a0 *BIN\PKeyConfigs\Office KMS Host\Production\Office 2013 KMS Host\pkeyconfig-office-kmshost.xrm-ms
 629b2224103186a1eb6a5ed4ddf2fb1da46707d3770802348c59e6e265f0f830 *BIN\PKeyConfigs\Office KMS Host\Production\Office 2016-2019-2021-2024 KMS Host\pkeyconfig-office-kmshost.xrm-ms
@@ -112,7 +131,7 @@ d74dfb370a19a2adb41bb9880935c0a8db9d475b81edf383427023bd81d15c55 *BIN\PKeyConfig
 d758ff8c9511aad5648b429bc74c076438cee26a8778a8b0db53b498cd4bcbf4 *BIN\PKeyConfigs\Windows - Server\Production\Main\7601 - Windows 7 - Server 2008 R2\pkeyconfig.xrm-ms
 d310e0c0e45d08db12a6010954ffd6400154a206060cb7910af52697aef31be0 *BIN\PKeyConfigs\Windows - Server\Production\Main\9200 - Windows 8 - Server 2012\pkeyconfig.xrm-ms
 b8e8b0ff5c1066562497aede3702089c248382c5d38cd26a70ecfbc8fea90aeb *BIN\PKeyConfigs\Windows - Server\Production\Main\9600 - Windows 8.1 - Server 2012 R2\pkeyconfig.xrm-ms
-d2614db392d0c4decdd0f21fbf995217487ed0035652b62efdafe90912424a5d *BIN\PKeyConfigsMap.csv
+e199ac8e358a90dcf4be6c7ad840b0aa7920faac00cb36d1a0680c97be20a24c *BIN\PKeyConfigsMap.csv
 89bc2d22e2d162a3981d224702f6c2ffe9fdfe13be58282d0d16a98d15f37034 *BIN\PreVistaRanges.csv
 c622301660b0f5568d81dffe24a156866643b5f3da89b070f471db21ac1e636d *BIN\PublishLicense.xml
 8c8a5ac162fa323d64bcc63e31c39a8c110452ba6ee278c6d5d5fb4aa8ae00c2 *BIN\Scripts\DecodePKey2009.ps1

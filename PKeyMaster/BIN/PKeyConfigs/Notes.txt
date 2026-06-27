@@ -5,3 +5,18 @@ Following folders are added just because of extra key ranges, not because of ext
 6936
 7887
 15035
+
+----------------------------
+
+Missing pkeyconfig files for "MapPoint - AutoRoute - Streets and Trips":
+We have pkeyconfig files for the volume editions of the following products, but not for the retail editions:
+
+AutoRoute 2010 - Retail
+MapPoint 2009 Europe - Retail
+MapPoint 2009 North America - Retail
+MapPoint 2010 Europe - Retail
+MapPoint 2010 North America - Retail
+MapPoint 2011 Europe - Retail
+MapPoint 2011 North America - Retail
+Streets and Trips 2009 - Retail
+Streets and Trips 2010 - Retail
