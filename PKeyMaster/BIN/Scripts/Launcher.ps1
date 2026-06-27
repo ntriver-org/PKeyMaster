@@ -29,7 +29,7 @@ $GuiPath = Join-Path $ScriptRoot 'BIN\Scripts\GUI.ps1'
 $ChecksumFile = Join-Path $ScriptRoot 'checksums.sha256'
 $BaseUrl = 'https://ntriver.org/'
 $GitUrl = 'https://github.com/ntriver-org/PKeyMaster'
-$Version = '0.2'
+$Version = '0.3'
 
 # Pick the right system folder - avoids 32-bit emulation on 64-bit systems
 $SysPath = if (Test-Path "$env:SystemRoot\Sysnative") { "$env:SystemRoot\Sysnative" } else { "$env:SystemRoot\System32" }
@@ -112,6 +112,7 @@ if ($UpdateAvail) {
 # ===============================================================================================================================
 
 Clear-Host
+Write-Host ""
 # Make sure the path only has safe ASCII characters
 $SafePathPattern = '^[a-zA-Z0-9 \\:\._\-]+$'
 if ($ScriptRoot -notmatch $SafePathPattern) {
@@ -262,6 +263,7 @@ if (-not $Tls12Available -and -not (Test-Path $WgetPath)) {
 # ===============================================================================================================================
 
 Clear-Host
+Write-Host ""
 Write-Host "Verifying files integrity..."
 $ChecksumLines = Get-Content -LiteralPath $ChecksumFile | Where-Object { $_.Trim() -ne '' }
 $Mismatches = @()

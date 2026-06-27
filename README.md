@@ -30,9 +30,13 @@
 
 ---
 
-**Latest version**: 0.2  
-**Release date**: 24-June-2026  
+**Latest version**: 0.3  
+**Release date**: 28-June-2026  
 **Git Mirrors**:  [GitHub](https://github.com/ntriver-org/PKeyMaster) / [Codeberg](https://codeberg.org/ntriver-org/PKeyMaster) / [Tangled](https://tangled.org/windowsaddict.ntriver.org/PKeyMaster)
+
+---
+
+<p align="center"><img src="https://ntriver.org/assets/images/pkeymaster-keychecker-272ae955cbcc8ff814a93e52fbbbf90f.png" alt="PKeyMaster Keychecker"></p>
 
 ---
 
@@ -66,9 +70,8 @@
 
 ---
 
-[![Screenshots](https://img.shields.io/badge/View-Screenshots-blue?style=for-the-badge)](https://ntriver.org/pkeymaster#screenshots)
-
-[![Documentation](https://img.shields.io/badge/Documentation-Read%20Online-blue?style=for-the-badge)](https://ntriver.org/pkeymaster/key-checker)
+[Screenshots](https://ntriver.org/pkeymaster#screenshots)  
+[Documentation](https://ntriver.org/pkeymaster/key-checker)
 
 [![Discord](https://img.shields.io/badge/Discord-Chat%20with%20us-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/476fzQ3mV3)
 
