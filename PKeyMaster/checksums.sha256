@@ -1,12 +1,18 @@
 9d5d40c09a2358aa63dc895c9ef4189fc9ead943b4599af8393a72a7294576cc *BIN\icon.ico
 8af34350c30bb85e1e93075da07dc023fe72be608bf43166d8217fdaced998b8 *BIN\pidgenx32.dll
 e4593a7b96339023f55bab9f1f45b2b1706dbcc81f71b8626f30c9bed17f6017 *BIN\pidgenx64.dll
+0234c90bf9efe8308d4ea9f757ee79a0915fddce232ec9489bca340fbc39d196 *BIN\PKeyConfigs\.NET Micro Framework\Production\.NET Micro Framework Porting Kit v3.0\pkeyconfig.xrm-ms
+9e5a424d887daaa42e30b99025c68b70a0f5c07bf761695c11ddb5a613484a98 *BIN\PKeyConfigs\Advanced Threat Analytics\Production\Advanced Threat Analytics 1.4 and Later\ProductIdGeneratorConfiguration.xml
+705f775b806054eb981d4a825c1b19234d665f0f5557ec92de00d93651e9ce2b *BIN\PKeyConfigs\AutoCollage\Production\AutoCollage 2008 Academic v1.1\pkeyconfig.xrm-ms
+264f18d957df2af436c847e3fa496132cf479d32caea38239d9d2ad85fc429c0 *BIN\PKeyConfigs\Automatic Graph Layout\Production\Research Automatic Graph Layout\pkeyconfig.xrm-ms
 a59f045cf4ddd530c378739f99a2cd4cfefb4147cb4039d2c4c9938394925b06 *BIN\PKeyConfigs\Dynamics CRM\Production\Dynamics 365 v9.X\Crm9PKConfig.xml
 f83acc25135689eb1354b7dd1efcf7621a496f7a7a1f9363632f9979702d73d8 *BIN\PKeyConfigs\Dynamics CRM\Production\Dynamics CRM 2011\CrmPKConfig.xml
 0415537cfdfebbc1f20291ed50068ac6c7e28238b3b031c2f25e58183e2f99b7 *BIN\PKeyConfigs\Dynamics CRM\Production\Dynamics CRM 2013\CrmRtm6PKConfig.xml
 7108ad9108ec79eb4b152d821eb8c0da334bbd50a1e5d061507eb26a14bfc24b *BIN\PKeyConfigs\Dynamics CRM\Production\Dynamics CRM 2015\CrmRtm7PKConfig.xml
 8e6895d6d04f931df7b26ce975da9e0a35a7fe88f1f93aa571773e7dce065b5e *BIN\PKeyConfigs\Dynamics CRM\Production\Dynamics CRM 2016 - Dynamics 365 v8.X\Crm8PKConfig.xml
 774ff469a76edda509ba7288d7a8c720cc2efcb0c3da589f38bd40679a1757a3 *BIN\PKeyConfigs\Dynamics CRM\Production\Dynamics CRM 2016\Crm8PKConfig.xml
+8d6d975be4594e392c8f9d73234666c5aa65c8b86b3a398ff9eaebc4b8c0d6a4 *BIN\PKeyConfigs\Embedded Compact\Production\Windows Embedded Compact 2013\pkeyconfig.xrm-ms
+596fa6953ea909eaa53cf2b9545c946a8213fec40802b806297d26cc3ad165b2 *BIN\PKeyConfigs\Embedded Compact\Production\Windows Embedded Compact 7\pkeyconfig.xrm-ms
 b7a97a0f5a87f3b55d5f6b513d7e14f9117e0b2cd88a4291465df1bd5ebafdbd *BIN\PKeyConfigs\Embedded\Beta\9200 - Beta - Windows Embedded Standard 8\pkeyconfig.xrm-ms
 f0c47a235f0477d174d1e95c6aab27f7f58caa450bc9ee97415fa03422b0b246 *BIN\PKeyConfigs\Embedded\Production\7600 - Windows Thin PC\pkeyconfig.xrm-ms
 ad1d41b4b81d64cd3510a8597052c6b50dde373ec36d22578ddb5dee7a75fe82 *BIN\PKeyConfigs\Embedded\Production\7601 - Windows Embedded POSReady 7\pkeyconfig.xrm-ms
@@ -19,6 +25,10 @@ a2cc02ea0a8ff3d9dce5b82492776b71cfdb3e0a504686839285b35387dca741 *BIN\PKeyConfig
 86b3a395606d09cbde979be432b6b070800769155c26bf8bfa012f52b02cbdc3 *BIN\PKeyConfigs\Exchange Server\Production\Exchange Server 2016\productkeyconfig.xml
 8dbb0e4536af9a7a7681a5e0ff8cf49723b12072f72d3e731a1b59139abe5f40 *BIN\PKeyConfigs\Exchange Server\Production\Exchange Server 2019\ProductKeyConfig.xml
 8dbb0e4536af9a7a7681a5e0ff8cf49723b12072f72d3e731a1b59139abe5f40 *BIN\PKeyConfigs\Exchange Server\Production\Exchange Server Subscription Edition\ProductKeyConfig.xml
+9a553835005617bf749a0727a8bf59de509c30a3d01156034351d00ea5bff9f6 *BIN\PKeyConfigs\Expression\Production\Expression Studio 1\pkeyconfig.xrm-ms
+046922f821870cd656900eaa0d25d1d2eee24ced8cd3a84501dabed86ca93c5e *BIN\PKeyConfigs\Expression\Production\Expression Studio 2\prs-pkeyconfig.xrm-ms
+672186015a1363035fa4903fd3fe7bd2e6e62787e5686571be3fd89d60909d6b *BIN\PKeyConfigs\Expression\Production\Expression Studio 3\prs-pkeyconfig.xrm-ms
+e2b9cdd92547ad9d3e0e71d1481e5f7b899d5689910caafd346366787868a25e *BIN\PKeyConfigs\Expression\Production\Expression Studio 4\prs-pkeyconfig.xrm-ms
 1ef6ade8dbb56f0c3474c2eb8ec4ecc0aa998d6afcdb8f0cffa459cb75763f02 *BIN\PKeyConfigs\Flight Simulator\Production\Flight Simulator X\pkeyconfig.xrm-ms
 e50172f7f90cdff2278f720ff2478dbbb85a5bf76403dcb1ecf05d07dca47c4e *BIN\PKeyConfigs\Forefront\Production\Forefront Protection 2010 for Exchange Server\PKeyConfigExchange.xml
 aa8e4216de715f5a9f9a386077676e082e3745d9a8c0de717dc49876fcae806d *BIN\PKeyConfigs\Forefront\Production\Forefront Protection 2010 for SharePoint\PKeyConfigSharepoint.xml
@@ -39,6 +49,8 @@ ca8e1e889e9d27a8a5f6737ceef8c581f75b231b739b2f5adde77617d4076f93 *BIN\PKeyConfig
 30a0c81c53f5c046dcc924f4a46bb2c0a3ce2a76422cf687c09c44825725d185 *BIN\PKeyConfigs\MapPoint - AutoRoute - Streets and Trips\Production\Streets and Trips 2011 - Retail\pkcfg.xrm
 b40e3ba86a88d3aa82959fce10dc1eba6a2be26e1d6098cf5b046897f0c3b487 *BIN\PKeyConfigs\MapPoint - AutoRoute - Streets and Trips\Production\Streets and Trips 2011 - Volume\pkcfg.xrm
 726fff6e989bc26cf8a4c8db0d4e29b763ca6949f9955187acf6d63c7eaa61ab *BIN\PKeyConfigs\Notes.txt
+9419c202c24ad00f07f4521f7f8a9efbf9b449d068f4175698647f187769475c *BIN\PKeyConfigs\Office For Mac\Production\Office 2011 For Mac\retail_pkeyconfig.xml
+91a4b0ec0869d1649dadb269e5033ed8c5e3341dbcc69d47d0217b7e74fe9080 *BIN\PKeyConfigs\Office For Mac\Production\Office 2016-2019-2021-2024-O365 Subscription For Mac\subscription_pkeyconfig.xml
 cedcc90fd7aefb46350cf40101cf16c537acfe369ba12f1153805bfec41fd4ed *BIN\PKeyConfigs\Office KMS Host\Production\Office 2010 KMS Host\prs-pkeyconfig-o14-rtm.xrm-ms
 6ee85d2c519f3397f23cadba31ebec0feac2686a4720fe72c5684182c3abc0a0 *BIN\PKeyConfigs\Office KMS Host\Production\Office 2013 KMS Host\pkeyconfig-office-kmshost.xrm-ms
 629b2224103186a1eb6a5ed4ddf2fb1da46707d3770802348c59e6e265f0f830 *BIN\PKeyConfigs\Office KMS Host\Production\Office 2016-2019-2021-2024 KMS Host\pkeyconfig-office-kmshost.xrm-ms
@@ -46,9 +58,7 @@ cedcc90fd7aefb46350cf40101cf16c537acfe369ba12f1153805bfec41fd4ed *BIN\PKeyConfig
 d278ce4228552f4de79bab18ffb394a73ff3705f9b3bfe9433b81b3b78147b82 *BIN\PKeyConfigs\Office\Beta\15.0.4025.1000 - Beta - Office 2013\pkeyconfig-office.xrm-ms
 1092f13fcc6b08aa2dc5fcab54f5966724bb86598f0b1c2a88c3eb6a45a29666 *BIN\PKeyConfigs\Office\Beta\16.0.14326.20454 - Beta - Office 2019-2021\pkeyconfig-office.xrm-ms
 edfb49cd35fe352a1d29db39baa949ac23b06795c31f417816185b0c04c82f07 *BIN\PKeyConfigs\Office\Production\Office 2010\pkeyconfig-office.xrm-ms
-9419c202c24ad00f07f4521f7f8a9efbf9b449d068f4175698647f187769475c *BIN\PKeyConfigs\Office\Production\Office 2011 For Mac\retail_pkeyconfig.xml
 12321543ed69de70de79cf9066ae68160f8d4375ff8dea1360ae1e41fbe7f357 *BIN\PKeyConfigs\Office\Production\Office 2013-O365\pkeyconfig-office.xrm-ms
-91a4b0ec0869d1649dadb269e5033ed8c5e3341dbcc69d47d0217b7e74fe9080 *BIN\PKeyConfigs\Office\Production\Office 2016-2019-2021-2024-O365 Subscription For Mac\subscription_pkeyconfig.xml
 adc4173b64f1b85b3c92f720b994ef2d758d1702f7728f650f93ada21ae3a802 *BIN\PKeyConfigs\Office\Production\Office 2016-2019-2021-2024-O365\pkeyconfig-office.xrm-ms
 3cde6eea590b6be555e7c01035b1f1e0ab9c0bef45638ce6767b2f8ef6b62b84 *BIN\PKeyConfigs\Pre-Vista Custom Made\Pre-Vista (Windows 98 to XP - Office 2000 to 2007 - etc)\pkeyconfig-custom-made.xrm-ms
 5ceb4f442bf3e045a7821ba998eb25093aadc7e9833899e266377d2341ca3273 *BIN\PKeyConfigs\Sharepoint Server\Production\Sharepoint Server 2010\pkeyconfig-office.xrm-ms
@@ -56,6 +66,7 @@ adc4173b64f1b85b3c92f720b994ef2d758d1702f7728f650f93ada21ae3a802 *BIN\PKeyConfig
 37c7bc84a350375a4e176f36779ecbf4e4e48dad988cf1e373713ab7267397b4 *BIN\PKeyConfigs\Sharepoint Server\Production\Sharepoint Server 2016\pkeyconfig-office.xrm-ms
 1181d4090211fd021cf4ea2ddf0f6ca0768973d0b808adb96371bf09232f8c77 *BIN\PKeyConfigs\Sharepoint Server\Production\Sharepoint Server 2019\pkeyconfig-office.xrm-ms
 2280786500901fc2e6e65eb378a093d17b65b2bc43363a4de23fbb00e3aced95 *BIN\PKeyConfigs\Sharepoint Server\Production\SharePoint Server Subscription Edition\pkeyconfig-office.xrm-ms
+a2a9ba0fac4e409632b619cb2d32d8165937e6cb0257fba66d89f00c271cd9ec *BIN\PKeyConfigs\Songsmith\Production\Songsmith Academic 1.03\pkeyconfig.xrm-ms
 d87d959f0baf299e72e467e2e7c45feb9ccbaac8fb04cc2a859b1b9c3fde549a *BIN\PKeyConfigs\SQL Server\Production\SQL Server 2012\PidPrivateConfigObjectMaps.xml
 bb57cc33baff745199541ebcde06de4215bc5ed8199b0d9beae69848e344aa75 *BIN\PKeyConfigs\SQL Server\Production\SQL Server 2014\PidPrivateConfigObjectMaps.xml
 54070e495168b15837d00cb7b446685fbb547e81fdebc0d3e3bb04a044ec3c8e *BIN\PKeyConfigs\SQL Server\Production\SQL Server 2016\PidPrivateConfigObjectMaps.xml
@@ -64,7 +75,7 @@ bb57cc33baff745199541ebcde06de4215bc5ed8199b0d9beae69848e344aa75 *BIN\PKeyConfig
 5752407b302b11e72cd5bda6ebe8e8d0d09115893b9433f26297110437627313 *BIN\PKeyConfigs\SQL Server\Production\SQL Server 2022\PidPrivateConfigObjectMaps.xml
 d339b49971ff869f902a91d398ada86ad8d264631ce8c344248cd553e95db393 *BIN\PKeyConfigs\SQL Server\Production\SQL Server 2025\PidPrivateConfigObjectMaps.xml
 c186a107fb2dac0e9eea5663e1ef089cdbebfd9c63cae0d0e1394e468ce4a32e *BIN\PKeyConfigs\System Center\Production\System Center 2012 and Later\PKConfig.xml
-49466684efeb94d2901c4c1c58ddca1dc6c13378d13d50338127ac2cfd67f5bc *BIN\PKeyConfigs\Visual Studio\Production\Visual Studio 2010\pkconfig.xrm-ms
+49466684efeb94d2901c4c1c58ddca1dc6c13378d13d50338127ac2cfd67f5bc *BIN\PKeyConfigs\Visual Studio\Production\Visual Studio 2010 - Visual Studio LightSwitch 2011\pkconfig.xrm-ms
 7543560cd4bae31bf6e65ae06d81f3ef9777fb98aa209c07342b13e035257c9e *BIN\PKeyConfigs\Visual Studio\Production\Visual Studio 2012\pkconfig.xrm-ms
 b1e0a83a95fdbb0cd2ddc0c36523311e9f8b26833c4788ca59bd3a5f500f6bd1 *BIN\PKeyConfigs\Visual Studio\Production\Visual Studio 2013\pkconfig.xrm-ms
 71e3d253b681b897a80863d24880a271bee72b65cecb310380102f4c83ef3e97 *BIN\PKeyConfigs\Visual Studio\Production\Visual Studio 2015\pkconfig.xrm-ms
@@ -131,7 +142,7 @@ d74dfb370a19a2adb41bb9880935c0a8db9d475b81edf383427023bd81d15c55 *BIN\PKeyConfig
 d758ff8c9511aad5648b429bc74c076438cee26a8778a8b0db53b498cd4bcbf4 *BIN\PKeyConfigs\Windows - Server\Production\Main\7601 - Windows 7 - Server 2008 R2\pkeyconfig.xrm-ms
 d310e0c0e45d08db12a6010954ffd6400154a206060cb7910af52697aef31be0 *BIN\PKeyConfigs\Windows - Server\Production\Main\9200 - Windows 8 - Server 2012\pkeyconfig.xrm-ms
 b8e8b0ff5c1066562497aede3702089c248382c5d38cd26a70ecfbc8fea90aeb *BIN\PKeyConfigs\Windows - Server\Production\Main\9600 - Windows 8.1 - Server 2012 R2\pkeyconfig.xrm-ms
-e199ac8e358a90dcf4be6c7ad840b0aa7920faac00cb36d1a0680c97be20a24c *BIN\PKeyConfigsMap.csv
+dd2b85caad8bd03628b4e346205733098e35339dcbd03c8a1c1be2ad09d1cf9f *BIN\PKeyConfigsMap.csv
 89bc2d22e2d162a3981d224702f6c2ffe9fdfe13be58282d0d16a98d15f37034 *BIN\PreVistaRanges.csv
 c622301660b0f5568d81dffe24a156866643b5f3da89b070f471db21ac1e636d *BIN\PublishLicense.xml
 8c8a5ac162fa323d64bcc63e31c39a8c110452ba6ee278c6d5d5fb4aa8ae00c2 *BIN\Scripts\DecodePKey2009.ps1
