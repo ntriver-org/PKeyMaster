@@ -138,4 +138,8 @@
 "10143 - Beta - Csvlk - Windows 10","Beta","[2005, 2009]","4","3","0","Windows - Server\Beta\Csvlk\10143 - Beta - Csvlk - Windows 10\pkeyconfig-csvlk.xrm-ms"
 "8288 - Beta - Csvlk - Windows 8","Beta","[2005]","0","3","0","Windows - Server\Beta\Csvlk\8288 - Beta - Csvlk - Windows 8\pkeyconfig-csvlk.xrm-ms"
 "8032 - Beta - Csvlk - Windows 8","Beta","[2005, 2009]","4","3","0","Windows - Server\Beta\Csvlk\8032 - Beta - Csvlk - Windows 8\pkeyconfig-csvlk.xrm-ms"
+"Visual Studio 2015 Preview 2","Production","[2009]","1","0","0","Visual Studio\Beta\Visual Studio 2015 Preview 2\pkconfig.xrm-ms"
+"Visual Studio 2015 RC","Production","[2009]","1","0","0","Visual Studio\Beta\Visual Studio 2015 RC\pkconfig.xrm-ms"
+"Visual Studio 2013 RC","Production","[2005]","0","1","0","Visual Studio\Beta\Visual Studio 2013 RC\pkconfig.xrm-ms"
+"Visual Studio 2012 RC","Production","[2005]","0","1","0","Visual Studio\Beta\Visual Studio 2012 RC\pkconfig.xrm-ms"
 "9200 - Beta - Windows Embedded Standard 8","Beta","[2005, 2009]","3","4","0","Embedded\Beta\9200 - Beta - Windows Embedded Standard 8\pkeyconfig.xrm-ms"

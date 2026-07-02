@@ -75,6 +75,10 @@ bb57cc33baff745199541ebcde06de4215bc5ed8199b0d9beae69848e344aa75 *BIN\PKeyConfig
 5752407b302b11e72cd5bda6ebe8e8d0d09115893b9433f26297110437627313 *BIN\PKeyConfigs\SQL Server\Production\SQL Server 2022\PidPrivateConfigObjectMaps.xml
 d339b49971ff869f902a91d398ada86ad8d264631ce8c344248cd553e95db393 *BIN\PKeyConfigs\SQL Server\Production\SQL Server 2025\PidPrivateConfigObjectMaps.xml
 c186a107fb2dac0e9eea5663e1ef089cdbebfd9c63cae0d0e1394e468ce4a32e *BIN\PKeyConfigs\System Center\Production\System Center 2012 and Later\PKConfig.xml
+52be35db49acb7e4d784fc0fb44942a77635d4baa5b01841cce7df6a3224f1e4 *BIN\PKeyConfigs\Visual Studio\Beta\Visual Studio 2012 RC\pkconfig.xrm-ms
+ef7f6c18f2d7f53d09edd8a2940508267274b247058438d85a2acb8f3b6c05ae *BIN\PKeyConfigs\Visual Studio\Beta\Visual Studio 2013 RC\pkconfig.xrm-ms
+e94e8f7430a510f9df83d9669ab29bee34f9fb8f57a42f12d0d7cc9f64d8ae06 *BIN\PKeyConfigs\Visual Studio\Beta\Visual Studio 2015 Preview 2\pkconfig.xrm-ms
+2752595dfdb548cf1bf307021c9a953382de62dbe134c155b3c8e6dca2d275c3 *BIN\PKeyConfigs\Visual Studio\Beta\Visual Studio 2015 RC\pkconfig.xrm-ms
 49466684efeb94d2901c4c1c58ddca1dc6c13378d13d50338127ac2cfd67f5bc *BIN\PKeyConfigs\Visual Studio\Production\Visual Studio 2010 - Visual Studio LightSwitch 2011\pkconfig.xrm-ms
 7543560cd4bae31bf6e65ae06d81f3ef9777fb98aa209c07342b13e035257c9e *BIN\PKeyConfigs\Visual Studio\Production\Visual Studio 2012\pkconfig.xrm-ms
 b1e0a83a95fdbb0cd2ddc0c36523311e9f8b26833c4788ca59bd3a5f500f6bd1 *BIN\PKeyConfigs\Visual Studio\Production\Visual Studio 2013\pkconfig.xrm-ms
@@ -142,7 +146,7 @@ d74dfb370a19a2adb41bb9880935c0a8db9d475b81edf383427023bd81d15c55 *BIN\PKeyConfig
 d758ff8c9511aad5648b429bc74c076438cee26a8778a8b0db53b498cd4bcbf4 *BIN\PKeyConfigs\Windows - Server\Production\Main\7601 - Windows 7 - Server 2008 R2\pkeyconfig.xrm-ms
 d310e0c0e45d08db12a6010954ffd6400154a206060cb7910af52697aef31be0 *BIN\PKeyConfigs\Windows - Server\Production\Main\9200 - Windows 8 - Server 2012\pkeyconfig.xrm-ms
 b8e8b0ff5c1066562497aede3702089c248382c5d38cd26a70ecfbc8fea90aeb *BIN\PKeyConfigs\Windows - Server\Production\Main\9600 - Windows 8.1 - Server 2012 R2\pkeyconfig.xrm-ms
-dd2b85caad8bd03628b4e346205733098e35339dcbd03c8a1c1be2ad09d1cf9f *BIN\PKeyConfigsMap.csv
+c3708f0efea31776195111fe308768619bf2397fed8bb14e332a525e157b31cd *BIN\PKeyConfigsMap.csv
 89bc2d22e2d162a3981d224702f6c2ffe9fdfe13be58282d0d16a98d15f37034 *BIN\PreVistaRanges.csv
 c622301660b0f5568d81dffe24a156866643b5f3da89b070f471db21ac1e636d *BIN\PublishLicense.xml
 8c8a5ac162fa323d64bcc63e31c39a8c110452ba6ee278c6d5d5fb4aa8ae00c2 *BIN\Scripts\DecodePKey2009.ps1
