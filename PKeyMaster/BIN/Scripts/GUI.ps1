@@ -1806,7 +1806,7 @@ function Show-PKeyMasterGui {
     $scanInstalledKeysButton.Add_Click({
             Invoke-UiAction {
                 Start-ToolTask `
-                    -ScriptName 'ScanKeysInSppTrustedStore.ps1' `
+                    -ScriptName 'ScanKeysInTrustedStore.ps1' `
                     -Arguments @{} `
                     -OutputBox $scanKeysOutputBox `
                     -ControlsToDisable $scanTaskControls `
