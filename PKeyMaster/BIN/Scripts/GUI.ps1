@@ -915,7 +915,7 @@ function Show-PKeyMasterGui {
         "`r`nAvailable Scanner Actions:" +
         "`r`n  - Scan Files: Searches for 5x5 keys and DPID blobs." +
         "`r`n  - List of system files containing keys: $homePageUrl/pkeymaster/scan-keys" +
-        "`r`n  - Installed Keys: Extracts keys from the SPP trusted store." +
+        "`r`n  - Installed Keys: Extracts keys from the trusted store." +
         "`r`n  - Registry: Scans for DPID blobs of Microsoft products." +
         "`r`n  - BIOS/UEFI MSDM: Reads the OEM keys from the firmware.`r`n"
         Set-IntroText -OutputBox $scanKeysOutputBox -Text $scanKeysText
@@ -1248,7 +1248,7 @@ function Show-PKeyMasterGui {
     $scanLogsCheckBox = New-FormCheckBox -Text 'Logs' -Tooltip 'Saves the scan results to log files on the Desktop.' -AutoSize $false
     $scanButton = New-FormButton -Text 'Scan' -Tooltip 'Scans the selected file or folder for product keys or Digital Product IDs.'
     $scanKeysSeparator = New-WinFormsControl -TypeName 'Label' -Properties @{ AutoSize = $false; BorderStyle = 'Fixed3D' }
-    $scanInstalledKeysButton = New-FormButton -Text 'Get Installed Windows/Office Keys' -Tooltip 'Retrieves the installed Windows and Office product keys from the SPP trusted store.' -Width 190
+    $scanInstalledKeysButton = New-FormButton -Text 'Get Installed Windows/Office Keys' -Tooltip 'Retrieves the installed Windows and Office product keys from the trusted store.' -Width 190
     $scanWindowsRegistryButton = New-FormButton -Text 'Get Windows Keys From Registry' -Tooltip 'Extracts the Windows product keys from the registry Digital Product ID blobs.' -Width 190
     $scanOfficeRegistryButton = New-FormButton -Text 'Get Office Keys From Registry' -Tooltip 'Extracts the Office (MSI version) product keys from the registry Digital Product ID blobs.' -Width 190
     $scanOtherRegistryButton = New-FormButton -Text 'Get Other Product Keys From Registry' -Tooltip 'Scans the registry for product keys from other Microsoft products.' -Width 190
