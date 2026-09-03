@@ -568,10 +568,10 @@ $osppPages = Get-OsppStorePages
 
 if (-not $osppPages -or $osppPages.Count -eq 0) {
     if (-not (Get-Service 'osppsvc' -ErrorAction SilentlyContinue)) {
-        Write-Output "OSPP based Office is not installed."
+        Write-Color "OSPP based Office is not installed." "BgGray"
     }
     else {
-        Write-Output "OSPP trusted store not found."
+        Write-Color "OSPP trusted store not found." "BgRed"
     }
 }
 else {
