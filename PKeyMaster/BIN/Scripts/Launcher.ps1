@@ -47,8 +47,7 @@ function Show-Msg([string]$Url = '') {
         Write-Host 'GitHub  : ' -NoNewline
         Write-Host $GitUrl -ForegroundColor Green
     }
-    Write-Host "`nPress any key to exit..."
-    $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | Out-Null
+    Read-Host "`nPress Enter to exit..."
 }
 
 # ===============================================================================================================================
