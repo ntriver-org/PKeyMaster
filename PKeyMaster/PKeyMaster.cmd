@@ -97,7 +97,14 @@ if %winBuild% LSS 6001 (
 ::========================================================================================================================================
 
 set "psError="
-set "psPath=%sysPath%\WindowsPowerShell\v1.0\powershell.exe"
+
+::  64-bit PowerShell on ARM64 cannot load the x64 PidGenX.dll
+
+echo "%PROCESSOR_ARCHITECTURE% %PROCESSOR_ARCHITEW6432%" | find /i "ARM64" 1>nul && (
+    set "psPath=%SystemRoot%\SysWOW64\WindowsPowerShell\v1.0\powershell.exe"
+) || (
+    set "psPath=%sysPath%\WindowsPowerShell\v1.0\powershell.exe"
+)
 
 if not exist "%sysPath%\WindowsPowerShell\v1.0\Modules" (
     set "psError=PowerShell 1.0 is installed on your system."

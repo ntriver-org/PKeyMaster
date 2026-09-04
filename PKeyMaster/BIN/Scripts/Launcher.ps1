@@ -158,6 +158,14 @@ catch {
 # Environment validation
 # ===============================================================================================================================
 
+# 64-bit PowerShell on ARM64 cannot load the x64 PidGenX.dll.
+if ("$env:PROCESSOR_ARCHITECTURE $env:PROCESSOR_ARCHITEW6432" -match 'ARM64' -and [IntPtr]::Size -eq 8) {
+    Write-Host "ERROR: PowerShell is not running in 32-bit mode on ARM64." -ForegroundColor Red
+    Write-Host "Please launch PKeyMaster using PKeyMaster.cmd." -ForegroundColor Green
+    Show-Msg "${BaseUrl}troubleshoot"
+    return
+}
+
 # Full Language Mode required for Reflection / P/Invoke.
 if ($ExecutionContext.SessionState.LanguageMode.value__ -ne 0) {
     Write-Host "ERROR: PowerShell is not running in Full Language Mode (Current: $($ExecutionContext.SessionState.LanguageMode))." -ForegroundColor Red
