@@ -11,7 +11,7 @@
     The 25-character product key to activate.
 
 .PARAMETER ActConfigId
-    The Activation Configuration ID associated with the product key (from PidGenX).
+    The Activation Configuration ID associated with the product key.
 
 .PARAMETER ConfigExt
     The configuration extension appended to the activation URL.

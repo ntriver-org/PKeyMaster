@@ -112,14 +112,6 @@ if (-not $Script:PidGenXNativeType) {
 }
 
 # ===============================================================================================================================
-
-# Patched memory offsets (must be verified if pidgenx DLL is updated)
-
-$actConfigIdOffset = if ([IntPtr]::Size -eq 8) { 0xAF6F8 } else { 0x8F4C2 }
-$actConfigIdSize = if ([IntPtr]::Size -eq 8) { 512 }     else { 256 }
-$pkey2005SecurityOffset = if ([IntPtr]::Size -eq 8) { 0xAF900 } else { 0x8F600 }
-
-# ===============================================================================================================================
 # Helper functions
 # ===============================================================================================================================
 
@@ -292,32 +284,55 @@ function Invoke-GetConfirmationId($IID, $LogFolder, $f, $scriptDir) {
 
 # ===============================================================================================================================
 
-function Read-PidGenXPatchedData([bool]$ReadPKey2005Security = $false) {
-    # Read values captured by the patched PIDGenX DLL after a successful PidGenX call.
-    $data = New-Object PSObject -Property @{ ActConfigId = ""; PKey2005Security = $null }
+function Read-PidGenXPKey2005Security {
+    # Read the PKey2005 security value captured by the patched PIDGenX DLL.
+    # This offset must be verified if PIDGenX is updated.
+    $securityOffset = if ([IntPtr]::Size -eq 8) { 0xAF900 } else { 0x8F600 }
     $hModule = $Script:PidGenXNativeType::GetModuleHandle($dllName)
-    if ($hModule -eq [IntPtr]::Zero) { return $data }
+    if ($hModule -eq [IntPtr]::Zero) { return $null }
 
-    $bufferPtr = [IntPtr]($hModule.ToInt64() + $actConfigIdOffset)
-    $builder = New-Object System.Text.StringBuilder
-    for ($index = 0; $index -lt $actConfigIdSize; $index++) {
-        $val = [System.Runtime.InteropServices.Marshal]::ReadInt16($bufferPtr, ($index * 2))
-        if ($val -eq 0) { break }
-        $null = $builder.Append([char]$val)
-    }
+    $securityPtr = [IntPtr]($hModule.ToInt64() + $securityOffset)
+    try { return [System.Runtime.InteropServices.Marshal]::ReadInt32($securityPtr) }
+    catch { return $null }
+}
 
-    $result = $builder.ToString().Trim()
-    if ($result -match '^(?i)msft200[59]:[^\s]+$') { $data.ActConfigId = $result }
+# ===============================================================================================================================
 
-    if ($ReadPKey2005Security) {
-        $securityPtr = [IntPtr]($hModule.ToInt64() + $pkey2005SecurityOffset)
-        try {
-            $data.PKey2005Security = [System.Runtime.InteropServices.Marshal]::ReadInt32($securityPtr)
+# ActConfig ID helpers
+
+function Set-ActConfigBits($Data, $Offset, $Length, $Value) {
+    [uint64]$valueMask = 1
+    for ($bit = 0; $bit -lt $Length; $bit++) {
+        if (($Value -band $valueMask) -ne 0) {
+            $byteIndex = [int][Math]::Floor(($Offset + $bit) / 8)
+            $bitIndex = ($Offset + $bit) % 8
+            $Data[$byteIndex] = [byte]($Data[$byteIndex] -bor [int][Math]::Pow(2, $bitIndex))
         }
-        catch {}
+        $valueMask = $valueMask * 2
     }
+}
 
-    return $data
+function Get-PKey2005ActConfigId($SkuId, $Upgrade, $Serial, $Security) {
+    if ($null -eq $Security -or -not $SkuId) { return "" }
+
+    $data = New-Object byte[] 12
+    Set-ActConfigBits $data 0 1 ([uint64]$Upgrade)
+    Set-ActConfigBits $data 1 30 ([uint64][int64]$Serial)
+    Set-ActConfigBits $data 31 20 ([uint64][int64]$Security)
+
+    return "msft2005:{0}&{1}" -f $SkuId, [Convert]::ToBase64String($data)
+}
+
+function Get-PKey2009ActConfigId($SkuId, $Upgrade, $Serial, $Group, $Security) {
+    if ($null -eq $Security -or -not $SkuId) { return "" }
+
+    $data = New-Object byte[] 13
+    Set-ActConfigBits $data 0 1 ([uint64]$Upgrade)
+    Set-ActConfigBits $data 1 30 ([uint64][int64]$Serial)
+    Set-ActConfigBits $data 31 20 ([uint64][int64]$Group)
+    Set-ActConfigBits $data 51 53 ([uint64][int64]$Security)
+
+    return "msft2009:{0}&{1}" -f $SkuId, [Convert]::ToBase64String($data)
 }
 
 # ===============================================================================================================================
@@ -480,9 +495,13 @@ try {
             if (-not $isTestKey) {
                 # Parse and Capture
                 if ($info.Algorithm -match "2005|2009") {
-                    $patchedData = Read-PidGenXPatchedData ($info.Algorithm -match "2005")
-                    $pkActConfigId = $patchedData.ActConfigId
-                    $pkey2005Security = $patchedData.PKey2005Security
+                    if ($info.Algorithm -match "2005") {
+                        $pkey2005Security = Read-PidGenXPKey2005Security
+                        $pkActConfigId = Get-PKey2005ActConfigId $activationId $parsedDpid4.IsUpgrade $keyId $pkey2005Security
+                    }
+                    elseif ($null -ne $pkey2009DecodedSecurity) {
+                        $pkActConfigId = Get-PKey2009ActConfigId $activationId $parsedDpid4.IsUpgrade $keyId $groupId $pkey2009DecodedSecurity
+                    }
                     if ($GetInstallationId -or $GetConfirmationId) {
                         $iid = Invoke-GetInstallationId $ProductKey $currentPath
                     }

@@ -10,7 +10,7 @@
     The 25-character product key to certify.
 
 .PARAMETER ActConfigId
-    The Activation Configuration ID associated with the product key (from PidGenX).
+    The Activation Configuration ID associated with the product key.
 
 .PARAMETER LogPath
     Optional folder path where this script saves certification request/response payloads.
