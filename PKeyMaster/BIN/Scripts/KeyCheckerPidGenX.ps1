@@ -115,8 +115,9 @@ if (-not $Script:PidGenXNativeType) {
 
 # Patched memory offsets (must be verified if pidgenx DLL is updated)
 
-$captureOffset = if ([IntPtr]::Size -eq 8) { 0xAF6F8 } else { 0x8F4C2 }
-$captureSize = if ([IntPtr]::Size -eq 8) { 512 }     else { 256 }
+$actConfigIdOffset = if ([IntPtr]::Size -eq 8) { 0xAF6F8 } else { 0x8F4C2 }
+$actConfigIdSize = if ([IntPtr]::Size -eq 8) { 512 }     else { 256 }
+$pkey2005SecurityOffset = if ([IntPtr]::Size -eq 8) { 0xAF900 } else { 0x8F600 }
 
 # ===============================================================================================================================
 # Helper functions
@@ -291,22 +292,32 @@ function Invoke-GetConfirmationId($IID, $LogFolder, $f, $scriptDir) {
 
 # ===============================================================================================================================
 
-function Read-ActConfigId {
-    # Read ActConfigId from a patched memory offset in the PIDGenX DLL.
+function Read-PidGenXPatchedData([bool]$ReadPKey2005Security = $false) {
+    # Read values captured by the patched PIDGenX DLL after a successful PidGenX call.
+    $data = New-Object PSObject -Property @{ ActConfigId = ""; PKey2005Security = $null }
     $hModule = $Script:PidGenXNativeType::GetModuleHandle($dllName)
-    if ($hModule -eq [IntPtr]::Zero) { return "" }
+    if ($hModule -eq [IntPtr]::Zero) { return $data }
 
-    $bufferPtr = [IntPtr]($hModule.ToInt64() + $captureOffset)
+    $bufferPtr = [IntPtr]($hModule.ToInt64() + $actConfigIdOffset)
     $builder = New-Object System.Text.StringBuilder
-    for ($index = 0; $index -lt $captureSize; $index++) {
+    for ($index = 0; $index -lt $actConfigIdSize; $index++) {
         $val = [System.Runtime.InteropServices.Marshal]::ReadInt16($bufferPtr, ($index * 2))
         if ($val -eq 0) { break }
         $null = $builder.Append([char]$val)
     }
-    
+
     $result = $builder.ToString().Trim()
-    if ($result -match '^(?i)msft200[59]:[^\s]+$') { return $result }
-    return ""
+    if ($result -match '^(?i)msft200[59]:[^\s]+$') { $data.ActConfigId = $result }
+
+    if ($ReadPKey2005Security) {
+        $securityPtr = [IntPtr]($hModule.ToInt64() + $pkey2005SecurityOffset)
+        try {
+            $data.PKey2005Security = [System.Runtime.InteropServices.Marshal]::ReadInt32($securityPtr)
+        }
+        catch {}
+    }
+
+    return $data
 }
 
 # ===============================================================================================================================
@@ -464,11 +475,14 @@ try {
             $isTestKey = ($info.Description -eq "TEST" -and $info.Edition -eq "TEST" -and $info.Algorithm -notmatch "2005|2009")
 
             $pkActConfigId = ""
+            $pkey2005Security = $null
             $iid = ""
             if (-not $isTestKey) {
                 # Parse and Capture
                 if ($info.Algorithm -match "2005|2009") {
-                    $pkActConfigId = Read-ActConfigId
+                    $patchedData = Read-PidGenXPatchedData ($info.Algorithm -match "2005")
+                    $pkActConfigId = $patchedData.ActConfigId
+                    $pkey2005Security = $patchedData.PKey2005Security
                     if ($GetInstallationId -or $GetConfirmationId) {
                         $iid = Invoke-GetInstallationId $ProductKey $currentPath
                     }
@@ -507,14 +521,23 @@ try {
             Write-Output ($f -f "Algorithm ID", $info.Algorithm)
             Write-Output ($f -f "Group ID", ("{0} (0x{0:X})" -f $groupId))
             Write-Output ($f -f "Key ID", ("{0} (0x{0:X})" -f $keyId))
+            if (-not $isTestKey) {
+                if ($isPKey2009 -and $null -ne $pkey2009DecodedGroup) {
+                    Write-Output ($f -f "Security", ("{0} (0x{0:X})" -f $pkey2009DecodedSecurity))
+                    Write-Output ($f -f "PKey2009 Extra", $pkey2009DecodedExtra)
+                }
+                if ($info.Algorithm -match "2005" -and $null -ne $pkey2005Security) {
+                    Write-Output ($f -f "Security", ("{0} (0x{0:X})" -f $pkey2005Security))
+                }
+            }
 
             $channel = $null
             $seq = $null
             if ($info.Algorithm -match "980|986") {
                 $channel = [int64][Math]::Floor($keyId / 1000000)
                 $seq = $keyId % 1000000
-                Write-Output ($f -f "Channel ID", $channel)
-                Write-Output ($f -f "Sequence", $seq)
+                Write-Output ($f -f "Channel ID", ("{0} (0x{0:X})" -f $channel))
+                Write-Output ($f -f "Sequence", ("{0} (0x{0:X})" -f $seq))
 
                 $decode980Script = Join-Path $scriptDir "DecodePKey980-PKey986.ps1"
                 if (Test-Path $decode980Script) {
@@ -523,9 +546,9 @@ try {
                         $dataObj = $decodeOutput[-1]
                         if ($dataObj) {
                             if ($null -ne $dataObj.Format) { Write-Output ($f -f "Bink", $dataObj.Format) }
-                            if ($null -ne $dataObj.Hash) { Write-Output ($f -f "Hash", $dataObj.Hash) }
-                            if ($null -ne $dataObj.Auth) { Write-Output ($f -f "Auth", $dataObj.Auth) }
-                            if ($null -ne $dataObj.Signature) { Write-Output ($f -f "Signature", $dataObj.Signature) }
+                            if ($null -ne $dataObj.Hash) { Write-Output ($f -f "Hash", ("{0} (0x{0:X})" -f $dataObj.Hash)) }
+                            if ($null -ne $dataObj.Auth) { Write-Output ($f -f "Auth", ("{0} (0x{0:X})" -f $dataObj.Auth)) }
+                            if ($null -ne $dataObj.Signature) { Write-Output ($f -f "Signature", ("{0} (0x{0:X})" -f $dataObj.Signature)) }
                         }
                     }
                 }
@@ -537,11 +560,6 @@ try {
             }
 
             if (-not $isTestKey) {
-                if ($isPKey2009 -and $null -ne $pkey2009DecodedGroup) {
-                    Write-Output ($f -f "PKey2009 Security", $pkey2009DecodedSecurity)
-                    Write-Output ($f -f "PKey2009 Extra", $pkey2009DecodedExtra)
-                }
-                
                 $runAnyApi = ($KeyCertification -and $pkActConfigId) -or ($KeyActivation -and $pkActConfigId) -or ($MAKCount -and $info.KeyType -match "Volume:MAK") -or ($GetConfirmationId -and $iid)
                 if ($runAnyApi) { Write-Output "" }
 
@@ -594,9 +612,9 @@ try {
             Write-Output ($f -f "Algorithm ID", "msft:rm/algorithm/pkey/2009")
             Write-Output ($f -f "Group ID", ("{0} (0x{0:X})" -f $pkey2009DecodedGroup))
             Write-Output ($f -f "Key ID", ("{0} (0x{0:X})" -f $pkey2009DecodedSerial))
-            Write-Output ($f -f "Upgrade Key", $(if ($pkey2009DecodedUpgrade -eq 1) { "Yes" } else { "No" }))
-            Write-Output ($f -f "PKey2009 Security", $pkey2009DecodedSecurity)
+            Write-Output ($f -f "Security", ("{0} (0x{0:X})" -f $pkey2009DecodedSecurity))
             Write-Output ($f -f "PKey2009 Extra", $pkey2009DecodedExtra)
+            Write-Output ($f -f "Upgrade Key", $(if ($pkey2009DecodedUpgrade -eq 1) { "Yes" } else { "No" }))
         }
     }
 }
