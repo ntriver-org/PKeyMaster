@@ -177,6 +177,30 @@ function Invoke-PassThruScript([string]$ScriptPath, [hashtable]$Params) {
 
 # ===============================================================================================================================
 
+function Invoke-CheckRedeemKey($RedeemKey, $LogFolder, $f, $scriptDir) {
+    # Run CheckRedeemKey.ps1 and show the redeem-key status.
+    $redeemScript = Join-Path $scriptDir "CheckRedeemKey.ps1"
+    $params = @{ RedeemKey = $RedeemKey }
+    if ($LogFolder) { $params['LogPath'] = $LogFolder }
+    $redeemOutput = Invoke-PassThruScript $redeemScript $params
+    if (-not $redeemOutput) { return }
+    $redeemObj = $redeemOutput[-1]
+    if (-not $redeemObj -or -not $redeemObj.Status) { return }
+
+    if ($redeemObj.ErrorCode -eq 0) {
+        Write-Color ($f -f "Redeem Key Status", $redeemObj.Status) "BgGreen"
+        if ($redeemObj.Description) { Write-Output ($f -f "Redeem Key Info", $redeemObj.Description) }
+        if ($redeemObj.AllowedRegions) { Write-Output ($f -f "Allowed Regions", $redeemObj.AllowedRegions) }
+    }
+    else {
+        Write-Color ($f -f "Redeem Key Status", $redeemObj.Status) "BgRed"
+        Write-Color ($f -f "Redeem Error Code", $redeemObj.ErrorCode) "BgRed"
+        Write-Color ($f -f "Redeem Error Msg", $redeemObj.ErrorDetail) "BgRed"
+    }
+}
+
+# ===============================================================================================================================
+
 function Invoke-KeyCertification($ProductKey, $ActConfigId, $LogFolder, $f, $scriptDir) {
     # Run KeyCertification.ps1 and display the result.
     $certScript = Join-Path $scriptDir "KeyCertification.ps1"
@@ -579,8 +603,18 @@ try {
             }
 
             if (-not $isTestKey) {
-                $runAnyApi = ($KeyCertification -and $pkActConfigId) -or ($KeyActivation -and $pkActConfigId) -or ($MAKCount -and $info.KeyType -match "Volume:MAK") -or ($GetConfirmationId -and $iid)
+                $runAnyApi = (
+                    ($KeyCertification -and $pkActConfigId) -or
+                    ($KeyActivation -and $pkActConfigId) -or
+                    ($MAKCount -and $info.KeyType -match "Volume:MAK") -or
+                    ($parsedDpid4.EULA -eq "ltPIN") -or
+                    ($GetConfirmationId -and $iid)
+                )
                 if ($runAnyApi) { Write-Output "" }
+
+                if ($parsedDpid4.EULA -eq "ltPIN") {
+                    Invoke-CheckRedeemKey $ProductKey $LogFolder $f $scriptDir
+                }
 
                 if ($KeyCertification -and $pkActConfigId) {
                     Invoke-KeyCertification $ProductKey $pkActConfigId $LogFolder $f $scriptDir
@@ -609,11 +643,11 @@ try {
         if ($null -ne $hr) {
             $resultText = switch ($hr) {
                 -2147024809 { 'The parameter is incorrect' }
-                -1979645695 { "Specified key is either invalid or couldn't find a matching profile" }
-                -1979645951 { "Specified key is valid but couldn't find a matching profile" }
+                -1979645695 { "Key is either invalid or couldn't find a matching profile" }
+                -1979645951 { "Key is valid, but no matching profile found; may be a redeem key." }
                 -2147024894 { "Can't find specified pkeyconfig file" }
                 -2147024893 { 'Specified pkeyconfig path does not exist' }
-                15 { 'Specified key is blacklisted' }
+                15 { 'Key is blacklisted' }
                 default {
                     'Error: 0x{0:X8}' -f [int]$hr
                 }
@@ -623,17 +657,22 @@ try {
 
         Write-Output ""
         Write-Output ($f -f "Product Key", $ProductKey)
-        Write-Color ($f -f "Result", $resultText) "BgRed"
-        if ($hrHex) {
-            Write-Color ($f -f "PidGenX ErrorCode", ("{0} ({1})" -f $hr, $hrHex)) "BgRed"
+        if ($hr -ne -1979645951) {
+            Write-Color ($f -f "Result", $resultText) "BgRed"
+            if ($hrHex) {
+                Write-Color ($f -f "PidGenX ErrorCode", ("{0} ({1})" -f $hr, $hrHex)) "BgRed"
+            }
         }
         if ($hr -eq -1979645951 -and $null -ne $pkey2009DecodedGroup) {
+            Write-Color ($f -f "Result", $resultText) "BgGray"
             Write-Output ($f -f "Algorithm ID", "msft:rm/algorithm/pkey/2009")
             Write-Output ($f -f "Group ID", ("{0} (0x{0:X})" -f $pkey2009DecodedGroup))
             Write-Output ($f -f "Key ID", ("{0} (0x{0:X})" -f $pkey2009DecodedSerial))
             Write-Output ($f -f "Security", ("{0} (0x{0:X})" -f $pkey2009DecodedSecurity))
             Write-Output ($f -f "PKey2009 Extra", $pkey2009DecodedExtra)
             Write-Output ($f -f "Upgrade Key", $(if ($pkey2009DecodedUpgrade -eq 1) { "Yes" } else { "No" }))
+            Write-Output ""
+            Invoke-CheckRedeemKey $ProductKey $LogFolder $f $scriptDir
         }
     }
 }
