@@ -88,6 +88,11 @@ if (Test-Path $commonPath) { . $commonPath }
 # P/Invoke type compilation
 # ===============================================================================================================================
 
+if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM') {
+    Write-Color "PidGenX script is not supported on Windows ARM32 systems." "BgRed"
+    return
+}
+
 if (-not $Script:PidGenXNativeType) {
     if (-not (Test-Path $dllPath)) {
         Write-Color "PidGenX DLL not found: $dllPath" "BgRed"

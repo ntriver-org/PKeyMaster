@@ -242,8 +242,8 @@ if (-not $Tls12Available -and -not (Test-Path $WgetPath)) {
     Write-Host ''
     Write-Host '  wget.exe not found in the BIN folder.' -ForegroundColor Yellow
     Write-Host ''
-    Write-Host '  CID with Visual API needs TLS 1.2, which is not'
-    Write-Host '  enabled by default in older Windows versions.'
+    Write-Host '  CID with Visual API and redeem keys check needs TLS 1.2,'
+    Write-Host '  which is not enabled by default in older Windows versions.'
     Write-Host '  Download wget.exe (x86) and place it in the BIN folder.' -ForegroundColor Yellow
     Write-Host '__________________________________________________________'
     Write-Host ''
