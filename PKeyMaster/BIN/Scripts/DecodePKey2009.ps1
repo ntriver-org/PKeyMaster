@@ -75,17 +75,27 @@ foreach ($d in $digits) {
 # Bit parsing & decoding
 # ===============================================================================================================================
 
-# Read the decoded buffer as three 64-bit words and extract fields by shift + mask
-[int64] $lo = [System.BitConverter]::ToInt64($kb, 0)
-[int64] $mi = [System.BitConverter]::ToInt64($kb, 6)
-[int64] $hi = [System.BitConverter]::ToInt64($kb, 8)
+function Get-Bits($Data, $Offset, $Length) {
+    [int64]$result = 0
+    [int64]$mask = 1
+    $bitPowers = @(1, 2, 4, 8, 16, 32, 64, 128)
+    for ($bit = 0; $bit -lt $Length; $bit++) {
+        $byteIndex = [int][Math]::Floor(($Offset + $bit) / 8)
+        $bitIndex = ($Offset + $bit) % 8
+        if (($Data[$byteIndex] -band $bitPowers[$bitIndex]) -ne 0) {
+            $result = $result -bor $mask
+        }
+        $mask = $mask * 2
+    }
+    return $result
+}
 
-$grp = $lo -band 0xFFFFF
-$ser = ([int64][Math]::Floor($lo / [Math]::Pow(2, 20))) -band 0x3FFFFFFF
-$sec = ([int64][Math]::Floor($mi / 4)) -band 0x1FFFFFFFFFFFFF
-$csum = ([int64][Math]::Floor($hi / [Math]::Pow(2, 39))) -band 0x3FF
-$upg = ([int64][Math]::Floor($hi / [Math]::Pow(2, 49))) -band 0x1
-$ext = ([int64][Math]::Floor($hi / [Math]::Pow(2, 50))) -band 0x1
+$grp = Get-Bits $kb 0 20
+$ser = Get-Bits $kb 20 30
+$sec = Get-Bits $kb 50 53
+$csum = Get-Bits $kb 103 10
+$upg = Get-Bits $kb 113 1
+$ext = Get-Bits $kb 114 1
 
 # ===============================================================================================================================
 # Console output

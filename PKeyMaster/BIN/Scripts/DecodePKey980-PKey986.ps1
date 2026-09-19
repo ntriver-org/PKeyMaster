@@ -78,33 +78,44 @@ foreach ($ch in $cleanKey.ToCharArray()) {
 # Bit parsing & decoding
 # ===============================================================================================================================
 
-# Determine BINK format (Bink1998 or Bink2002) and extract fields by shift + mask
+function Get-Bits($Data, $Offset, $Length) {
+    [int64]$result = 0
+    [int64]$mask = 1
+    $bitPowers = @(1, 2, 4, 8, 16, 32, 64, 128)
+    for ($bit = 0; $bit -lt $Length; $bit++) {
+        $byteIndex = [int][Math]::Floor(($Offset + $bit) / 8)
+        $bitIndex = ($Offset + $bit) % 8
+        if (($Data[$byteIndex] -band $bitPowers[$bitIndex]) -ne 0) {
+            $result = $result -bor $mask
+        }
+        $mask = $mask * 2
+    }
+    return $result
+}
+
+# Determine BINK format (Bink1998 or Bink2002) and extract fields by bits
 $binkId = if ($binkIdHex -match '^0x') { [int]$binkIdHex } else { [int]"0x$binkIdHex" }
 $is2002 = $binkId -ge 0x40
 
-[int64] $lo = [System.BitConverter]::ToInt64($kb, 0)
-[int64] $mi = if ($is2002) { [System.BitConverter]::ToInt64($kb, 5) } else { [System.BitConverter]::ToInt64($kb, 7) }
-[int64] $hi = [System.BitConverter]::ToInt64($kb, 8)
-
-$upg = [int]($lo -band 0x1)
+$upg = [int](Get-Bits $kb 0 1)
 
 if ($is2002) {
     # Bink2002 format (Server 2003)
     $serial = $null
-    $channel = ([int64][Math]::Floor($lo / 2)) -band 0x3FF
+    $channel = Get-Bits $kb 1 10
     $seq = $null
-    $hash = ([int64][Math]::Floor($lo / [Math]::Pow(2, 11))) -band 0x7FFFFFFF
-    $sig = ([int64][Math]::Floor($mi / 4)) -band 0x3FFFFFFFFFFFFFFF
-    $auth = ([int64][Math]::Floor($hi / [Math]::Pow(2, 40))) -band 0x3FF
+    $hash = Get-Bits $kb 11 31
+    $sig = Get-Bits $kb 42 62
+    $auth = Get-Bits $kb 104 10
     $fmt = "Bink2002"
 }
 else {
     # Bink1998 format (Windows 98 / ME / 2000 / XP)
-    $serial = ([int64][Math]::Floor($lo / 2)) -band 0x3FFFFFFF
+    $serial = Get-Bits $kb 1 30
     $channel = [int64][Math]::Floor($serial / 1000000)
     $seq = $serial % 1000000
-    $hash = ([int64][Math]::Floor($lo / [Math]::Pow(2, 31))) -band 0xFFFFFFF
-    $sig = ([int64][Math]::Floor($mi / 8)) -band 0xFFFFFFFFFFFFFF
+    $hash = Get-Bits $kb 31 28
+    $sig = Get-Bits $kb 59 56
     $auth = $null
     $fmt = "Bink1998"
 }
