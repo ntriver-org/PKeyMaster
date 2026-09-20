@@ -50,8 +50,8 @@ if (Test-Path $commonPath) { . $commonPath }
 # Constants & helpers
 # ===============================================================================================================================
 
-# 5x5 key regex (case-insensitive, includes N for PKey2009)
-$KEY_PATTERN = '(?i)[BCDFGHJKMPQRTVWXY2346789N]{5}(-[BCDFGHJKMPQRTVWXY2346789N]{5}){4}'
+# 5x5 key regex (case-insensitive, includes N for PKey2009, Z for redeem keys)
+$KEY_PATTERN = '(?i)[BCDFGHJKMPQRTVWXY2346789NZ]{5}(-[BCDFGHJKMPQRTVWXY2346789NZ]{5}){4}'
 
 function Find-KeysInFile {
     # Read file in multiple encodings and extract unique 5x5 keys via regex.

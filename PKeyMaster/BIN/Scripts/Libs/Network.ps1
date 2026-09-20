@@ -300,7 +300,7 @@ function Invoke-TextRequestWithRetry($Method, $Url, $Body, $Headers, $ContentTyp
             }
             if ($bodyValid) { break }
             if ($i -eq 0 -and -not (Test-InternetConnection)) { break }
-            if ([Environment]::OSVersion.Version.Build -lt 9200 -and $mode -eq "WebRequest" -and $Url -match "visual") { break }
+            if ([Environment]::OSVersion.Version.Build -lt 9200 -and $mode -eq "WebRequest" -and $Url -match "visual|signup") { break }
             if ($i -lt 5) { Start-Sleep -Seconds 2 }
         }
         return $out

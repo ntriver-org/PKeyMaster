@@ -645,11 +645,19 @@ try {
     if (-not $matchFound) {
         $resultText = "Failed (No matching configuration found)"
         $hrHex = ""
+        $isRedeemKey = ($hr -eq -1979645951) -or ($hr -eq -1979645695 -and $ProductKey -match 'Z')
         if ($null -ne $hr) {
             $resultText = switch ($hr) {
                 -2147024809 { 'The parameter is incorrect' }
-                -1979645695 { "Key is either invalid or couldn't find a matching profile" }
-                -1979645951 { "Key is valid, but no matching profile found; may be a redeem key." }
+                -1979645695 {
+                    if ($isRedeemKey) {
+                        "This key is either a redeem key or an invalid key."
+                    }
+                    else {
+                        "This key is either invalid or missing a profile."
+                    }
+                }
+                -1979645951 { "This key is valid with no profile match. It may be a redeem key." }
                 -2147024894 { "Can't find specified pkeyconfig file" }
                 -2147024893 { 'Specified pkeyconfig path does not exist' }
                 15 { 'Key is blacklisted' }
@@ -662,20 +670,22 @@ try {
 
         Write-Output ""
         Write-Output ($f -f "Product Key", $ProductKey)
-        if ($hr -ne -1979645951) {
+        if (-not $isRedeemKey) {
             Write-Color ($f -f "Result", $resultText) "BgRed"
             if ($hrHex) {
                 Write-Color ($f -f "PidGenX ErrorCode", ("{0} ({1})" -f $hr, $hrHex)) "BgRed"
             }
         }
-        if ($hr -eq -1979645951 -and $null -ne $pkey2009DecodedGroup) {
+        if ($isRedeemKey) {
             Write-Color ($f -f "Result", $resultText) "BgGray"
-            Write-Output ($f -f "Algorithm ID", "msft:rm/algorithm/pkey/2009")
-            Write-Output ($f -f "Group ID", ("{0} (0x{0:X})" -f $pkey2009DecodedGroup))
-            Write-Output ($f -f "Key ID", ("{0} (0x{0:X})" -f $pkey2009DecodedSerial))
-            Write-Output ($f -f "Security", ("{0} (0x{0:X})" -f $pkey2009DecodedSecurity))
-            Write-Output ($f -f "PKey2009 Extra", $pkey2009DecodedExtra)
-            Write-Output ($f -f "Upgrade Key", $(if ($pkey2009DecodedUpgrade -eq 1) { "Yes" } else { "No" }))
+            if ($null -ne $pkey2009DecodedGroup) {
+                Write-Output ($f -f "Algorithm ID", "msft:rm/algorithm/pkey/2009")
+                Write-Output ($f -f "Group ID", ("{0} (0x{0:X})" -f $pkey2009DecodedGroup))
+                Write-Output ($f -f "Key ID", ("{0} (0x{0:X})" -f $pkey2009DecodedSerial))
+                Write-Output ($f -f "Security", ("{0} (0x{0:X})" -f $pkey2009DecodedSecurity))
+                Write-Output ($f -f "PKey2009 Extra", $pkey2009DecodedExtra)
+                Write-Output ($f -f "Upgrade Key", $(if ($pkey2009DecodedUpgrade -eq 1) { "Yes" } else { "No" }))
+            }
             Write-Output ""
             Invoke-CheckRedeemKey $ProductKey $LogFolder $f $scriptDir
         }
