@@ -197,7 +197,8 @@ $colsPidGenX = @(
 # ===============================================================================================================================
 
 # Standard 5x5 key (XXXXX-XXXXX-XXXXX-XXXXX-XXXXX) (includes N for PKey2009, Z for redeem keys)
-$Win5x5 = '([BCDFGHJKMPQRTVWXY2346789NZ]{5}-){4}[BCDFGHJKMPQRTVWXY2346789NZ]{5}'
+$KeyChars = 'BCDFGHJKMPQRTVWXY2346789N'
+$Win5x5 = "([$KeyChars]{5}-){4}[$KeyChars]{4}[${KeyChars}Z]"
 
 # Pre-98 OEM key format (12345-OEM-1234567-12345)
 $PreOEM = '(?<![0-9])[0-9]{5}-OEM-[0-9]{7}-[0-9]{5}(?![0-9])'
