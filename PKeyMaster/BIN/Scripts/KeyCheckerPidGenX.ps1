@@ -192,15 +192,16 @@ function Invoke-CheckRedeemKey($RedeemKey, $LogFolder, $f, $scriptDir) {
     $redeemObj = $redeemOutput[-1]
     if (-not $redeemObj -or -not $redeemObj.Status) { return }
 
-    if ($redeemObj.ErrorCode -eq 0) {
+    if ($redeemObj.Status -eq "Key can be redeemed") {
         Write-Color ($f -f "Redeem Key Status", $redeemObj.Status) "BgGreen"
-        if ($redeemObj.Description) { Write-Output ($f -f "Redeem Key Info", $redeemObj.Description) }
-        if ($redeemObj.AllowedRegions) { Write-Output ($f -f "Allowed Regions", $redeemObj.AllowedRegions) }
     }
     else {
         Write-Color ($f -f "Redeem Key Status", $redeemObj.Status) "BgRed"
-        Write-Color ($f -f "Redeem Error Code", $redeemObj.ErrorCode) "BgRed"
-        Write-Color ($f -f "Redeem Error Msg", $redeemObj.ErrorDetail) "BgRed"
+    }
+    if ($redeemObj.Pkpn) {
+        Write-Output ($f -f "Redeem Acid", $redeemObj.Acid)
+        Write-Output ($f -f "Redeem GroupId", $redeemObj.GroupId)
+        Write-Output ($f -f "Redeem Pkpn", $redeemObj.Pkpn)
     }
 }
 

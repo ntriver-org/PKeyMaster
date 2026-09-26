@@ -135,7 +135,7 @@ function Get-AccessToken {
     # - The script does not execute the token on your system, it only sends it as a header value to Microsoft's server to get the CID.
     # - The response is parsed as JSON only, and the token format is validated against the expected JWT character set and structure, so it cannot alter HTTP header syntax or inject additional headers.
     # - Microsoft does not link the IID or the retrieved CID to the token's account, so a shared token works fine.
-    $res = Invoke-GetTextRequest "https://cidtoken.ntriver.org/token.json" $null "" "json"
+    $res = Invoke-GetTextRequest "https://cidtoken.ntriver.org/token.json" $null "" "" "json"
     $ResponseFull = $res.Body.Trim()
     $msg = $res.Error.Trim()
     if (-not $ResponseFull) {

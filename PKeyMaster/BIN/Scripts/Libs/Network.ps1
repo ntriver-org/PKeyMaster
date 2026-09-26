@@ -108,7 +108,7 @@ function Test-Json([string]$Text) {
         Add-Type -AssemblyName System.Web.Extensions | Out-Null
         (New-Object System.Web.Script.Serialization.JavaScriptSerializer).DeserializeObject($Text) | Out-Null
 
-        if ($Text -match '"(cid|message|reasonCode|token)"\s*:') {
+        if ($Text -match '"(cid|message|reasonCode|token|Pkpn)"\s*:') {
             return $true
         }
 
@@ -300,7 +300,7 @@ function Invoke-TextRequestWithRetry($Method, $Url, $Body, $Headers, $ContentTyp
             }
             if ($bodyValid) { break }
             if ($i -eq 0 -and -not (Test-InternetConnection)) { break }
-            if ([Environment]::OSVersion.Version.Build -lt 9200 -and $mode -eq "WebRequest" -and $Url -match "visual|signup") { break }
+            if ([Environment]::OSVersion.Version.Build -lt 9200 -and $mode -eq "WebRequest" -and $Url -match "visual|m365") { break }
             if ($i -lt 5) { Start-Sleep -Seconds 2 }
         }
         return $out
@@ -317,9 +317,9 @@ function Invoke-TextRequestWithRetry($Method, $Url, $Body, $Headers, $ContentTyp
 # Public entry points
 # ===============================================================================================================================
 
-function Invoke-GetTextRequest($Url, $Headers = $null, $UserAgent = "", $ExpectedFormat = "") {
+function Invoke-GetTextRequest($Url, $Headers = $null, $ContentType = "", $UserAgent = "", $ExpectedFormat = "") {
     # GET with retries
-    return Invoke-TextRequestWithRetry "GET" $Url "" $Headers "" $UserAgent $ExpectedFormat
+    return Invoke-TextRequestWithRetry "GET" $Url "" $Headers $ContentType $UserAgent $ExpectedFormat
 }
 
 # ===============================================================================================================================

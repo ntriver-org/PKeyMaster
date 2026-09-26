@@ -183,7 +183,7 @@ $colsPidGenX = @(
     "Algorithm ID", "Group ID", "Key ID", "Security", "PKey2009 Extra",
     "Channel ID", "Sequence", "Bink", "Hash", "Auth", "Signature",
     "License Type", "Upgrade Key", "Product Match",
-    "Redeem Key Status", "Redeem Key Info", "Allowed Regions", "Redeem Error Code", "Redeem Error Msg",
+    "Redeem Key Status", "Redeem Acid", "Redeem GroupId", "Redeem Pkpn",
     "Key Certification", "Cert Error Code", "Cert Error Msg",
     "Key Activation", "Act Error Code", "Act Error Msg",
     "MAK Count", "MAK Error Code", "MAK Error Msg",

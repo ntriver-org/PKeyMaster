@@ -1,17 +1,17 @@
 <#
 .SYNOPSIS
-    Checks whether a Microsoft redeem key is valid.
+    Checks the status of a Microsoft redeem key.
 
 .DESCRIPTION
-    Sends a redeem key to Microsoft's signup validation endpoint and displays
-    its status, description, and allowed regions.
+    Queries a Microsoft licensing endpoint to determine the status of a
+    redeem key.
     This check does not redeem a key or make any change to its balance.
 
 .PARAMETER RedeemKey
     Redeem key to check. The key is sent in uppercase.
 
 .PARAMETER LogPath
-    Optional folder path where this script saves redeem-key request and response payloads.
+    Optional folder path where this script saves the request and response payloads.
 
 .PARAMETER PassThru
     Returns a structured PSObject for the submitted redeem key.
@@ -54,13 +54,12 @@ function New-ResponseObject {
     # Standard redeem-key validation response object.
     return @{
         Status         = "Failed"
-        Description    = $null
-        AllowedRegions = $null
-        ErrorCode      = $null
-        ErrorMessage   = $null
         RequestFull    = ""
         ResponseFull   = ""
         RequestDetails = ""
+        Acid           = $null
+        GroupId        = $null
+        Pkpn           = $null
     }
 }
 
@@ -91,89 +90,82 @@ function Write-ApiLogs($LogPath, $Prefix, $Obj) {
 # ===============================================================================================================================
 
 function Invoke-RedeemKeyRequest($Key) {
-    # Send a redeem key to the Microsoft signup validation service.
+    # Query the Microsoft licensing endpoint to check the status of a redeem key.
     $out = New-ResponseObject
 
-    $body = @"
-{"keys":["$Key"]}
-"@
-
-    $url = "https://signup.microsoft.com/api/signupservice/validatePrepaidKeys?culture=en-us&api-version=1"
-    $contentType = "application/json; charset=utf-8"
-    $userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-    $contentLength = [Text.Encoding]::UTF8.GetByteCount($body)
+    $correlationId = [System.Guid]::NewGuid().ToString().ToUpper()
+    $url = "https://licensing.m365.svc.cloud.microsoft/olsc/olsconfig.svc/pin/v3/${Key}?id=$correlationId"
+    $userAgent = "Microsoft Office/16.0 (Windows NT 10.0; Microsoft Excel 16.0.20520; Pro)"
+    $contentType = "application/json"
     $uri = New-Object System.Uri($url)
-    $out.RequestFull = $body
+    $out.RequestFull = ""
     $out.RequestDetails = @"
-POST $url HTTP/1.1
-Host: $($uri.Host)
-Connection: close
+GET $url HTTP/1.1
+Connection: Keep-Alive
 Content-Type: $contentType
 User-Agent: $userAgent
-Content-Length: $contentLength
-
-Body:
-$body
+Host: $($uri.Host)
 "@
 
-    $res = Invoke-PostTextRequest $url $body $null $contentType $userAgent "json"
+    $res = Invoke-GetTextRequest $url $null $contentType $userAgent "json"
     $responseFull = $res.Body.Trim()
     $msg = $res.Error.Trim()
 
     if (-not $responseFull) {
-        $out.ErrorMessage = if ($msg) { "$msg" } else { "No server response" }
+        $out.Status = if ($msg) { "Failed: $msg" } else { "Failed: No server response" }
         return $out
     }
 
     $out.ResponseFull = $responseFull
     if (-not (Test-Json $responseFull)) {
-        $out.ErrorMessage = if ($msg) { "$msg" } else { "Unrecognized response format from server" }
+        $out.Status = if ($msg) { "Failed: $msg" } else { "Failed: Unrecognized response format from server" }
         return $out
     }
 
     try {
         $json = $jsonSerializer.DeserializeObject($responseFull)
-        $validationResult = $json["prepaidKeysValidationResult"]
-        $descriptionResult = $json["prepaidKeysDescriptionResult"]
-        if ($descriptionResult) {
-            $out.Description = (($descriptionResult["description"] -replace '<[^>]+>', ' ') -replace '\s+', ' ').Trim()
-        }
-
-        $allowedRegions = $json["allowedRegions"]
-        if ($allowedRegions) {
-            $regionNames = @()
-            foreach ($region in $allowedRegions.Values) {
-                if ($region) { $regionNames += [string]$region }
-            }
-            $out.AllowedRegions = $regionNames -join ", "
-        }
-
-        $status = if ($validationResult) { @($validationResult["tokenStatus"])[0] } else { $null }
-        if ($status) {
-            $out.ErrorCode = $status["statusCode"]
-            $out.Status = switch ($out.ErrorCode) {
-                0 { "Key can be redeemed" }
-                5 { "Key already redeemed" }
-                7 { "Invalid key format" }
-                1 { "Not a redeem key (Xbox not checked)" }
-                6 { "Scrapped redeem key" }
-                default { "Unknown status" }
-            }
-            if ($out.ErrorCode -ne 0) {
-                $out.ErrorMessage = $status["tokenValidationMessage"]
-                if (-not $out.ErrorMessage) { $out.ErrorMessage = "Token validation message not found in response" }
-            }
+        if (-not $json) {
+            $out.Status = "Failed: JSON parse returned null"
             return $out
         }
 
-        $out.ErrorCode = $json["responseCode"]
-        $out.ErrorMessage = $json["message"]
-        if (-not $out.ErrorMessage) { $out.ErrorMessage = "Token status not found in response" }
+        $result = [string]$json["Result"]
+        $pkpn = $json["Pkpn"]
+        $acid = $json["Acid"]
+        $groupId = $json["GroupId"]
+
+        $hasPkpn = ($null -ne $pkpn) -and (([string]$pkpn).Trim() -ne "") -and (([string]$pkpn).Trim() -ne "null")
+
+        if ($hasPkpn) { $out.Pkpn = [string]$pkpn }
+        if ($acid -and ([string]$acid).Trim() -ne "null") { $out.Acid = [string]$acid }
+        if ($null -ne $groupId) { $out.GroupId = $groupId }
+
+        if ($result -eq "Valid") {
+            $out.Status = "Key can be redeemed"
+        }
+        elseif ($result -eq "Used") {
+            $out.Status = "Key already redeemed"
+        }
+        elseif ($result -eq "InvalidToken") {
+            if ($hasPkpn) {
+                $out.Status = "Scrapped redeem key"
+            }
+            else {
+                $out.Status = "Not a redeem key"
+            }
+        }
+        elseif ($result -eq "InvalidFormat") {
+            $out.Status = "Invalid key format"
+        }
+        else {
+            $out.Status = if ($result) { "Unknown status ($result)" } else { "Unknown status" }
+        }
+
         return $out
     }
     catch {
         $exMsg = if ($_.Exception.InnerException) { $_.Exception.InnerException.Message } else { $_.Exception.Message }
-        $out.ErrorMessage = "JSON parse error: $exMsg"
+        $out.Status = "Failed: $exMsg"
         return $out
     }
 }
@@ -184,16 +176,14 @@ $body
 
 $cleanKey = $RedeemKey.Trim().ToUpper()
 $res = $null
-if (-not (Get-Command Invoke-PostTextRequest -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command Invoke-GetTextRequest -ErrorAction SilentlyContinue)) {
     $res = New-ResponseObject
-    $res.ErrorMessage = "Network module not loaded"
+    $res.Status = "Failed: Network module not loaded"
 }
 else {
     $res = Invoke-RedeemKeyRequest $cleanKey
 }
 
-if ($null -eq $res.ErrorCode) { $res.ErrorCode = "N/A" }
-if (-not $res.ErrorMessage) { $res.ErrorMessage = "N/A" }
 $logStatus = Write-ApiLogs $LogPath "CheckRedeemKey" $res
 
 # ===============================================================================================================================
@@ -204,15 +194,16 @@ $f = "{0,-18}: {1}"
 Write-Output ""
 Write-Output ($f -f "Redeem Key", $cleanKey)
 
-if ($res.ErrorCode -eq 0) {
+if ($res.Status -eq "Key can be redeemed") {
     Write-Color ($f -f "Status", $res.Status) "BgGreen"
-    if ($res.Description) { Write-Output ($f -f "Description", $res.Description) }
-    if ($res.AllowedRegions) { Write-Output ($f -f "Allowed Regions", $res.AllowedRegions) }
 }
 else {
     Write-Color ($f -f "Status", $res.Status) "BgRed"
-    Write-Color ($f -f "Error Code", $res.ErrorCode) "BgRed"
-    Write-Color ($f -f "Error Msg", $res.ErrorMessage) "BgRed"
+}
+if ($res.Pkpn) {
+    Write-Output ($f -f "Acid", $res.Acid)
+    Write-Output ($f -f "GroupId", $res.GroupId)
+    Write-Output ($f -f "Pkpn", $res.Pkpn)
 }
 if ($logStatus) {
     if ($logStatus -match '^Failed') {
@@ -232,15 +223,14 @@ if ($PassThru) {
     New-Object PSObject -Property @{
         RedeemKey      = $cleanKey
         Status         = $res.Status
-        Description    = $res.Description
-        AllowedRegions = $res.AllowedRegions
         LogPath        = $LogPath
         LogStatus      = $logStatus
-        ErrorCode      = $res.ErrorCode
-        ErrorDetail    = $res.ErrorMessage
         RequestFull    = $res.RequestFull
         ResponseFull   = $res.ResponseFull
         RequestDetails = $res.RequestDetails
+        Acid           = $res.Acid
+        GroupId        = $res.GroupId
+        Pkpn           = $res.Pkpn
     }
 }
 
