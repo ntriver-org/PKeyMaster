@@ -891,12 +891,13 @@ function Show-PKeyMasterGui {
         $keyCheckerText = "KeyChecker`r`n" +
         "`r`nValidates Microsoft keys (Windows, Office, VS, etc.) from Windows 95 era to present.`r`n" +
         "`r`nAvailable options:" +
-        "`r`n  Key Certification - Checks SLCertifyProduct to verify key certification status." +
-        "`r`n  Key Activation    - Activates key via SLActivateProduct. Consumes an activation slot." +
-        "`r`n  MAK Count         - Queries the remaining MAK activation count." +
-        "`r`n  IID               - Retrieves IID using PidGenX.dll." +
-        "`r`n  CID               - Retrieves CID using Batch/Visual API. Consumes an activation slot." +
-        "`r`n  Logs              - Saves the results to the Desktop.`r`n" +
+        "`r`n  Certification - Checks the key certification status via SLCertifyProduct API." +
+        "`r`n  Activation    - Activates the key via SLActivateProduct API (consumes activation slot)." +
+        "`r`n  MAK Count     - Checks the remaining MAK activation count via Batch API." +
+        "`r`n  Redeem Status - Checks the status of a redeem key via the OLSC API." +
+        "`r`n  IID           - Retrieves the IID via PidGenX.dll." +
+        "`r`n  CID           - Retrieves the CID via Batch/Visual API (consumes activation slot)." +
+        "`r`n  Logs          - Saves the results to the Desktop.`r`n" +
         "`r`nEnter a key (e.g., NJCF7-PW8QT-3324D-688JX-2YV66) and click Check.`r`n" +
         "`r`nFor more information: $repositoryUrl`r`n"
         Set-IntroText -OutputBox $keyCheckerOutputBox -Text $keyCheckerText
@@ -1204,14 +1205,15 @@ function Show-PKeyMasterGui {
     $keyFileTextBox = New-FormTextBox -ReadOnly $true -Tooltip 'Select a file that contains one or more product keys.' -Placeholder $browsePlaceholder
     $profileLabel = New-FormLabel -Text 'Profile'
     $profileComboBox = New-FormComboBox -DisplayMember 'Label' -Tooltip 'Select a PKeyConfig profile to use for validating the key.'
-    $certificationCheckBox = New-FormCheckBox -Text 'Key Certification' -Tooltip 'Checks the Microsoft SLCertifyProduct endpoint to confirm whether the key certifies as valid. This does not consume an activation slot. Works with Windows Vista / Office 2010 and later keys.' -AutoSize $false
-    $activationCheckBox = New-FormCheckBox -Text 'Key Activation' -Tooltip 'Activates the key via the Microsoft SLActivateProduct endpoint. This consumes an activation slot. Works with Windows Vista / Office 2010 and later keys.' -AutoSize $false
-    $makCountCheckBox = New-FormCheckBox -Text 'MAK Count' -Tooltip 'Queries the remaining MAK activation count using the Microsoft BatchActivation endpoint. Works with Windows Vista / Office 2010 and later Volume:MAK keys. The MAK count does not guarantee a key is valid for activation. Check the certification status to verify.' -AutoSize $false
-    $installationIdCheckBox = New-FormCheckBox -Text 'IID' -Tooltip 'Retrieves the Installation ID using PidGenX.dll. Works with PKey2005/2009 keys.' -AutoSize $false
-    $confirmationIdCheckBox = New-FormCheckBox -Text 'CID' -Tooltip 'Retrieves the Confirmation ID using the Microsoft BatchApi, fallbacks to VisualApi. This consumes an activation slot. Works with Windows Vista / Office 2010 and later keys.' -AutoSize $false
+    $certificationCheckBox = New-FormCheckBox -Text 'Certification' -Tooltip 'Checks the key certification status via SLCertifyProduct API (does not consume activation slot). Works with Windows Vista / Office 2010 and later keys.' -AutoSize $false
+    $activationCheckBox = New-FormCheckBox -Text 'Activation' -Tooltip 'Activates the key via SLActivateProduct API (consumes activation slot). Works with Windows Vista / Office 2010 and later keys.' -AutoSize $false
+    $makCountCheckBox = New-FormCheckBox -Text 'MAK Count' -Tooltip 'Checks the remaining MAK activation count via Batch API. Works with Windows Vista / Office 2010 and later Volume:MAK keys. The MAK count does not guarantee a key is valid for activation. Check the certification status to verify.' -AutoSize $false
+    $redeemStatusCheckBox = New-FormCheckBox -Text 'Redeem Status' -Tooltip 'Checks the status of a redeem key via the OLSC API. Works with PKey2009 keys (excluding Volume, OEM, and Eval) and keys ending in Z.' -AutoSize $false
+    $installationIdCheckBox = New-FormCheckBox -Text 'IID' -Tooltip 'Retrieves the IID via PidGenX.dll. Works with PKey2005/2009 keys.' -AutoSize $false
+    $confirmationIdCheckBox = New-FormCheckBox -Text 'CID' -Tooltip 'Retrieves the CID via Batch/Visual API (consumes activation slot). Works with Windows Vista / Office 2010 and later keys.' -AutoSize $false
     $keyLogsCheckBox = New-FormCheckBox -Text 'Logs' -Tooltip 'Saves the result files and the request and response logs to the PKeyMaster-Logs folder on the Desktop.' -AutoSize $false
     $checkKeyButton = New-FormButton -Text 'Check' -Tooltip 'Checks the key using the selected profile and options.'
-    $keyCheckerTopPanel.Controls.AddRange(@($keyLabel, $keyTextBox, $keyFileLabel, $keyFileTextBox, $profileLabel, $profileComboBox, $certificationCheckBox, $activationCheckBox, $makCountCheckBox, $installationIdCheckBox, $confirmationIdCheckBox, $keyLogsCheckBox, $checkKeyButton))
+    $keyCheckerTopPanel.Controls.AddRange(@($keyLabel, $keyTextBox, $keyFileLabel, $keyFileTextBox, $profileLabel, $profileComboBox, $certificationCheckBox, $activationCheckBox, $makCountCheckBox, $redeemStatusCheckBox, $installationIdCheckBox, $confirmationIdCheckBox, $keyLogsCheckBox, $checkKeyButton))
 
     $keyCheckerBottomPanel = New-FormPanel
     $keyCheckerOutputBox = New-OutputBox
@@ -1364,7 +1366,10 @@ function Show-PKeyMasterGui {
         Set-LabeledControlBounds -Label $keyFileLabel -Control $keyFileTextBox -Top $keyRow2Top -LabelWidth $keyLabelWidth -ControlLeft $keyInputLeft -ControlWidth $keyInputWidth
         Set-LabeledControlBounds -Label $profileLabel -Control $profileComboBox -Top $keyRow3Top -LabelWidth $keyLabelWidth -ControlLeft $keyInputLeft -ControlWidth $keyInputWidth
         $checkKeyButton.SetBounds($checkKeyButtonLeft, $keyRow3Top, $checkKeyButtonWidth, $controlHeight)
-        Set-CheckboxRowBounds -CheckBoxes @($certificationCheckBox, $activationCheckBox, $makCountCheckBox, $installationIdCheckBox, $confirmationIdCheckBox, $keyLogsCheckBox) -Left $keyInputLeft -Top $keyRow4Top -Width $keyInputWidth -Gap 2
+        Set-CheckboxRowBounds -CheckBoxes @($certificationCheckBox, $activationCheckBox, $makCountCheckBox, $redeemStatusCheckBox, $installationIdCheckBox, $confirmationIdCheckBox) -Left $keyInputLeft -Top $keyRow4Top -Width $keyInputWidth -Gap 2
+        $logsPreferredWidth = [Math]::Min($checkKeyButtonWidth, $keyLogsCheckBox.PreferredSize.Width)
+        $logsLeft = $checkKeyButtonLeft + [int][Math]::Round(($checkKeyButtonWidth - $logsPreferredWidth) / 2)
+        $keyLogsCheckBox.SetBounds($logsLeft, $keyRow4Top, $logsPreferredWidth, $controlHeight)
 
         $iidRow1Top = $uiPadding
         $iidRow2Top = $iidRow1Top + $rowStep
@@ -1583,6 +1588,7 @@ function Show-PKeyMasterGui {
                 if ($certificationCheckBox.Checked) { $arguments['KeyCertification'] = $true }
                 if ($activationCheckBox.Checked) { $arguments['KeyActivation'] = $true }
                 if ($makCountCheckBox.Checked) { $arguments['MAKCount'] = $true }
+                if ($redeemStatusCheckBox.Checked) { $arguments['CheckRedeemKey'] = $true }
                 if ($confirmationIdCheckBox.Checked) {
                     $arguments['GetInstallationId'] = $true
                     $arguments['GetConfirmationId'] = $true
@@ -1599,6 +1605,7 @@ function Show-PKeyMasterGui {
                     $certificationCheckBox,
                     $activationCheckBox,
                     $makCountCheckBox,
+                    $redeemStatusCheckBox,
                     $installationIdCheckBox,
                     $confirmationIdCheckBox,
                     $keyLogsCheckBox,

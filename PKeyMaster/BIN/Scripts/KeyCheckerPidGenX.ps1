@@ -26,6 +26,9 @@
 .PARAMETER KeyActivation
     Enables key activation via the SL activation service.
 
+.PARAMETER CheckRedeemKey
+    Enables redeem key validation via Microsoft licensing endpoint.
+
 .PARAMETER MAKCount
     Enables MAK remaining count query.
 
@@ -62,6 +65,7 @@ param(
     [switch]$GetInstallationId,
     [switch]$KeyCertification,
     [switch]$KeyActivation,
+    [switch]$CheckRedeemKey,
     [switch]$MAKCount,
     [switch]$GetConfirmationId,
     [string]$LogFolder
@@ -609,34 +613,21 @@ try {
             }
 
             if (-not $isTestKey) {
-                $runAnyApi = (
-                    ($KeyCertification -and $pkActConfigId) -or
-                    ($KeyActivation -and $pkActConfigId) -or
-                    ($MAKCount -and $info.KeyType -match "Volume:MAK") -or
-                    ($parsedDpid4.EULA -eq "ltPIN") -or
-                    ($GetConfirmationId -and $iid)
-                )
-                if ($runAnyApi) { Write-Output "" }
+                $doCert = $KeyCertification -and $pkActConfigId
+                $doAct = $KeyActivation -and $pkActConfigId
+                $doRedeem = $CheckRedeemKey -and $info.Algorithm -match "2009" -and $info.KeyType -notmatch "Volume|OEM|EVAL"
+                $doMak = $MAKCount -and $info.KeyType -match "Volume:MAK"
+                $doCid = $GetConfirmationId -and $iid
 
-                if ($parsedDpid4.EULA -eq "ltPIN") {
-                    Invoke-CheckRedeemKey $ProductKey $LogFolder $f $scriptDir
+                if ($doCert -or $doAct -or $doRedeem -or $doMak -or $doCid) {
+                    Write-Output ""
                 }
 
-                if ($KeyCertification -and $pkActConfigId) {
-                    Invoke-KeyCertification $ProductKey $pkActConfigId $LogFolder $f $scriptDir
-                }
-
-                if ($KeyActivation -and $pkActConfigId) {
-                    Invoke-KeyActivation $ProductKey $pkActConfigId $LogFolder $f $scriptDir
-                }
-
-                if ($MAKCount -and $info.KeyType -match "Volume:MAK") {
-                    Invoke-MakCount $parsedDpid4.AdvancedPid $LogFolder $f $scriptDir
-                }
-
-                if ($GetConfirmationId -and $iid) {
-                    Invoke-GetConfirmationId $iid $LogFolder $f $scriptDir
-                }
+                if ($doCert) { Invoke-KeyCertification $ProductKey $pkActConfigId $LogFolder $f $scriptDir }
+                if ($doAct) { Invoke-KeyActivation $ProductKey $pkActConfigId $LogFolder $f $scriptDir }
+                if ($doRedeem) { Invoke-CheckRedeemKey $ProductKey $LogFolder $f $scriptDir }
+                if ($doMak) { Invoke-MakCount $parsedDpid4.AdvancedPid $LogFolder $f $scriptDir }
+                if ($doCid) { Invoke-GetConfirmationId $iid $LogFolder $f $scriptDir }
             }
             $matchFound = $true
             break
@@ -688,7 +679,12 @@ try {
                 Write-Output ($f -f "Upgrade Key", $(if ($pkey2009DecodedUpgrade -eq 1) { "Yes" } else { "No" }))
             }
             Write-Output ""
-            Invoke-CheckRedeemKey $ProductKey $LogFolder $f $scriptDir
+            if ($CheckRedeemKey) {
+                Invoke-CheckRedeemKey $ProductKey $LogFolder $f $scriptDir
+            }
+            else {
+                Write-Color ($f -f "Tip", "Enable Redeem Status option to view the redemption status.") "FgYellow"
+            }
         }
     }
 }

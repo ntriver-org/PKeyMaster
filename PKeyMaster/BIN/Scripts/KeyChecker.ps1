@@ -25,6 +25,9 @@
 .PARAMETER KeyActivation
     Enables key activation via the SL activation service.
 
+.PARAMETER CheckRedeemKey
+    Enables redeem key validation via Microsoft licensing endpoint.
+
 .PARAMETER MAKCount
     Enables MAK remaining count query.
 
@@ -90,6 +93,7 @@ param(
     [string]$ProfileName = '',
     [switch]$KeyCertification,
     [switch]$KeyActivation,
+    [switch]$CheckRedeemKey,
     [switch]$MAKCount,
     [switch]$GetInstallationId,
     [switch]$GetConfirmationId,
@@ -183,9 +187,9 @@ $colsPidGenX = @(
     "Algorithm ID", "Group ID", "Key ID", "Security", "PKey2009 Extra",
     "Channel ID", "Sequence", "Bink", "Hash", "Auth", "Signature",
     "License Type", "Upgrade Key", "Product Match",
-    "Redeem Key Status", "Redeem Acid", "Redeem GroupId", "Redeem Pkpn",
     "Key Certification", "Cert Error Code", "Cert Error Msg",
     "Key Activation", "Act Error Code", "Act Error Msg",
+    "Redeem Key Status", "Redeem Acid", "Redeem GroupId", "Redeem Pkpn",
     "MAK Count", "MAK Error Code", "MAK Error Msg",
     "CID Batch Api", "Batch Error Code", "Batch Error Msg",
     "CID Visual Api", "Visual Error Code", "Visual Error Msg",
@@ -374,6 +378,7 @@ if ($PKeyConfigPath) { $pidGenXParams['ManualPKeyConfigPath'] = $PKeyConfigPath 
 if ($ProfileName) { $pidGenXParams['ManualProfileName'] = $ProfileName }
 if ($KeyCertification) { $pidGenXParams['KeyCertification'] = $true }
 if ($KeyActivation) { $pidGenXParams['KeyActivation'] = $true }
+if ($CheckRedeemKey) { $pidGenXParams['CheckRedeemKey'] = $true }
 if ($MAKCount) { $pidGenXParams['MAKCount'] = $true }
 if ($GetInstallationId) { $pidGenXParams['GetInstallationId'] = $true }
 if ($GetConfirmationId) { $pidGenXParams['GetConfirmationId'] = $true }
