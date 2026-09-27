@@ -8,7 +8,7 @@ Following folders are added just because of extra key ranges, not because of ext
 
 ----------------------------
 
-Missing pkeyconfig files for "MapPoint - AutoRoute - Streets and Trips":
+Missing pkeyconfig files for MapPoint, AutoRoute, Streets and Trips:
 We have pkeyconfig files for the volume editions of the following products, but not for the retail editions:
 
 AutoRoute 2010 - Retail
