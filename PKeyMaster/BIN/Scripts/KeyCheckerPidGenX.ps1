@@ -219,13 +219,13 @@ function Invoke-KeyCertification($ProductKey, $ActConfigId, $LogFolder, $f, $scr
     $certOutput = Invoke-PassThruScript $certScript $params
     if (-not $certOutput) { return }
     $certObj = $certOutput[-1]
-    if (-not $certObj -or -not $certObj.Result) { return }
+    if (-not $certObj -or -not $certObj.Status) { return }
     
-    if ($certObj.Result -eq "SUCCESS") {
-        Write-Color ($f -f "Key Certification", "Valid") "BgGreen"
+    if ($certObj.Status -eq "Succeeded") {
+        Write-Color ($f -f "Key Certification", $certObj.Status) "BgGreen"
     }
     else {
-        Write-Color ($f -f "Key Certification", "Failed") "BgRed"
+        Write-Color ($f -f "Key Certification", $certObj.Status) "BgRed"
         Write-Color ($f -f "Cert Error Code", $certObj.ErrorCode) "BgRed"
         Write-Color ($f -f "Cert Error Msg", $certObj.ErrorDetail) "BgRed"
     }
@@ -241,13 +241,13 @@ function Invoke-KeyActivation($ProductKey, $ActConfigId, $LogFolder, $f, $script
     $actOutput = Invoke-PassThruScript $actScript $params
     if (-not $actOutput) { return }
     $actObj = $actOutput[-1]
-    if (-not $actObj -or -not $actObj.Result) { return }
+    if (-not $actObj -or -not $actObj.Status) { return }
     
-    if ($actObj.Result -eq "SUCCESS") {
-        Write-Color ($f -f "Key Activation", "Succeeded") "BgGreen"
+    if ($actObj.Status -eq "Succeeded") {
+        Write-Color ($f -f "Key Activation", $actObj.Status) "BgGreen"
     }
     else {
-        Write-Color ($f -f "Key Activation", "Failed") "BgRed"
+        Write-Color ($f -f "Key Activation", $actObj.Status) "BgRed"
         Write-Color ($f -f "Act Error Code", $actObj.ErrorCode) "BgRed"
         Write-Color ($f -f "Act Error Msg", $actObj.ErrorDetail) "BgRed"
     }

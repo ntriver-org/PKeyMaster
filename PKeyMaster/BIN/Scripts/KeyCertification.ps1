@@ -62,7 +62,7 @@ function HtmlEncode([string]$s) {
 function New-ResponseObject {
     # Standard certification response object.
     return @{
-        Success        = $false
+        Status         = "Failed"
         ErrorCode      = $null
         ErrorMessage   = $null
         ResponseInner  = ""
@@ -158,7 +158,7 @@ $RequestFull
             $out.ResponseInner = $valText
             
             if (Test-Xml $valText) {
-                $out.Success = $true
+                $out.Status = "Succeeded"
                 return $out
             }
             if ($valText -match "^0x") {
@@ -224,6 +224,7 @@ if (-not (Get-Command Invoke-PostTextRequest -ErrorAction SilentlyContinue)) {
 else {
     $res = Invoke-KeyCertificationRequest $ProductKey $ActConfigId
 }
+if ($res.ErrorCode -eq "0xC004C00D") { $res.Status = "Failed (Unsupported product key)" }
 if (-not $res.ErrorCode) { $res.ErrorCode = "N/A" }
 if (-not $res.ErrorMessage) { $res.ErrorMessage = "N/A" }
 $logStatus = Write-ApiLogs $LogPath "KeyCertification" $res
@@ -236,11 +237,11 @@ $f = "{0,-18}: {1}"
 Write-Output ""
 Write-Output ($f -f "Product Key", $ProductKey)
 Write-Output ($f -f "ActConfigId", $ActConfigId)
-if ($res.Success) {
-    Write-Color ($f -f "Result", "Key Certification Succeeded") "BgGreen"
+if ($res.Status -eq "Succeeded") {
+    Write-Color ($f -f "Result", $res.Status) "BgGreen"
 }
 else {
-    Write-Color ($f -f "Result", "Key Certification Failed") "BgRed"
+    Write-Color ($f -f "Result", $res.Status) "BgRed"
     Write-Color ($f -f "Error Code", $res.ErrorCode) "BgRed"
     Write-Color ($f -f "Error Msg", $res.ErrorMessage) "BgRed"
 }
@@ -262,7 +263,7 @@ if ($PassThru) {
     New-Object PSObject -Property @{
         ProductKey     = $ProductKey
         ActConfigId    = $ActConfigId
-        Result         = if ($res.Success) { "SUCCESS" } else { "FAILED" }
+        Status         = $res.Status
         LogPath        = $LogPath
         LogStatus      = $logStatus
         ErrorCode      = $res.ErrorCode
