@@ -275,7 +275,9 @@ $passThruObjects = @()
 
 $randNum = Get-Random -Minimum 1000 -Maximum 10000
 
+$i = 0
 foreach ($iid in $iidsToCheck) {
+    $i++
     if (-not $IidFile) {
         Write-Output ($f -f "Checking IID", $iid)
     }
@@ -321,7 +323,12 @@ foreach ($iid in $iidsToCheck) {
     # Final result object: prefer VisualApi when it ran, otherwise keep BatchApi.
     $finalObj = if ($visualObj) { $visualObj } else { $batchObj }
 
-    if ($IidFile) { $allLines += $lineSeparator }
+    if ($IidFile) {
+        $pct = [int](($i / $iidsToCheck.Count) * 100)
+        $allLines += ""
+        $allLines += $(Write-Color ($f -f "Progress", ("{0} of {1} ({2}%)" -f $i, $iidsToCheck.Count, $pct)) "BgGray")
+        $allLines += $lineSeparator
+    }
 
     # Console output
     $allLines | Write-Output

@@ -389,7 +389,9 @@ if ($GetConfirmationId) { $pidGenXParams['GetConfirmationId'] = $true }
 
 $randNum = Get-Random -Minimum 1000 -Maximum 10000
 
+$i = 0
 foreach ($rawKey in $keysToCheck) {
+    $i++
     $route = Resolve-KeyRoute $rawKey $KeyCheckMode
     $k = $route.Key
     $ExecutedType = $route.Type
@@ -446,6 +448,12 @@ foreach ($rawKey in $keysToCheck) {
 
     # Console output and file logging
     if ($output) {
+        if ($KeyFile) {
+            $pct = [int](($i / $keysToCheck.Count) * 100)
+            $output += ""
+            $output += $(Write-Color ($f -f "Progress", ("{0} of {1} ({2}%)" -f $i, $keysToCheck.Count, $pct)) "BgGray")
+        }
+
         $displayOutput = if ($KeyFile) {
             $output + $lineSeparator
         }
