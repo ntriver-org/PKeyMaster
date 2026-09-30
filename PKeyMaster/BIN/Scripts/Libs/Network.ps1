@@ -124,9 +124,11 @@ function Test-Json([string]$Text) {
 function Invoke-WgetTextRequest($Method, $Url, $Body, $Headers, $ContentType, $UserAgent) {
     # Make the request via wget.exe.
     $wget = $script:WgetPath
-    $tempPath = $null
+    $tempOut = "$env:SystemRoot\Temp\$([Guid]::NewGuid())"
+    $tempErr = "$env:SystemRoot\Temp\$([Guid]::NewGuid())"
+    $tempPath = "$env:SystemRoot\Temp\$([Guid]::NewGuid())"
     try {
-        $wgetArgs = @("--no-config", "--no-verbose", "--server-response", "--content-on-error", "--output-document", "-", "--no-http-keep-alive", "--no-check-certificate", "--no-hsts", "--tries=1")
+        $wgetArgs = @("--no-config", "--no-verbose", "--server-response", "--content-on-error", "--output-document=$tempOut", "--output-file=$tempErr", "--no-http-keep-alive", "--no-check-certificate", "--no-hsts", "--tries=1")
         if ($UserAgent) { $wgetArgs += @("--user-agent=$UserAgent") }
         if ($ContentType) { $wgetArgs += @("--header=Content-Type: $ContentType") }
         if ($Headers) { foreach ($k in $Headers.Keys) { $wgetArgs += @("--header=$($k): $($Headers[$k])") } }
@@ -134,7 +136,6 @@ function Invoke-WgetTextRequest($Method, $Url, $Body, $Headers, $ContentType, $U
         if ($Method -eq "POST") {
             if ($null -eq $Body) { $Body = "" }
             # Write POST data to a temp file to avoid CLI character limits and escaping issues
-            $tempPath = [System.IO.Path]::GetTempFileName()
             [System.IO.File]::WriteAllText($tempPath, $Body, [System.Text.Encoding]::UTF8)
             $wgetArgs += @("--post-file=$tempPath")
         }
@@ -150,14 +151,15 @@ function Invoke-WgetTextRequest($Method, $Url, $Body, $Headers, $ContentType, $U
         $psi.FileName = $wget
         $psi.Arguments = $argsString.Trim()
         $psi.UseShellExecute = $false
-        $psi.RedirectStandardOutput = $true
-        $psi.RedirectStandardError = $true
         $psi.CreateNoWindow = $true
 
         $p = [System.Diagnostics.Process]::Start($psi)
-        $res = $p.StandardOutput.ReadToEnd()
-        $err = $p.StandardError.ReadToEnd()
-        $p.WaitForExit()
+        if (-not $p.WaitForExit(30000)) {
+            try { $p.Kill() } catch {}
+        }
+
+        $res = if (Test-Path $tempOut) { [System.IO.File]::ReadAllText($tempOut, [System.Text.Encoding]::UTF8) } else { "" }
+        $err = if (Test-Path $tempErr) { [System.IO.File]::ReadAllText($tempErr, [System.Text.Encoding]::UTF8) } else { "" }
 
         $msg = ""
         if ($p.ExitCode -ne 0) {
@@ -186,9 +188,11 @@ function Invoke-WgetTextRequest($Method, $Url, $Body, $Headers, $ContentType, $U
         return $out
     }
     finally {
-        # Clean up temporary file
-        if ($tempPath -and (Test-Path $tempPath)) {
-            try { Remove-Item $tempPath -Force -ErrorAction SilentlyContinue } catch {}
+        # Clean up temporary files
+        foreach ($f in @($tempPath, $tempOut, $tempErr)) {
+            if ($f -and (Test-Path $f)) {
+                try { Remove-Item $f -Force -ErrorAction SilentlyContinue } catch {}
+            }
         }
     }
 }
