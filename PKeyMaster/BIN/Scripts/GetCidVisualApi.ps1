@@ -179,6 +179,33 @@ function ConvertTo-Base64Url($Bytes) {
 
 # ===============================================================================================================================
 
+function Get-NetworkUtcTime {
+    # Fetch UTC time from Microsoft NCSI to handle out-of-sync system clocks.
+    # Falls back to local clock if the network request fails.
+    $resp = $null
+    try {
+        $req = [System.Net.HttpWebRequest]::Create("http://www.msftconnecttest.com/connecttest.txt")
+        $req.Method = "HEAD"
+        $req.Timeout = 3000
+        $req.KeepAlive = $false
+
+        $resp = $req.GetResponse()
+        $dateStr = $resp.Headers["Date"]
+        if ($dateStr) {
+            $serverUtc = [DateTime]::Parse($dateStr).ToUniversalTime()
+            return [int64]($serverUtc - [DateTime]'1970-01-01').TotalSeconds
+        }
+    }
+    catch { }
+    finally {
+        if ($resp) { $resp.Close() }
+    }
+
+    return [int64]([DateTime]::UtcNow.AddSeconds(-5) - [DateTime]'1970-01-01').TotalSeconds
+}
+
+# ===============================================================================================================================
+
 function New-VisualApiDpopToken($Url, $Method) {
     # Build a DPoP JWT with ephemeral ECDSA P-256 key.
 
@@ -196,7 +223,7 @@ function New-VisualApiDpopToken($Url, $Method) {
         # Build the JWT header (with embedded JWK) and payload
         $jwk = '{"kty":"EC","crv":"P-256","x":"' + (ConvertTo-Base64Url $x) + '","y":"' + (ConvertTo-Base64Url $y) + '"}'
         $hdr = '{"alg":"ES256","typ":"dpop+jwt","jwk":' + $jwk + '}'
-        $iat = [int64]([DateTime]::UtcNow - [DateTime]'1970-01-01').TotalSeconds
+        $iat = Get-NetworkUtcTime
         $pld = '{"htu":"' + $Url + '","htm":"' + $Method + '","jti":"' + ([Guid]::NewGuid().ToString()) + '","iat":' + $iat + '}'
 
         # Sign the header.payload with ECDSA
