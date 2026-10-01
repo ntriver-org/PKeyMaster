@@ -1511,6 +1511,7 @@ function Show-PKeyMasterGui {
                 if ((Show-OwnedDialog -Dialog $dialog -OwnerWindow $mainWindow) -eq [System.Windows.Forms.DialogResult]::OK) {
                     $keyFileTextBox.Text = $dialog.FileName
                     $keyTextBox.Text = ''
+                    $keyLogsCheckBox.Checked = $true
                 }
             }
         })
@@ -1624,6 +1625,7 @@ function Show-PKeyMasterGui {
                 if ((Show-OwnedDialog -Dialog $dialog -OwnerWindow $mainWindow) -eq [System.Windows.Forms.DialogResult]::OK) {
                     $installationIdFileTextBox.Text = $dialog.FileName
                     $installationIdTextBox.Text = ''
+                    $manualCidLogsCheckBox.Checked = $true
                 }
             }
         })
@@ -1790,6 +1792,7 @@ function Show-PKeyMasterGui {
                 if ((Show-OwnedDialog -Dialog $dialog -OwnerWindow $mainWindow) -eq [System.Windows.Forms.DialogResult]::OK) {
                     $scanFolderTextBox.Text = [System.IO.Path]::GetFullPath($dialog.SelectedPath)
                     $scanFileTextBox.Text = $browsePlaceholder
+                    $scanLogsCheckBox.Checked = $true
                 }
             }
         })
