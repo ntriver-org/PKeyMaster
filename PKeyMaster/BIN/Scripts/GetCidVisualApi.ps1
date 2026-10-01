@@ -182,17 +182,19 @@ function ConvertTo-Base64Url($Bytes) {
 function Get-NetworkUtcTime {
     # Fetch UTC time from Microsoft NCSI to handle out-of-sync system clocks.
     # Falls back to local clock if the network request fails.
+    # Microsoft DPoP tolerance is [-10s, +5s]; +3s gives slow connections extra time before the token expires.
     $resp = $null
     try {
         $req = [System.Net.HttpWebRequest]::Create("http://www.msftconnecttest.com/connecttest.txt")
         $req.Method = "HEAD"
         $req.Timeout = 3000
         $req.KeepAlive = $false
+        $req.Proxy = $null
 
         $resp = $req.GetResponse()
         $dateStr = $resp.Headers["Date"]
         if ($dateStr) {
-            $serverUtc = [DateTime]::Parse($dateStr).ToUniversalTime()
+            $serverUtc = [DateTime]::Parse($dateStr).ToUniversalTime().AddSeconds(3)
             return [int64]($serverUtc - [DateTime]'1970-01-01').TotalSeconds
         }
     }
@@ -201,7 +203,7 @@ function Get-NetworkUtcTime {
         if ($resp) { $resp.Close() }
     }
 
-    return [int64]([DateTime]::UtcNow.AddSeconds(-5) - [DateTime]'1970-01-01').TotalSeconds
+    return [int64]([DateTime]::UtcNow.AddSeconds(3) - [DateTime]'1970-01-01').TotalSeconds
 }
 
 # ===============================================================================================================================

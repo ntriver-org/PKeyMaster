@@ -128,7 +128,7 @@ function Invoke-WgetTextRequest($Method, $Url, $Body, $Headers, $ContentType, $U
     $tempErr = "$env:SystemRoot\Temp\$([Guid]::NewGuid())"
     $tempPath = "$env:SystemRoot\Temp\$([Guid]::NewGuid())"
     try {
-        $wgetArgs = @("--no-config", "--no-verbose", "--server-response", "--content-on-error", "--output-document=$tempOut", "--output-file=$tempErr", "--no-http-keep-alive", "--no-check-certificate", "--no-hsts", "--tries=1")
+        $wgetArgs = @("--no-config", "--no-verbose", "--server-response", "--content-on-error", "--output-document=$tempOut", "--output-file=$tempErr", "--no-http-keep-alive", "--no-check-certificate", "--no-hsts", "--no-proxy", "--tries=1")
         if ($UserAgent) { $wgetArgs += @("--user-agent=$UserAgent") }
         if ($ContentType) { $wgetArgs += @("--header=Content-Type: $ContentType") }
         if ($Headers) { foreach ($k in $Headers.Keys) { $wgetArgs += @("--header=$($k): $($Headers[$k])") } }
@@ -212,6 +212,7 @@ function Invoke-DotNetTextRequest($Method, $Url, $Body, $Headers, $ContentType, 
         $request = [System.Net.HttpWebRequest][System.Net.WebRequest]::Create($Url)
         $request.Method = $Method
         $request.KeepAlive = $false
+        $request.Proxy = $null
 
         if ($ContentType) { $request.ContentType = $ContentType }
         if ($UserAgent) { $request.UserAgent = $UserAgent }
@@ -304,8 +305,10 @@ function Invoke-TextRequestWithRetry($Method, $Url, $Body, $Headers, $ContentTyp
             }
             if ($bodyValid) { break }
             if ($i -eq 0 -and -not (Test-InternetConnection)) { break }
+            # OLSC and Visual API require TLS 1.2, which Win7 and older lack by default; don't retry if wget is missing
             if ([Environment]::OSVersion.Version.Build -lt 9200 -and $mode -eq "WebRequest" -and $Url -match "visual|m365") { break }
-            if ($i -lt 5) { Start-Sleep -Seconds 2 }
+            # Don't delay retries on Visual API, DPoP token expires in ~10s
+            if ($i -lt 5 -and $Url -notmatch "visual") { Start-Sleep -Seconds 2 }
         }
         return $out
     }
