@@ -101,7 +101,7 @@ function Add-IidToCsv([string[]]$OutputLines, [string[]]$Columns, [string]$CsvPa
     $writeHeader = -not (Test-Path $CsvPath)
     if ($writeHeader) {
         $headerLine = ($Columns | ForEach-Object { '"{0}"' -f ($_ -replace '"', '""') }) -join ","
-        $headerLine | Out-File $CsvPath -Encoding UTF8
+        @("sep=,", $headerLine) | Out-File $CsvPath -Encoding UTF8
     }
 
     $obj = @{}

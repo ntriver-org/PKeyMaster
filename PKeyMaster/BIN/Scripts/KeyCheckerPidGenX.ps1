@@ -132,7 +132,8 @@ function Write-ProductMatch($GroupId, $KeyId, $f, $scriptDir) {
     if (-not (Test-Path $csvPath)) { return }
 
     $editionMatches = @{}
-    foreach ($row in (Import-Csv $csvPath)) {
+    $csvRows = (Get-Content -LiteralPath $csvPath) | Where-Object { $_ -notmatch '^\s*sep\s*=' } | ConvertFrom-Csv
+    foreach ($row in $csvRows) {
         if (-not $row.BinkID_Dec -or [int]$row.BinkID_Dec -ne $GroupId) { continue }
 
         $min = ([int64]$row.Channel_Min * 1000000) + [int64]$row.Sequence_Min
@@ -432,7 +433,7 @@ if (-not $ManualPKeyConfigPath) {
         return
     }
 
-    $configsMap = Import-Csv $csvPath
+    $configsMap = (Get-Content -LiteralPath $csvPath) | Where-Object { $_ -notmatch '^\s*sep\s*=' } | ConvertFrom-Csv
 
     $sortedRows = @()
     if ($isPKey2009) {

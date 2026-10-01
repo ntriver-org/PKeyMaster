@@ -994,7 +994,9 @@ function Show-PKeyMasterGui {
         $profileMapPath = Join-Path $Script:ApplicationRoot 'PKeyConfigsMap.csv'
         if (Test-Path -LiteralPath $profileMapPath) {
             try {
-                Import-Csv -Path $profileMapPath | Where-Object {
+                (Get-Content -LiteralPath $profileMapPath) | Where-Object {
+                    $_ -notmatch '^\s*sep\s*='
+                } | ConvertFrom-Csv | Where-Object {
                     $_.Path -and $_.Path.Trim()
                 } | ForEach-Object {
                     $relativePath = $_.Path.TrimStart('\')

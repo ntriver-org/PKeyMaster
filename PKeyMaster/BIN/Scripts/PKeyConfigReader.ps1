@@ -237,6 +237,7 @@ function Invoke-ExportCsv([string]$FilePath, [string]$OutPath) {
 
     # Build CSV output
     $lines = New-Object 'System.Collections.Generic.List[string]'
+    $lines.Add("sep=,")
     $headers = @("ActConfigID", "RefGroupID", "AlgorithmId", "EditionID", "ProductDescription", "ProductKeyType", "IsRandomized", "PartNumber", "EULAType", "IsValid", "Start", "End", "Total Keys")
     $lines.Add((Format-CsvRow $headers))
 
@@ -274,7 +275,7 @@ function Invoke-ExportCsv([string]$FilePath, [string]$OutPath) {
 
     $utf8Bom = New-Object System.Text.UTF8Encoding $true
     [System.IO.File]::WriteAllText($OutPath, ($lines -join "`r`n"), $utf8Bom)
-    return ($lines.Count - 1)
+    return ($lines.Count - 2)
 }
 
 # ===============================================================================================================================
