@@ -1183,7 +1183,7 @@ function Show-PKeyMasterGui {
         BackColor = $mainWindow.BackColor
     }
     $iidCidTabPage = New-WinFormsControl -TypeName 'TabPage' -Properties @{
-        Text      = 'IID/CID'
+        Text      = 'GetCID'
         BackColor = $mainWindow.BackColor
     }
     $readerTabPage = New-WinFormsControl -TypeName 'TabPage' -Properties @{
