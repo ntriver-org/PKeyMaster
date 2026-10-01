@@ -397,5 +397,8 @@ else {
     Write-Color ("{0,$pad}: Success {1}, Failed {2}" -f "Summary", $successCount, $failureCount) "BgGreen"
 }
 Write-Output ""
+if (Test-Path $outputDir -PathType Container) {
+    Invoke-Item -LiteralPath $outputDir
+}
 
 # ===============================================================================================================================

@@ -503,6 +503,9 @@ if ($KeyFile -or ($ExportLogs -and $logRoot)) {
     }
     if ($ExportLogs -and $logRoot) {
         Write-Output ($f -f "Logs Saved To", $logRoot)
+        if (Test-Path $logRoot -PathType Container) {
+            Invoke-Item -LiteralPath $logRoot
+        }
     }
 }
 

@@ -206,6 +206,9 @@ else {
 if ($global:savedFiles.Count -gt 0) {
     Write-Output ""
     Write-Output "Logs saved to   : $logRoot"
+    if (Test-Path $logRoot -PathType Container) {
+        Invoke-Item -LiteralPath $logRoot
+    }
 }
 
 Write-Output ""
