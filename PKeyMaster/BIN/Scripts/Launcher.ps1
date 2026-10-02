@@ -344,20 +344,10 @@ else {
 Write-Host ""
 Write-Host "Launching PKeyMaster GUI..."
 
-# Minimize the launcher window.
-# Set a known title, find the handle, call ShowWindow via P/Invoke.
-try {
-    if ($Launcher) {
-        $host.UI.RawUI.WindowTitle = 'PKeyMaster-Launcher'
-        $p = Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like '*PKeyMaster-Launcher' } | Select-Object -First 1
-        if ($p -and $p.MainWindowHandle -ne [IntPtr]::Zero) {
-            $TB = [AppDomain]::CurrentDomain.DefineDynamicAssembly((Get-Random), 1).DefineDynamicModule((Get-Random), $False).DefineType((Get-Random))
-            [void]$TB.DefinePInvokeMethod('ShowWindow', 'user32.dll', 22, 1, [bool], @([IntPtr], [int]), 1, 4).SetImplementationFlags(128)
-            [void]$TB.CreateType()::ShowWindow($p.MainWindowHandle, 6)
-        }
-    }
+# Set launcher console title so GUI can minimize it cleanly after showing
+if ($Launcher) {
+    $host.UI.RawUI.WindowTitle = 'PKeyMaster-Launcher'
 }
-catch { }
 
 # Launch the GUI within the current process
 . $GuiPath

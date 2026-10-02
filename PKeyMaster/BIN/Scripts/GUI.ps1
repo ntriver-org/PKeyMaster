@@ -52,8 +52,10 @@ function Initialize-WinForms {
         $TB = [AppDomain]::CurrentDomain.DefineDynamicAssembly((Get-Random), 1).DefineDynamicModule((Get-Random), $false).DefineType((Get-Random))
 
         [void]$TB.DefinePInvokeMethod('SetProcessDPIAware', 'user32.dll', 22, 1, [bool], @(), 1, 4).SetImplementationFlags(128)
+        [void]$TB.DefinePInvokeMethod('ShowWindow', 'user32.dll', 22, 1, [bool], @([IntPtr], [int]), 1, 4).SetImplementationFlags(128)
 
-        [void]$TB.CreateType()::SetProcessDPIAware()
+        $Script:NativeUiMethods = $TB.CreateType()
+        [void]$Script:NativeUiMethods::SetProcessDPIAware()
     }
     catch { }
 
@@ -1170,12 +1172,11 @@ function Show-PKeyMasterGui {
     $mainToolTip.ShowAlways = $true
 
     $mainTabControl = New-WinFormsControl -TypeName 'TabControl' -Properties @{
-        Dock         = 'Fill'
-        Font         = $uiFont
-        Padding      = New-Point -X (Get-ScaledDpi 12) -Y (Get-ScaledDpi 4)
-        Appearance   = 'Buttons'
-        HotTrack     = $true
-        ShowToolTips = $true
+        Dock       = 'Fill'
+        Appearance = 'FlatButtons'
+        SizeMode   = 'Fixed'
+        ItemSize   = New-Size -Width 0 -Height 1
+        TabStop    = $false
     }
 
     $keyCheckerTabPage = New-WinFormsControl -TypeName 'TabPage' -Properties @{
@@ -1199,6 +1200,32 @@ function Show-PKeyMasterGui {
         BackColor = $mainWindow.BackColor
     }
     $mainTabControl.TabPages.AddRange(@($keyCheckerTabPage, $iidCidTabPage, $readerTabPage, $scanKeysTabPage, $aboutTabPage))
+
+    $tabStripPanel = New-WinFormsControl -TypeName 'FlowLayoutPanel' -Properties @{
+        Dock         = 'Top'
+        WrapContents = $false
+        AutoSize     = $true
+        Padding      = New-Padding -Left (Get-ScaledDpi 6) -Top (Get-ScaledDpi 4) -Right (Get-ScaledDpi 6) -Bottom (Get-ScaledDpi 2)
+    }
+    for ($tabIndex = 0; $tabIndex -lt $mainTabControl.TabPages.Count; $tabIndex++) {
+        $tabPage = $mainTabControl.TabPages[$tabIndex]
+        $tabButtonWidth = [Math]::Max((Get-ScaledDpi 80), ((Get-TextWidth -Text $tabPage.Text) + (Get-ScaledDpi 20)))
+        $tabButton = New-WinFormsControl -TypeName 'RadioButton' -Properties @{
+            Text       = $tabPage.Text
+            Appearance = 'Button'
+            FlatStyle  = 'System'
+            TextAlign  = 'MiddleCenter'
+            Size       = New-Size -Width $tabButtonWidth -Height (Get-ScaledDpi 27)
+            Margin     = New-Padding -Left 0 -Top 0 -Right (Get-ScaledDpi 2) -Bottom 0
+            TabStop    = $false
+            Checked    = ($tabIndex -eq 0)
+        }
+        $selectedTabIndex = $tabIndex
+        $tabButton.Add_Click({
+                $mainTabControl.SelectedIndex = $selectedTabIndex
+            }.GetNewClosure())
+        $tabStripPanel.Controls.Add($tabButton)
+    }
 
     $keyCheckerTopPanel = New-FormPanel -Height (Get-ScaledDpi 135)
     $keyLabel = New-FormLabel -Text 'Key'
@@ -1346,6 +1373,7 @@ function Show-PKeyMasterGui {
     $aboutTabPage.Controls.Add($aboutLayout)
 
     $mainWindow.Controls.Add($mainTabControl)
+    $mainWindow.Controls.Add($tabStripPanel)
 
     # ===============================================================================================================================
     # Dynamic layout
@@ -1473,6 +1501,18 @@ function Show-PKeyMasterGui {
             Update-Layout
             Update-ProfileList -TargetMode 'Automatic'
             Restore-IntroText
+            if ($Launcher) {
+                try {
+                    $p = Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like '*PKeyMaster-Launcher' } | Select-Object -First 1
+                    if ($p -and $p.MainWindowHandle -ne [IntPtr]::Zero -and $Script:NativeUiMethods) {
+                        [void]$Script:NativeUiMethods::ShowWindow($p.MainWindowHandle, 6)
+                    }
+                }
+                catch { }
+            }
+            [void]$mainWindow.BeginInvoke([System.Windows.Forms.MethodInvoker] {
+                    [void]$keyTextBox.Focus()
+                })
         })
     $mainWindow.Add_Resize({
             Update-Layout
