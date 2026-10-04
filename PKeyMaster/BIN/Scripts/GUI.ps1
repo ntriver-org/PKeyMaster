@@ -80,19 +80,14 @@ function Show-PKeyMasterGui {
     }
     $browsePlaceholder = 'Click to browse...'
 
-    $systemDpiScale = 1.0
+    $dpiScale = 1.0
     try {
         $graphics = [System.Drawing.Graphics]::FromHwnd([IntPtr]::Zero)
-        $systemDpiScale = [double]$graphics.DpiX / 96.0
+        $dpiScale = [double]$graphics.DpiX / 96.0
         $graphics.Dispose()
     }
     catch { }
-    if ($systemDpiScale -lt 1.0) { $systemDpiScale = 1.0 }
-
-    $dpiScale = $systemDpiScale
-    if ($systemDpiScale -le 1.0) {
-        $dpiScale = 1.1
-    }
+    if ($dpiScale -lt 1.0) { $dpiScale = 1.0 }
 
     function Get-ScaledDpi([double]$value) {
         return [int][Math]::Round($value * $dpiScale)
@@ -475,24 +470,17 @@ function Show-PKeyMasterGui {
             [System.Drawing.FontStyle]$Style = [System.Drawing.FontStyle]::Regular
         )
 
-        $effectiveSize = if ($systemDpiScale -gt 0 -and $dpiScale -gt 0) {
-            [float][Math]::Round($Size * ($dpiScale / $systemDpiScale), 2)
-        }
-        else {
-            $Size
-        }
-
         foreach ($fontName in $FontNames) {
             try {
                 $fontFamily = New-Object System.Drawing.FontFamily($fontName)
                 if ($fontFamily.Name -eq $fontName) {
-                    return New-Object System.Drawing.Font($fontName, $effectiveSize, $Style)
+                    return New-Object System.Drawing.Font($fontName, $Size, $Style)
                 }
             }
             catch { }
         }
 
-        return New-Object System.Drawing.Font('Microsoft Sans Serif', $effectiveSize, $Style)
+        return New-Object System.Drawing.Font('Microsoft Sans Serif', $Size, $Style)
     }
 
     # ===============================================================================================================================
@@ -562,8 +550,8 @@ function Show-PKeyMasterGui {
         param(
             [string]$Text,
             [string]$Tooltip = '',
-            [int]$Width = 104,
-            [int]$Height = 24
+            [int]$Width = 114,
+            [int]$Height = 26
         )
 
         $button = New-WinFormsControl -TypeName 'Button' -Properties @{
@@ -743,7 +731,7 @@ function Show-PKeyMasterGui {
     function Get-ActionWidth {
         param([object[]]$Controls)
 
-        return (Get-MaxTextWidth -Controls $Controls -Minimum $minimumActionWidth -Extra (Get-ScaledDpi 26))
+        return (Get-MaxTextWidth -Controls $Controls -Minimum $minimumActionWidth -Extra (Get-ScaledDpi 28))
     }
 
     # ===============================================================================================================================
@@ -1122,19 +1110,19 @@ function Show-PKeyMasterGui {
     # UI constants
     # ===============================================================================================================================
 
-    $uiFont = New-UiFont -FontNames @('Segoe UI', 'Tahoma') -Size 9.25
-    $inputFont = New-UiFont -FontNames @('Consolas', 'Lucida Console', 'Courier New') -Size 10
-    $outputFont = New-UiFont -FontNames @('Consolas', 'Lucida Console', 'Courier New') -Size 10
-    $titleFont = New-UiFont -FontNames @('Segoe UI', 'Tahoma') -Size 16 -Style ([System.Drawing.FontStyle]::Bold)
+    $uiFont = New-UiFont -FontNames @('Segoe UI', 'Tahoma') -Size 10.25
+    $inputFont = New-UiFont -FontNames @('Consolas', 'Lucida Console', 'Courier New') -Size 11
+    $outputFont = New-UiFont -FontNames @('Consolas', 'Lucida Console', 'Courier New') -Size 11
+    $titleFont = New-UiFont -FontNames @('Segoe UI', 'Tahoma') -Size 18 -Style ([System.Drawing.FontStyle]::Bold)
 
-    $uiPadding = Get-ScaledDpi 10
-    $labelGap = Get-ScaledDpi 5
+    $uiPadding = Get-ScaledDpi 11
+    $labelGap = Get-ScaledDpi 6
     $actionGap = Get-ScaledDpi 8
-    $controlHeight = Get-ScaledDpi 24
+    $controlHeight = Get-ScaledDpi 26
     $rowGap = Get-ScaledDpi 6
     $rowStep = $controlHeight + $rowGap
-    $minimumInputWidth = Get-ScaledDpi 120
-    $minimumActionWidth = Get-ScaledDpi 104
+    $minimumInputWidth = Get-ScaledDpi 130
+    $minimumActionWidth = Get-ScaledDpi 114
 
     $defaultKeyFilter = '*.ini,*.txt,*.xml,*.exe,*.dll'
     $defaultDpidFilter = '*.reg,*.bin'
@@ -1146,8 +1134,8 @@ function Show-PKeyMasterGui {
     $mainWindow = New-Object System.Windows.Forms.Form
     $mainWindow.Text = $windowTitle
     $mainWindow.StartPosition = 'CenterScreen'
-    $mainWindow.Size = New-Size -Width (Get-ScaledDpi 698) -Height (Get-ScaledDpi 685)
-    $mainWindow.MinimumSize = New-Size -Width (Get-ScaledDpi 650) -Height (Get-ScaledDpi 500)
+    $mainWindow.Size = New-Size -Width (Get-ScaledDpi 768) -Height (Get-ScaledDpi 755)
+    $mainWindow.MinimumSize = New-Size -Width (Get-ScaledDpi 715) -Height (Get-ScaledDpi 550)
     $mainWindow.Font = $uiFont
     $mainWindow.KeyPreview = $true
     $mainWindow.BackColor = [System.Drawing.SystemColors]::Control
@@ -1156,13 +1144,13 @@ function Show-PKeyMasterGui {
     $screen = [System.Windows.Forms.Screen]::PrimaryScreen
     if ($screen -and $screen.WorkingArea.Height -gt 0) {
         if ($mainWindow.Height -gt $screen.WorkingArea.Height) {
-            $mainWindow.Height = [Math]::Max((Get-ScaledDpi 480), [int]($screen.WorkingArea.Height * 0.95))
+            $mainWindow.Height = [Math]::Max((Get-ScaledDpi 530), [int]($screen.WorkingArea.Height * 0.95))
             if ($mainWindow.Height -lt $mainWindow.MinimumSize.Height) {
                 $mainWindow.MinimumSize = New-Size -Width $mainWindow.MinimumSize.Width -Height $mainWindow.Height
             }
         }
         if ($mainWindow.Width -gt $screen.WorkingArea.Width) {
-            $mainWindow.Width = [Math]::Max((Get-ScaledDpi 600), [int]($screen.WorkingArea.Width * 0.95))
+            $mainWindow.Width = [Math]::Max((Get-ScaledDpi 660), [int]($screen.WorkingArea.Width * 0.95))
             if ($mainWindow.Width -lt $mainWindow.MinimumSize.Width) {
                 $mainWindow.MinimumSize = New-Size -Width $mainWindow.Width -Height $mainWindow.MinimumSize.Height
             }
@@ -1221,13 +1209,13 @@ function Show-PKeyMasterGui {
     }
     for ($tabIndex = 0; $tabIndex -lt $mainTabControl.TabPages.Count; $tabIndex++) {
         $tabPage = $mainTabControl.TabPages[$tabIndex]
-        $tabButtonWidth = [Math]::Max((Get-ScaledDpi 80), ((Get-TextWidth -Text $tabPage.Text) + (Get-ScaledDpi 20)))
+        $tabButtonWidth = [Math]::Max((Get-ScaledDpi 88), ((Get-TextWidth -Text $tabPage.Text) + (Get-ScaledDpi 22)))
         $tabButton = New-WinFormsControl -TypeName 'RadioButton' -Properties @{
             Text       = $tabPage.Text
             Appearance = 'Button'
             FlatStyle  = 'System'
             TextAlign  = 'MiddleCenter'
-            Size       = New-Size -Width $tabButtonWidth -Height (Get-ScaledDpi 27)
+            Size       = New-Size -Width $tabButtonWidth -Height (Get-ScaledDpi 30)
             Margin     = New-Padding -Left 0 -Top 0 -Right (Get-ScaledDpi 2) -Bottom 0
             TabStop    = $false
             Checked    = ($tabIndex -eq 0)
@@ -1239,7 +1227,7 @@ function Show-PKeyMasterGui {
         $tabStripPanel.Controls.Add($tabButton)
     }
 
-    $keyCheckerTopPanel = New-FormPanel -Height (Get-ScaledDpi 135)
+    $keyCheckerTopPanel = New-FormPanel -Height (Get-ScaledDpi 148)
     $keyLabel = New-FormLabel -Text 'Key'
     $keyTextBox = New-FormTextBox -Tooltip 'Enter a Microsoft product key (Windows, Office, VS, etc.) from Windows 95 era to present.' -UseMonospaceFont $true
     $keyFileLabel = New-FormLabel -Text 'Key File'
@@ -1261,7 +1249,7 @@ function Show-PKeyMasterGui {
     $keyCheckerBottomPanel.Controls.Add($keyCheckerOutputBox)
     $keyCheckerTabPage.Controls.AddRange(@($keyCheckerBottomPanel, $keyCheckerTopPanel))
 
-    $iidCidTopPanel = New-FormPanel -Height (Get-ScaledDpi 180)
+    $iidCidTopPanel = New-FormPanel -Height (Get-ScaledDpi 198)
     $installationIdLabel = New-FormLabel -Text 'IID'
     $installationIdTextBox = New-FormTextBox -Tooltip 'Enter a 50, 54, 59, or 63-digit Installation ID.' -UseMonospaceFont $true
     $installationIdFileLabel = New-FormLabel -Text 'IID File'
@@ -1272,7 +1260,7 @@ function Show-PKeyMasterGui {
     $iidCidSeparator = New-WinFormsControl -TypeName 'Label' -Properties @{ AutoSize = $false; BorderStyle = 'Fixed3D' }
     $installedProductListLabel = New-FormLabel -Text 'List'
     $installedProductsComboBox = New-FormComboBox -DisplayMember 'DisplayName' -Tooltip 'Shows installed, unactivated Windows and Office products where the installed key supports phone (CID) activation.'
-    $populateInstalledProductsButton = New-FormButton -Text 'Get IID/CID of Unactivated Products' -Tooltip 'Retrieves the IID/CID of installed, unactivated Windows and Office products where the installed keys support phone (CID) activation. This consumes an activation slot.' -Width (Get-ScaledDpi 240)
+    $populateInstalledProductsButton = New-FormButton -Text 'Get IID/CID of Unactivated Products' -Tooltip 'Retrieves the IID/CID of installed, unactivated Windows and Office products where the installed keys support phone (CID) activation. This consumes an activation slot.' -Width (Get-ScaledDpi 264)
     $depositCidButton = New-FormButton -Text 'Deposit CID' -Tooltip 'Deposits the current Confirmation ID into the selected installed Windows or Office product.'
     $depositCidButton.Enabled = $false
     $iidCidTopPanel.Controls.AddRange(@($installationIdLabel, $installationIdTextBox, $installationIdFileLabel, $installationIdFileTextBox, $manualCidLogsCheckBox, $getCidButton, $iidCidSeparator, $installedProductListLabel, $installedProductsComboBox, $installedProductLogsCheckBox, $populateInstalledProductsButton, $depositCidButton))
@@ -1282,7 +1270,7 @@ function Show-PKeyMasterGui {
     $iidCidBottomPanel.Controls.Add($iidCidOutputBox)
     $iidCidTabPage.Controls.AddRange(@($iidCidBottomPanel, $iidCidTopPanel))
 
-    $readerTopPanel = New-FormPanel -Height (Get-ScaledDpi 84)
+    $readerTopPanel = New-FormPanel -Height (Get-ScaledDpi 92)
     $readerFileLabel = New-FormLabel -Text 'File'
     $readerFileTextBox = New-FormTextBox -ReadOnly $true -Tooltip 'Select a PKeyConfig file (.xrm-ms, .xml, or .xrm) to export as CSV.' -Placeholder $browsePlaceholder
     $readerFolderLabel = New-FormLabel -Text 'Folder'
@@ -1296,7 +1284,7 @@ function Show-PKeyMasterGui {
     $readerBottomPanel.Controls.Add($readerOutputBox)
     $readerTabPage.Controls.AddRange(@($readerBottomPanel, $readerTopPanel))
 
-    $scanKeysTopPanel = New-FormPanel -Height (Get-ScaledDpi 160)
+    $scanKeysTopPanel = New-FormPanel -Height (Get-ScaledDpi 176)
     $scanFileLabel = New-FormLabel -Text 'File'
     $scanFileTextBox = New-FormTextBox -ReadOnly $true -Tooltip 'Select a file to scan for product keys or Digital Product IDs.' -Placeholder $browsePlaceholder
     $scanFolderLabel = New-FormLabel -Text 'Folder'
@@ -1312,11 +1300,11 @@ function Show-PKeyMasterGui {
     $scanLogsCheckBox = New-FormCheckBox -Text 'Logs' -Tooltip 'Saves the scan results to log files on the Desktop.' -AutoSize $false
     $scanButton = New-FormButton -Text 'Scan' -Tooltip 'Scans the selected file or folder for product keys or Digital Product IDs.'
     $scanKeysSeparator = New-WinFormsControl -TypeName 'Label' -Properties @{ AutoSize = $false; BorderStyle = 'Fixed3D' }
-    $scanInstalledKeysButton = New-FormButton -Text 'Get Installed Windows/Office Keys' -Tooltip 'Retrieves the installed Windows and Office product keys from the trusted store.' -Width (Get-ScaledDpi 190)
-    $scanWindowsRegistryButton = New-FormButton -Text 'Get Windows Keys From Registry' -Tooltip 'Extracts the Windows product keys from the registry Digital Product ID blobs.' -Width (Get-ScaledDpi 190)
-    $scanOfficeRegistryButton = New-FormButton -Text 'Get Office Keys From Registry' -Tooltip 'Extracts the Office (MSI version) product keys from the registry Digital Product ID blobs.' -Width (Get-ScaledDpi 190)
-    $scanOtherRegistryButton = New-FormButton -Text 'Get Other Product Keys From Registry' -Tooltip 'Scans the registry for product keys from other Microsoft products.' -Width (Get-ScaledDpi 190)
-    $scanMsdmButton = New-FormButton -Text 'Get MSDM (BIOS/UEFI) Key' -Tooltip 'Reads the OEM product key embedded in the BIOS/UEFI MSDM table.' -Width (Get-ScaledDpi 190)
+    $scanInstalledKeysButton = New-FormButton -Text 'Get Installed Windows/Office Keys' -Tooltip 'Retrieves the installed Windows and Office product keys from the trusted store.' -Width (Get-ScaledDpi 210)
+    $scanWindowsRegistryButton = New-FormButton -Text 'Get Windows Keys From Registry' -Tooltip 'Extracts the Windows product keys from the registry Digital Product ID blobs.' -Width (Get-ScaledDpi 210)
+    $scanOfficeRegistryButton = New-FormButton -Text 'Get Office Keys From Registry' -Tooltip 'Extracts the Office (MSI version) product keys from the registry Digital Product ID blobs.' -Width (Get-ScaledDpi 210)
+    $scanOtherRegistryButton = New-FormButton -Text 'Get Other Product Keys From Registry' -Tooltip 'Scans the registry for product keys from other Microsoft products.' -Width (Get-ScaledDpi 210)
+    $scanMsdmButton = New-FormButton -Text 'Get MSDM (BIOS/UEFI) Key' -Tooltip 'Reads the OEM product key embedded in the BIOS/UEFI MSDM table.' -Width (Get-ScaledDpi 210)
     $scanKeysTopPanel.Controls.AddRange(@($scanFileLabel, $scanFileTextBox, $scanFolderLabel, $scanFolderTextBox, $scanFilterLabel, $scanFilterTextBox, $scanRecurseCheckBox, $scanKeyCheckBox, $scanDpidCheckBox, $scanLogsCheckBox, $scanButton, $scanKeysSeparator, $scanInstalledKeysButton, $scanWindowsRegistryButton, $scanOfficeRegistryButton, $scanOtherRegistryButton, $scanMsdmButton))
 
     $scanKeysBottomPanel = New-FormPanel
@@ -1398,7 +1386,7 @@ function Show-PKeyMasterGui {
         $keyRow2Top = $keyRow1Top + $rowStep
         $keyRow3Top = $keyRow2Top + $rowStep
         $keyRow4Top = $keyRow3Top + $rowStep
-        $keyLabelWidth = Get-MaxTextWidth -Controls @($keyLabel, $keyFileLabel, $profileLabel) -Minimum (Get-ScaledDpi 55) -Extra (Get-ScaledDpi 6)
+        $keyLabelWidth = Get-MaxTextWidth -Controls @($keyLabel, $keyFileLabel, $profileLabel) -Minimum (Get-ScaledDpi 60) -Extra (Get-ScaledDpi 6)
         $checkKeyButtonWidth = Get-ActionWidth -Controls @($checkKeyButton)
         $keyInputLeft = $uiPadding + $keyLabelWidth + $labelGap
         $checkKeyButtonLeft = $layoutWidth - $uiPadding - $checkKeyButtonWidth
@@ -1419,7 +1407,7 @@ function Show-PKeyMasterGui {
         $iidSeparatorTop = $iidRow3Top + $controlHeight + $actionGap
         $iidRow4Top = $iidSeparatorTop + $uiPadding
         $iidRow5Top = $iidRow4Top + $rowStep
-        $iidLabelWidth = Get-MaxTextWidth -Controls @($installationIdLabel, $installationIdFileLabel, $installedProductListLabel) -Minimum (Get-ScaledDpi 55) -Extra (Get-ScaledDpi 6)
+        $iidLabelWidth = Get-MaxTextWidth -Controls @($installationIdLabel, $installationIdFileLabel, $installedProductListLabel) -Minimum (Get-ScaledDpi 60) -Extra (Get-ScaledDpi 6)
         $iidInputLeft = $uiPadding + $iidLabelWidth + $labelGap
         $getCidButtonWidth = Get-ActionWidth -Controls @($getCidButton, $depositCidButton)
         $populateButtonWidth = Get-ActionWidth -Controls @($populateInstalledProductsButton)
@@ -1429,19 +1417,19 @@ function Show-PKeyMasterGui {
 
         Set-LabeledControlBounds -Label $installationIdLabel -Control $installationIdTextBox -Top $iidRow1Top -LabelWidth $iidLabelWidth -ControlLeft $iidInputLeft -ControlWidth $iidInputWidth
         Set-LabeledControlBounds -Label $installationIdFileLabel -Control $installationIdFileTextBox -Top $iidRow2Top -LabelWidth $iidLabelWidth -ControlLeft $iidInputLeft -ControlWidth $iidInputWidth
-        $manualLogWidth = (Get-TextWidth -Text $manualCidLogsCheckBox.Text) + (Get-ScaledDpi 20)
+        $manualLogWidth = (Get-TextWidth -Text $manualCidLogsCheckBox.Text) + (Get-ScaledDpi 22)
         $manualCidLogsCheckBox.SetBounds(($depositButtonLeft - $actionGap - $manualLogWidth), $iidRow3Top, $manualLogWidth, $controlHeight)
         $getCidButton.SetBounds($depositButtonLeft, $iidRow3Top, $getCidButtonWidth, $controlHeight)
         $iidCidSeparator.SetBounds($uiPadding, $iidSeparatorTop, ([Math]::Max($minimumInputWidth, ($layoutWidth - ($uiPadding * 2)))), 2)
         Set-LabeledControlBounds -Label $installedProductListLabel -Control $installedProductsComboBox -Top $iidRow4Top -LabelWidth $iidLabelWidth -ControlLeft $iidInputLeft -ControlWidth $iidInputWidth
-        $installedLogWidth = (Get-TextWidth -Text $installedProductLogsCheckBox.Text) + (Get-ScaledDpi 20)
+        $installedLogWidth = (Get-TextWidth -Text $installedProductLogsCheckBox.Text) + (Get-ScaledDpi 22)
         $installedProductLogsCheckBox.SetBounds(($populateButtonLeft - $actionGap - $installedLogWidth), $iidRow5Top, $installedLogWidth, $controlHeight)
         $populateInstalledProductsButton.SetBounds($populateButtonLeft, $iidRow5Top, $populateButtonWidth, $controlHeight)
         $depositCidButton.SetBounds($depositButtonLeft, $iidRow5Top, $getCidButtonWidth, $controlHeight)
 
         $readerRow1Top = $uiPadding
         $readerRow2Top = $readerRow1Top + $rowStep
-        $readerLabelWidth = Get-MaxTextWidth -Controls @($readerFileLabel, $readerFolderLabel) -Minimum (Get-ScaledDpi 55) -Extra (Get-ScaledDpi 6)
+        $readerLabelWidth = Get-MaxTextWidth -Controls @($readerFileLabel, $readerFolderLabel) -Minimum (Get-ScaledDpi 60) -Extra (Get-ScaledDpi 6)
         $readerInputLeft = $uiPadding + $readerLabelWidth + $labelGap
         $readerButtonWidth = Get-ActionWidth -Controls @($exportCsvButton)
         $readerButtonLeft = $layoutWidth - $uiPadding - $readerButtonWidth
@@ -1471,7 +1459,7 @@ function Show-PKeyMasterGui {
         $scanOtherRegistryButton.SetBounds($scanRightColumnLeft, $scanRow4Top, $scanRightColumnWidth, $controlHeight)
         $scanMsdmButton.SetBounds($scanRightColumnLeft, $scanRow5Top, $scanRightColumnWidth, $controlHeight)
 
-        $scanLabelWidth = Get-MaxTextWidth -Controls @($scanFileLabel, $scanFolderLabel, $scanFilterLabel) -Minimum (Get-ScaledDpi 55) -Extra (Get-ScaledDpi 6)
+        $scanLabelWidth = Get-MaxTextWidth -Controls @($scanFileLabel, $scanFolderLabel, $scanFilterLabel) -Minimum (Get-ScaledDpi 60) -Extra (Get-ScaledDpi 6)
         $scanInputLeft = $uiPadding + $scanLabelWidth + $labelGap
         $scanInputWidth = [Math]::Max($minimumInputWidth, (($scanSeparatorLeft - $actionGap) - $scanInputLeft))
         Set-LabeledControlBounds -Label $scanFileLabel -Control $scanFileTextBox -Top $scanRow1Top -LabelWidth $scanLabelWidth -ControlLeft $scanInputLeft -ControlWidth $scanInputWidth
@@ -1481,7 +1469,7 @@ function Show-PKeyMasterGui {
         $scanButton.SetBounds($scanInputLeft, $scanRow5Top, $scanInputWidth, $controlHeight)
 
         $visibleProfiles = [Math]::Min(25, ([Math]::Max(1, $profileComboBox.Items.Count)))
-        $profileComboBox.DropDownHeight = [Math]::Min((Get-ScaledDpi 600), ([Math]::Max((Get-ScaledDpi 140), (($visibleProfiles * ([Math]::Max((Get-ScaledDpi 18), $profileComboBox.ItemHeight))) + (Get-ScaledDpi 12)))))
+        $profileComboBox.DropDownHeight = [Math]::Min((Get-ScaledDpi 660), ([Math]::Max((Get-ScaledDpi 154), (($visibleProfiles * ([Math]::Max((Get-ScaledDpi 20), $profileComboBox.ItemHeight))) + (Get-ScaledDpi 14)))))
         $profileComboBox.MaxDropDownItems = $visibleProfiles
         $profileComboBox.DropDownWidth = $profileComboBox.Width
     }
