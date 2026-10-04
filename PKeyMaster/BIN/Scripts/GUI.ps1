@@ -80,14 +80,19 @@ function Show-PKeyMasterGui {
     }
     $browsePlaceholder = 'Click to browse...'
 
-    $dpiScale = 1.0
+    $systemDpiScale = 1.0
     try {
         $graphics = [System.Drawing.Graphics]::FromHwnd([IntPtr]::Zero)
-        $dpiScale = [double]$graphics.DpiX / 96.0
+        $systemDpiScale = [double]$graphics.DpiX / 96.0
         $graphics.Dispose()
     }
     catch { }
-    if ($dpiScale -lt 1.0) { $dpiScale = 1.0 }
+    if ($systemDpiScale -lt 1.0) { $systemDpiScale = 1.0 }
+
+    $dpiScale = $systemDpiScale
+    if ($systemDpiScale -le 1.0) {
+        $dpiScale = 1.1
+    }
 
     function Get-ScaledDpi([double]$value) {
         return [int][Math]::Round($value * $dpiScale)
@@ -470,17 +475,24 @@ function Show-PKeyMasterGui {
             [System.Drawing.FontStyle]$Style = [System.Drawing.FontStyle]::Regular
         )
 
+        $effectiveSize = if ($systemDpiScale -gt 0 -and $dpiScale -gt 0) {
+            [float][Math]::Round($Size * ($dpiScale / $systemDpiScale), 2)
+        }
+        else {
+            $Size
+        }
+
         foreach ($fontName in $FontNames) {
             try {
                 $fontFamily = New-Object System.Drawing.FontFamily($fontName)
                 if ($fontFamily.Name -eq $fontName) {
-                    return New-Object System.Drawing.Font($fontName, $Size, $Style)
+                    return New-Object System.Drawing.Font($fontName, $effectiveSize, $Style)
                 }
             }
             catch { }
         }
 
-        return New-Object System.Drawing.Font('Microsoft Sans Serif', $Size, $Style)
+        return New-Object System.Drawing.Font('Microsoft Sans Serif', $effectiveSize, $Style)
     }
 
     # ===============================================================================================================================
@@ -1134,7 +1146,7 @@ function Show-PKeyMasterGui {
     $mainWindow = New-Object System.Windows.Forms.Form
     $mainWindow.Text = $windowTitle
     $mainWindow.StartPosition = 'CenterScreen'
-    $mainWindow.Size = New-Size -Width (Get-ScaledDpi 688) -Height (Get-ScaledDpi 660)
+    $mainWindow.Size = New-Size -Width (Get-ScaledDpi 698) -Height (Get-ScaledDpi 685)
     $mainWindow.MinimumSize = New-Size -Width (Get-ScaledDpi 650) -Height (Get-ScaledDpi 500)
     $mainWindow.Font = $uiFont
     $mainWindow.KeyPreview = $true
@@ -1205,7 +1217,7 @@ function Show-PKeyMasterGui {
         Dock         = 'Top'
         WrapContents = $false
         AutoSize     = $true
-        Padding      = New-Padding -Left (Get-ScaledDpi 6) -Top (Get-ScaledDpi 4) -Right (Get-ScaledDpi 6) -Bottom (Get-ScaledDpi 2)
+        Padding      = New-Padding -Left (Get-ScaledDpi 6) -Top 0 -Right (Get-ScaledDpi 6) -Bottom (Get-ScaledDpi 2)
     }
     for ($tabIndex = 0; $tabIndex -lt $mainTabControl.TabPages.Count; $tabIndex++) {
         $tabPage = $mainTabControl.TabPages[$tabIndex]
