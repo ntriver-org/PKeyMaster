@@ -34,6 +34,10 @@ $Version = '0.3'
 # Pick the right system folder - avoids 32-bit emulation on 64-bit systems
 $SysPath = if (Test-Path "$env:SystemRoot\Sysnative") { "$env:SystemRoot\Sysnative" } else { "$env:SystemRoot\System32" }
 
+if ($Launcher) {
+    $host.UI.RawUI.WindowTitle = 'PKeyMaster-Launcher'
+}
+
 # ===============================================================================================================================
 # Helper functions
 # ===============================================================================================================================
@@ -338,16 +342,11 @@ else {
 }
 
 # ===============================================================================================================================
-# Window minimization and GUI launch
+# GUI launch
 # ===============================================================================================================================
 
 Write-Host ""
 Write-Host "Launching PKeyMaster GUI..."
-
-# Set launcher console title so GUI can minimize it cleanly after showing
-if ($Launcher) {
-    $host.UI.RawUI.WindowTitle = 'PKeyMaster-Launcher'
-}
 
 # Launch the GUI within the current process
 . $GuiPath

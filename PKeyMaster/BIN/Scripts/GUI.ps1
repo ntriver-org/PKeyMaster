@@ -1505,12 +1505,18 @@ function Show-PKeyMasterGui {
                 try {
                     $p = Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like '*PKeyMaster-Launcher' } | Select-Object -First 1
                     if ($p -and $p.MainWindowHandle -ne [IntPtr]::Zero -and $Script:NativeUiMethods) {
-                        [void]$Script:NativeUiMethods::ShowWindow($p.MainWindowHandle, 6)
+                        [void]$Script:NativeUiMethods::ShowWindow($p.MainWindowHandle, 7)
                     }
                 }
                 catch { }
             }
             [void]$mainWindow.BeginInvoke([System.Windows.Forms.MethodInvoker] {
+                    try {
+                        $mainWindow.TopMost = $true
+                        $mainWindow.TopMost = $false
+                        $mainWindow.Activate()
+                    }
+                    catch { }
                     [void]$keyTextBox.Focus()
                 })
         })
