@@ -1111,7 +1111,7 @@ function Show-PKeyMasterGui {
     # ===============================================================================================================================
 
     $uiFont = New-UiFont -FontNames @('Segoe UI', 'Tahoma') -Size 10.25
-    $inputFont = New-UiFont -FontNames @('Consolas', 'Lucida Console', 'Courier New') -Size 11
+    $inputFont = New-UiFont -FontNames @('Consolas', 'Lucida Console', 'Courier New') -Size 10.25
     $outputFont = New-UiFont -FontNames @('Consolas', 'Lucida Console', 'Courier New') -Size 11
     $titleFont = New-UiFont -FontNames @('Segoe UI', 'Tahoma') -Size 18 -Style ([System.Drawing.FontStyle]::Bold)
 
