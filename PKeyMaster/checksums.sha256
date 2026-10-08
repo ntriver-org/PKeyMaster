@@ -56,6 +56,7 @@ edfb49cd35fe352a1d29db39baa949ac23b06795c31f417816185b0c04c82f07 *BIN\PKeyConfig
 12321543ed69de70de79cf9066ae68160f8d4375ff8dea1360ae1e41fbe7f357 *BIN\PKeyConfigs\Office\Production\Office 2013-O365\pkeyconfig-office.xrm-ms
 adc4173b64f1b85b3c92f720b994ef2d758d1702f7728f650f93ada21ae3a802 *BIN\PKeyConfigs\Office\Production\Office 2016-2019-2021-2024-O365\pkeyconfig-office.xrm-ms
 3cde6eea590b6be555e7c01035b1f1e0ab9c0bef45638ce6767b2f8ef6b62b84 *BIN\PKeyConfigs\Pre-Vista Custom Made\Pre-Vista (Windows 98 to XP - Office 2000 to 2007 - etc)\pkeyconfig-custom-made.xrm-ms
+cfa5c1d46b882f7980fbacca01c6cfe80aad5ec96392d3f839dbd7ef27f40321 *BIN\PKeyConfigs\RDS CALs\Production\RDS CALs (Server 2008 to 2025)\LServer_PKConfig.xml
 5ceb4f442bf3e045a7821ba998eb25093aadc7e9833899e266377d2341ca3273 *BIN\PKeyConfigs\Sharepoint Server\Production\Sharepoint Server 2010\pkeyconfig-office.xrm-ms
 9fbf92e355c13213e014f4456f7c244144feb096f6aab74ada0c6fdc2912ec4e *BIN\PKeyConfigs\Sharepoint Server\Production\Sharepoint Server 2013\pkeyconfig-office.xrm-ms
 37c7bc84a350375a4e176f36779ecbf4e4e48dad988cf1e373713ab7267397b4 *BIN\PKeyConfigs\Sharepoint Server\Production\Sharepoint Server 2016\pkeyconfig-office.xrm-ms
@@ -148,7 +149,7 @@ d74dfb370a19a2adb41bb9880935c0a8db9d475b81edf383427023bd81d15c55 *BIN\PKeyConfig
 d758ff8c9511aad5648b429bc74c076438cee26a8778a8b0db53b498cd4bcbf4 *BIN\PKeyConfigs\Windows - Server\Production\Main\7601 - Windows 7 - Server 2008 R2\pkeyconfig.xrm-ms
 d310e0c0e45d08db12a6010954ffd6400154a206060cb7910af52697aef31be0 *BIN\PKeyConfigs\Windows - Server\Production\Main\9200 - Windows 8 - Server 2012\pkeyconfig.xrm-ms
 b8e8b0ff5c1066562497aede3702089c248382c5d38cd26a70ecfbc8fea90aeb *BIN\PKeyConfigs\Windows - Server\Production\Main\9600 - Windows 8.1 - Server 2012 R2\pkeyconfig.xrm-ms
-d27fe1b09ee62598c614aa09c553d6a68fe6a07bba34de48d6f91b5c5186ede0 *BIN\PKeyConfigsMap.csv
+f15c2fcdfee6a9092d52ffc5341fca36ba7842876f4f8ddcf49e6e70a0e922f9 *BIN\PKeyConfigsMap.csv
 89bc2d22e2d162a3981d224702f6c2ffe9fdfe13be58282d0d16a98d15f37034 *BIN\PreVistaRanges.csv
 c622301660b0f5568d81dffe24a156866643b5f3da89b070f471db21ac1e636d *BIN\PublishLicense.xml
 1a29aa0617a6ca1208f39e7726fd4d26d89fde02fa88de13d710a2bf9a63cc4f *BIN\Scripts\CheckRedeemKey.ps1
