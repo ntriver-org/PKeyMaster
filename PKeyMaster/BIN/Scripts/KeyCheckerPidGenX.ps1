@@ -616,7 +616,7 @@ try {
             if (-not $isTestKey) {
                 $doCert = $KeyCertification -and $pkActConfigId
                 $doAct = $KeyActivation -and $pkActConfigId
-                $doRedeem = $CheckRedeemKey -and $info.Algorithm -match "2009" -and $info.KeyType -notmatch "Volume|OEM|EVAL"
+                $doRedeem = $CheckRedeemKey -and $info.Algorithm -match "2009"
                 $doMak = $MAKCount -and $info.KeyType -match "Volume:MAK"
                 $doCid = $GetConfirmationId -and $iid
 
