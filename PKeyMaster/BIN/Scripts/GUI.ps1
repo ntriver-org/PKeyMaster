@@ -297,6 +297,10 @@ function Show-PKeyMasterGui {
                 return
             }
 
+            if ($OutputBox.Text -eq 'Checking, please wait...') {
+                $OutputBox.Clear()
+            }
+
             try {
                 foreach ($line in $Lines) {
                     # Prepend a newline for every line except the very first one
@@ -398,6 +402,10 @@ function Show-PKeyMasterGui {
                     finally {
                         $powerShellPipeline.Dispose()
                         
+                        if ($OutputBox -and $OutputBox.Text -eq 'Checking, please wait...') {
+                            $OutputBox.Clear()
+                        }
+
                         if ($OutputBox -and $OutputBox.TextLength -gt 0 -and -not $OutputBox.Text.EndsWith("`n")) {
                             $OutputBox.AppendText([Environment]::NewLine)
                             $OutputBox.ScrollToCaret()
@@ -1661,6 +1669,7 @@ function Show-PKeyMasterGui {
                     $checkKeyButton
                 )
                 Start-ToolTask -ScriptName 'KeyChecker.ps1' -Arguments $arguments -OutputBox $keyCheckerOutputBox -ControlsToDisable $keyCheckerControls -Completed $null
+                $keyCheckerOutputBox.Text = 'Checking, please wait...'
             }
         })
 
@@ -1712,6 +1721,7 @@ function Show-PKeyMasterGui {
                 }
 
                 Start-ToolTask -ScriptName 'GetCID.ps1' -Arguments $arguments -OutputBox $iidCidOutputBox -ControlsToDisable $iidCidTaskControls -Completed { Update-DepositCidState }
+                $iidCidOutputBox.Text = 'Checking, please wait...'
             }
         })
 

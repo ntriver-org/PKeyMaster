@@ -278,9 +278,6 @@ $randNum = Get-Random -Minimum 1000 -Maximum 10000
 $i = 0
 foreach ($iid in $iidsToCheck) {
     $i++
-    if (-not $IidFile) {
-        Write-Output ($f -f "Checking IID", $iid)
-    }
 
     # Per-IID log folder
     $iidFolder = ""

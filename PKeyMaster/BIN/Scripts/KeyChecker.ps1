@@ -396,10 +396,6 @@ foreach ($rawKey in $keysToCheck) {
     $k = $route.Key
     $ExecutedType = $route.Type
 
-    if (-not $KeyFile) {
-        Write-Output "Checking Key: $k"
-    }
-    
     $output = @()
 
     if ($ExecutedType -eq "Invalid") {
