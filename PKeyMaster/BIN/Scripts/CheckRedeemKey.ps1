@@ -141,14 +141,14 @@ Host: $($uri.Host)
         if ($null -ne $groupId) { $out.GroupId = $groupId }
 
         if ($result -eq "Valid") {
-            $out.Status = "Key can be redeemed"
+            $out.Status = "Valid"
         }
         elseif ($result -eq "Used") {
-            $out.Status = "Key already redeemed"
+            $out.Status = "Already redeemed"
         }
         elseif ($result -eq "InvalidToken") {
             if ($hasPkpn) {
-                $out.Status = "Scrapped redeem key"
+                $out.Status = "Expired or already redeemed"
             }
             else {
                 $out.Status = "Not a redeem key"
@@ -194,7 +194,7 @@ $f = "{0,-18}: {1}"
 Write-Output ""
 Write-Output ($f -f "Redeem Key", $cleanKey)
 
-if ($res.Status -eq "Key can be redeemed") {
+if ($res.Status -eq "Valid") {
     Write-Color ($f -f "Status", $res.Status) "BgGreen"
 }
 else {

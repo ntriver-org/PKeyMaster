@@ -197,7 +197,7 @@ function Invoke-CheckRedeemKey($RedeemKey, $LogFolder, $f, $scriptDir) {
     $redeemObj = $redeemOutput[-1]
     if (-not $redeemObj -or -not $redeemObj.Status) { return }
 
-    if ($redeemObj.Status -eq "Key can be redeemed") {
+    if ($redeemObj.Status -eq "Valid") {
         Write-Color ($f -f "Redeem Key Status", $redeemObj.Status) "BgGreen"
     }
     else {
