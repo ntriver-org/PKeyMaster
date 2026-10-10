@@ -165,7 +165,7 @@ function Write-ProductMatch($GroupId, $KeyId, $f, $scriptDir) {
             if ($tags.Count -gt 0) {
                 $m += " (" + ($tags -join ") (") + ")"
             }
-            Write-Output ($f -f "Product Match", $m)
+            Write-Color ($f -f "Product Match", $m) "BgGreen"
         }
     }
 }
@@ -522,12 +522,12 @@ try {
                 $keyId = [int64]$keyIdStr
             }
 
-            $isTestKey = ($info.Description -eq "TEST" -and $info.Edition -eq "TEST" -and $info.Algorithm -notmatch "2005|2009")
+            $isPreVistaKey = ($info.Description -eq "TEST" -and $info.Edition -eq "TEST" -and $info.Algorithm -notmatch "2005|2009")
 
             $pkActConfigId = ""
             $pkey2005Security = $null
             $iid = ""
-            if (-not $isTestKey) {
+            if (-not $isPreVistaKey) {
                 # Parse and Capture
                 if ($info.Algorithm -match "2005|2009") {
                     if ($info.Algorithm -match "2005") {
@@ -550,32 +550,59 @@ try {
             Write-Output ""
             Write-Output ($f -f "Product Key", $ProductKey)
             Write-Output ($f -f "Profile", $currentProfile)
-            Write-Color ($f -f "Result", "Specified key is valid") "BgGreen"
-            Write-Output ($f -f "Product ID", $parsedDpid3.ProductId)
-            Write-Output ($f -f "Extended PID", $advPid)
 
-            if (-not $isTestKey) {
-                if ($iid) {
-                    Write-Output ($f -f "Installation ID", $iid)
+            if ($isPreVistaKey) {
+                Write-ProductMatch $groupId $keyId $f $scriptDir
+                Write-Output ($f -f "Upgrade Key", $(if ($parsedDpid4.IsUpgrade -eq 1) { "Yes" } else { "No" }))
+                Write-Output ""
+                if ($info.Algorithm -match "980") {
+                    Write-Output ($f -f "Bink", "Bink1998")
                 }
-                if ($pkActConfigId) {
-                    Write-Output ($f -f "ActConfig ID", $pkActConfigId)
+                elseif ($info.Algorithm -match "986") {
+                    Write-Output ($f -f "Bink", "Bink2002")
                 }
-                Write-Output ($f -f "Activation ID", $activationId)
-                Write-Output ($f -f "Description", $info.Description)
-                Write-Output ($f -f "Edition", $info.Edition)
-                Write-Output ($f -f "Part number", $partNumber)
+                Write-Output ($f -f "Group ID", ("{0} (0x{0:X})" -f $groupId))
+                Write-Output ($f -f "Key ID", ("{0} (0x{0:X})" -f $keyId))
+
+                $channel = $null
+                $seq = $null
+                if ($info.Algorithm -match "980|986") {
+                    $channel = [int64][Math]::Floor($keyId / 1000000)
+                    $seq = $keyId % 1000000
+                    Write-Output ($f -f "Channel ID", ("{0} (0x{0:X})" -f $channel))
+                    Write-Output ($f -f "Sequence", ("{0} (0x{0:X})" -f $seq))
+
+                    $decode980Script = Join-Path $scriptDir "DecodePKey980-PKey986.ps1"
+                    if (Test-Path $decode980Script) {
+                        $decodeOutput = @(& $decode980Script -productKey $ProductKey -binkIdHex ("0x{0:X}" -f $groupId) -PassThru 2>$null)
+                        if ($decodeOutput) {
+                            $dataObj = $decodeOutput[-1]
+                            if ($dataObj) {
+                                if ($null -ne $dataObj.Hash) { Write-Output ($f -f "Hash", ("{0} (0x{0:X})" -f $dataObj.Hash)) }
+                                if ($null -ne $dataObj.Auth) { Write-Output ($f -f "Auth", ("{0} (0x{0:X})" -f $dataObj.Auth)) }
+                                if ($null -ne $dataObj.Signature) { Write-Output ($f -f "Signature", ("{0} (0x{0:X})" -f $dataObj.Signature)) }
+                            }
+                        }
+                    }
+                }
+                Write-Output ($f -f "License Type", $parsedDpid3.Lt)
                 Write-Output ($f -f "Label ID", $labelId)
+                Write-Output ($f -f "Product ID", $parsedDpid3.ProductId)
+                Write-Output ($f -f "Algorithm ID", $info.Algorithm)
+                Write-Output ($f -f "Extended PID", $advPid)
+            }
+            else {
+                Write-Color ($f -f "Description", $info.Description) "BgGreen"
+                Write-Output ($f -f "Edition", $info.Edition)
                 Write-Output ($f -f "Key Type", $info.KeyType)
                 if ($parsedDpid4.EULA) {
                     Write-Output ($f -f "EULA", $parsedDpid4.EULA)
                 }
-            }
+                Write-Output ($f -f "Upgrade Key", $(if ($parsedDpid4.IsUpgrade -eq 1) { "Yes" } else { "No" }))
+                Write-Output ""
+                Write-Output ($f -f "Group ID", ("{0} (0x{0:X})" -f $groupId))
+                Write-Output ($f -f "Key ID", ("{0} (0x{0:X})" -f $keyId))
 
-            Write-Output ($f -f "Algorithm ID", $info.Algorithm)
-            Write-Output ($f -f "Group ID", ("{0} (0x{0:X})" -f $groupId))
-            Write-Output ($f -f "Key ID", ("{0} (0x{0:X})" -f $keyId))
-            if (-not $isTestKey) {
                 if ($isPKey2009 -and $null -ne $pkey2009DecodedGroup) {
                     Write-Output ($f -f "Security", ("{0} (0x{0:X})" -f $pkey2009DecodedSecurity))
                     Write-Output ($f -f "PKey2009 Extra", $pkey2009DecodedExtra)
@@ -583,37 +610,20 @@ try {
                 if ($info.Algorithm -match "2005" -and $null -ne $pkey2005Security) {
                     Write-Output ($f -f "Security", ("{0} (0x{0:X})" -f $pkey2005Security))
                 }
-            }
-
-            $channel = $null
-            $seq = $null
-            if ($info.Algorithm -match "980|986") {
-                $channel = [int64][Math]::Floor($keyId / 1000000)
-                $seq = $keyId % 1000000
-                Write-Output ($f -f "Channel ID", ("{0} (0x{0:X})" -f $channel))
-                Write-Output ($f -f "Sequence", ("{0} (0x{0:X})" -f $seq))
-
-                $decode980Script = Join-Path $scriptDir "DecodePKey980-PKey986.ps1"
-                if (Test-Path $decode980Script) {
-                    $decodeOutput = @(& $decode980Script -productKey $ProductKey -binkIdHex ("0x{0:X}" -f $groupId) -PassThru 2>$null)
-                    if ($decodeOutput) {
-                        $dataObj = $decodeOutput[-1]
-                        if ($dataObj) {
-                            if ($null -ne $dataObj.Format) { Write-Output ($f -f "Bink", $dataObj.Format) }
-                            if ($null -ne $dataObj.Hash) { Write-Output ($f -f "Hash", ("{0} (0x{0:X})" -f $dataObj.Hash)) }
-                            if ($null -ne $dataObj.Auth) { Write-Output ($f -f "Auth", ("{0} (0x{0:X})" -f $dataObj.Auth)) }
-                            if ($null -ne $dataObj.Signature) { Write-Output ($f -f "Signature", ("{0} (0x{0:X})" -f $dataObj.Signature)) }
-                        }
-                    }
+                Write-Output ($f -f "License Type", $parsedDpid3.Lt)
+                Write-Output ($f -f "Part number", $partNumber)
+                Write-Output ($f -f "Label ID", $labelId)
+                Write-Output ($f -f "Product ID", $parsedDpid3.ProductId)
+                Write-Output ($f -f "Algorithm ID", $info.Algorithm)
+                Write-Output ($f -f "Activation ID", $activationId)
+                Write-Output ($f -f "Extended PID", $advPid)
+                if ($iid) {
+                    Write-Output ($f -f "Installation ID", $iid)
                 }
-            }
-            Write-Output ($f -f "License Type", $parsedDpid3.Lt)
-            Write-Output ($f -f "Upgrade Key", $(if ($parsedDpid4.IsUpgrade -eq 1) { "Yes" } else { "No" }))
-            if ($isTestKey) {
-                Write-ProductMatch $groupId $keyId $f $scriptDir
-            }
+                if ($pkActConfigId) {
+                    Write-Output ($f -f "ActConfig ID", $pkActConfigId)
+                }
 
-            if (-not $isTestKey) {
                 $doCert = $KeyCertification -and $pkActConfigId
                 $doAct = $KeyActivation -and $pkActConfigId
                 $doMak = $MAKCount -and $info.KeyType -match "Volume:MAK"
