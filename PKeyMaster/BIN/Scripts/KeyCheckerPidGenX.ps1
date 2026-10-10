@@ -616,17 +616,15 @@ try {
             if (-not $isTestKey) {
                 $doCert = $KeyCertification -and $pkActConfigId
                 $doAct = $KeyActivation -and $pkActConfigId
-                $doRedeem = $CheckRedeemKey -and $info.Algorithm -match "2009"
                 $doMak = $MAKCount -and $info.KeyType -match "Volume:MAK"
                 $doCid = $GetConfirmationId -and $iid
 
-                if ($doCert -or $doAct -or $doRedeem -or $doMak -or $doCid) {
+                if ($doCert -or $doAct -or $doMak -or $doCid) {
                     Write-Output ""
                 }
 
                 if ($doCert) { Invoke-KeyCertification $ProductKey $pkActConfigId $LogFolder $f $scriptDir }
                 if ($doAct) { Invoke-KeyActivation $ProductKey $pkActConfigId $LogFolder $f $scriptDir }
-                if ($doRedeem) { Invoke-CheckRedeemKey $ProductKey $LogFolder $f $scriptDir }
                 if ($doMak) { Invoke-MakCount $parsedDpid4.AdvancedPid $LogFolder $f $scriptDir }
                 if ($doCid) { Invoke-GetConfirmationId $iid $LogFolder $f $scriptDir }
             }
@@ -638,19 +636,11 @@ try {
     if (-not $matchFound) {
         $resultText = "Failed (No matching configuration found)"
         $hrHex = ""
-        $isRedeemKey = ($hr -eq -1979645951) -or ($hr -eq -1979645695 -and $ProductKey -match 'Z')
         if ($null -ne $hr) {
             $resultText = switch ($hr) {
                 -2147024809 { 'The parameter is incorrect' }
-                -1979645695 {
-                    if ($isRedeemKey) {
-                        "This key is either a redeem key or an invalid key."
-                    }
-                    else {
-                        "This key is either invalid or missing a profile."
-                    }
-                }
-                -1979645951 { "This key is valid with no profile match. It may be a redeem key." }
+                -1979645695 { 'This key is either invalid or missing a profile.' }
+                -1979645951 { 'This key is valid with no profile match.' }
                 -2147024894 { "Can't find specified pkeyconfig file" }
                 -2147024893 { 'Specified pkeyconfig path does not exist' }
                 15 { 'Key is blacklisted' }
@@ -663,30 +653,27 @@ try {
 
         Write-Output ""
         Write-Output ($f -f "Product Key", $ProductKey)
-        if (-not $isRedeemKey) {
-            Write-Color ($f -f "Result", $resultText) "BgRed"
-            if ($hrHex) {
-                Write-Color ($f -f "PidGenX ErrorCode", ("{0} ({1})" -f $hr, $hrHex)) "BgRed"
-            }
+        Write-Color ($f -f "Result", $resultText) "BgGray"
+        if ($hrHex) {
+            Write-Color ($f -f "PidGenX ErrorCode", ("{0} ({1})" -f $hr, $hrHex)) "BgGray"
         }
-        if ($isRedeemKey) {
-            Write-Color ($f -f "Result", $resultText) "BgGray"
-            if ($null -ne $pkey2009DecodedGroup) {
-                Write-Output ($f -f "Algorithm ID", "msft:rm/algorithm/pkey/2009")
-                Write-Output ($f -f "Group ID", ("{0} (0x{0:X})" -f $pkey2009DecodedGroup))
-                Write-Output ($f -f "Key ID", ("{0} (0x{0:X})" -f $pkey2009DecodedSerial))
-                Write-Output ($f -f "Security", ("{0} (0x{0:X})" -f $pkey2009DecodedSecurity))
-                Write-Output ($f -f "PKey2009 Extra", $pkey2009DecodedExtra)
-                Write-Output ($f -f "Upgrade Key", $(if ($pkey2009DecodedUpgrade -eq 1) { "Yes" } else { "No" }))
-            }
-            Write-Output ""
-            if ($CheckRedeemKey) {
-                Invoke-CheckRedeemKey $ProductKey $LogFolder $f $scriptDir
-            }
-            else {
-                Write-Color ($f -f "Tip", "Enable Redeem Status option to view the redemption status.") "FgYellow"
-            }
+        if ($hr -eq -1979645951 -and $null -ne $pkey2009DecodedGroup) {
+            Write-Output ($f -f "Algorithm ID", "msft:rm/algorithm/pkey/2009")
+            Write-Output ($f -f "Group ID", ("{0} (0x{0:X})" -f $pkey2009DecodedGroup))
+            Write-Output ($f -f "Key ID", ("{0} (0x{0:X})" -f $pkey2009DecodedSerial))
+            Write-Output ($f -f "Security", ("{0} (0x{0:X})" -f $pkey2009DecodedSecurity))
+            Write-Output ($f -f "PKey2009 Extra", $pkey2009DecodedExtra)
+            Write-Output ($f -f "Upgrade Key", $(if ($pkey2009DecodedUpgrade -eq 1) { "Yes" } else { "No" }))
         }
+    }
+
+    if ($CheckRedeemKey) {
+        Write-Output ""
+        Invoke-CheckRedeemKey $ProductKey $LogFolder $f $scriptDir
+    }
+    elseif (-not $matchFound -or $parsedDpid4.EULA -eq "ltPIN" -or $groupId -eq 28) {
+        Write-Output ""
+        Write-Color ($f -f "Tip", "This may be a Redeem key. Enable Redeem Status for details.") "FgYellow"
     }
 }
 finally {
