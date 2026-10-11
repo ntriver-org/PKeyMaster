@@ -170,9 +170,8 @@ Write-Output ""
 Write-Output ($f -f "Product Key", $Key)
 
 if ($MatchedProducts.Count -gt 0) {
-    Write-Color ($f -f "Result", "Valid") "BgGreen"
     foreach ($prod in $MatchedProducts) {
-        Write-Output ($f -f "Product Match", $prod)
+        Write-Color ($f -f "Product Match", $prod) "BgGreen"
     }
 }
 else {

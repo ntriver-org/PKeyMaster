@@ -181,18 +181,16 @@ function Add-KeyToCsv([string[]]$OutputLines, [string[]]$Columns, [string]$CsvPa
 $colsPre98 = @("Product Key", "Result", "Product Match", "Query Time")
 
 $colsPidGenX = @(
-    "Product Key", "Profile", "Result", "PidGenX ErrorCode",
-    "Product ID", "Extended PID", "Installation ID", "ActConfig ID", "Activation ID",
-    "Description", "Edition", "Part number", "Label ID", "Key Type", "EULA",
-    "Algorithm ID", "Group ID", "Key ID", "Security", "PKey2009 Extra",
-    "Channel ID", "Sequence", "Bink", "Hash", "Auth", "Signature",
-    "License Type", "Upgrade Key", "Product Match",
+    "Product Key", "Profile", "Result",
+    "Description", "Product Match", "Edition", "Key Type", "EULA", "Upgrade Key",
+    "Bink", "Group ID", "Key ID", "Channel ID", "Sequence", "Hash", "Auth", "Signature", "Security", "PKey2009 Extra",
+    "License Type", "Part number", "Label ID", "Product ID", "Algorithm ID", "Activation ID", "Extended PID", "Installation ID", "ActConfig ID",
     "Key Certification", "Cert Error Code", "Cert Error Msg",
     "Key Activation", "Act Error Code", "Act Error Msg",
-    "Redeem Key Status", "Redeem Acid", "Redeem GroupId", "Redeem Pkpn",
     "MAK Count", "MAK Error Code", "MAK Error Msg",
     "CID Batch Api", "Batch Error Code", "Batch Error Msg",
     "CID Visual Api", "Visual Error Code", "Visual Error Msg",
+    "Redeem Key Status", "Redeem Acid", "Redeem GroupId", "Redeem Pkpn",
     "Query Time"
 )
 
