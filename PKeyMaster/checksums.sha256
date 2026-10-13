@@ -32,10 +32,14 @@ a2cc02ea0a8ff3d9dce5b82492776b71cfdb3e0a504686839285b35387dca741 *BIN\PKeyConfig
 046922f821870cd656900eaa0d25d1d2eee24ced8cd3a84501dabed86ca93c5e *BIN\PKeyConfigs\Expression\Production\Expression Studio 2\prs-pkeyconfig.xrm-ms
 672186015a1363035fa4903fd3fe7bd2e6e62787e5686571be3fd89d60909d6b *BIN\PKeyConfigs\Expression\Production\Expression Studio 3\prs-pkeyconfig.xrm-ms
 e2b9cdd92547ad9d3e0e71d1481e5f7b899d5689910caafd346366787868a25e *BIN\PKeyConfigs\Expression\Production\Expression Studio 4\prs-pkeyconfig.xrm-ms
-1ef6ade8dbb56f0c3474c2eb8ec4ecc0aa998d6afcdb8f0cffa459cb75763f02 *BIN\PKeyConfigs\Flight Simulator\Production\Flight Simulator X\pkeyconfig.xrm-ms
 e50172f7f90cdff2278f720ff2478dbbb85a5bf76403dcb1ecf05d07dca47c4e *BIN\PKeyConfigs\Forefront\Production\Forefront Protection 2010 for Exchange Server\PKeyConfigExchange.xml
 aa8e4216de715f5a9f9a386077676e082e3745d9a8c0de717dc49876fcae806d *BIN\PKeyConfigs\Forefront\Production\Forefront Protection 2010 for SharePoint\PKeyConfigSharepoint.xml
 9dcf4ba720eedeca238edb8628657a39c90ce6f4595352415cfa8c3763387249 *BIN\PKeyConfigs\Forefront\Production\Forefront Threat Management Gateway 2010\PKConfigTMG.xml
+6f748ad1fd50e0a592b0a899ae228398d4b2795388329c5e7f876a16a338bed0 *BIN\PKeyConfigs\Games\Production\Flight Simulator X Acceleration\10.xrm-ms
+1ef6ade8dbb56f0c3474c2eb8ec4ecc0aa998d6afcdb8f0cffa459cb75763f02 *BIN\PKeyConfigs\Games\Production\Flight Simulator X\pkeyconfig.xrm-ms
+90cbf86fd2d5d2a7ffa3546829798f9fd14014e62bf6aef069a195af414d3764 *BIN\PKeyConfigs\Games\Production\Gears of War\Pkeyconfig_GearsofWar_2007-07-25-09-59-52-5952.xml
+4738218f3a9bec6c52332450536c743880eb35b46b22fc066f1addcb0868014c *BIN\PKeyConfigs\Games\Production\Halo 2 for Windows Vista\07.xrm-ms
+78c4ee7ddf8a7a5247fdae4bb6dce1c6462f9b50d22bf222ef1baac5a5dea9d3 *BIN\PKeyConfigs\Games\Production\Shadowrun\07.xrm-ms
 b21dbd31eb8c03c197e4ed83ea5f8ebe62f74b8212662df4b7094f753a167ed0 *BIN\PKeyConfigs\MapPoint\Production\MapPoint 2009 Europe - Volume\vlcfg.xrm
 65e1e28aee54a1d0d0b483eac9e5a86635a83055d2bd80474088de4ada5c0c9a *BIN\PKeyConfigs\MapPoint\Production\MapPoint 2009 North America - Volume\vlcfg.xrm
 8374dea7f1ce6228efcd0bbdb366afb006a13add3ec93b76e3364bb5e9dc1702 *BIN\PKeyConfigs\MapPoint\Production\MapPoint 2010 Europe - Volume\pkcfg.xrm
@@ -149,7 +153,8 @@ d74dfb370a19a2adb41bb9880935c0a8db9d475b81edf383427023bd81d15c55 *BIN\PKeyConfig
 d758ff8c9511aad5648b429bc74c076438cee26a8778a8b0db53b498cd4bcbf4 *BIN\PKeyConfigs\Windows - Server\Production\Main\7601 - Windows 7 - Server 2008 R2\pkeyconfig.xrm-ms
 d310e0c0e45d08db12a6010954ffd6400154a206060cb7910af52697aef31be0 *BIN\PKeyConfigs\Windows - Server\Production\Main\9200 - Windows 8 - Server 2012\pkeyconfig.xrm-ms
 b8e8b0ff5c1066562497aede3702089c248382c5d38cd26a70ecfbc8fea90aeb *BIN\PKeyConfigs\Windows - Server\Production\Main\9600 - Windows 8.1 - Server 2012 R2\pkeyconfig.xrm-ms
-f15c2fcdfee6a9092d52ffc5341fca36ba7842876f4f8ddcf49e6e70a0e922f9 *BIN\PKeyConfigsMap.csv
+7c7ef40793509a9272596f534804fe480c3c38b9ecc359eefdf7d6b52903b353 *BIN\PKeyConfigs\Windows Redpill\Beta\Redpill\pkeyconfig-rp.xrm-ms
+bae5e084d3467212b61ce93fc39676a4b5bebc8106882135b536831966ce5337 *BIN\PKeyConfigsMap.csv
 89bc2d22e2d162a3981d224702f6c2ffe9fdfe13be58282d0d16a98d15f37034 *BIN\PreVistaRanges.csv
 c622301660b0f5568d81dffe24a156866643b5f3da89b070f471db21ac1e636d *BIN\PublishLicense.xml
 bc5fa707dbd9df664ec278bd4e8e87852336349ba4af48db0f8b6114dbbc7fea *BIN\Scripts\CheckRedeemKey.ps1
