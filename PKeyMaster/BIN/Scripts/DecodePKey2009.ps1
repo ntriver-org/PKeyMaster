@@ -5,7 +5,7 @@
 .DESCRIPTION
     Decodes PKey2009-format product keys (Windows 8+, Office 2013+) by unpacking the Base24
     sequence. Uses the position of 'N' to realign the base conversion. Extracts Group ID,
-    Serial, Security, Upgrade, and Extra. Key validity is not verified.
+    Serial, Security, Upgrade, and Extra, and validates the CRC checksum.
 
 .PARAMETER Key
     The 25-character product key to decode (must contain an 'N').
@@ -90,6 +90,19 @@ function Get-Bits($Data, $Offset, $Length) {
     return $result
 }
 
+function Set-Bits($Data, $Offset, [int64]$Value, $Length) {
+    $bitPowers = @(1, 2, 4, 8, 16, 32, 64, 128)
+    [int64]$mask = 1
+    for ($bit = 0; $bit -lt $Length; $bit++) {
+        $byteIndex = [int][Math]::Floor(($Offset + $bit) / 8)
+        $bitIndex = ($Offset + $bit) % 8
+        if (($Value -band $mask) -ne 0) {
+            $Data[$byteIndex] = [byte]($Data[$byteIndex] -bor $bitPowers[$bitIndex])
+        }
+        $mask = $mask * 2
+    }
+}
+
 $grp = Get-Bits $kb 0 20
 $ser = Get-Bits $kb 20 30
 $sec = Get-Bits $kb 50 53
@@ -98,10 +111,55 @@ $upg = Get-Bits $kb 113 1
 $ext = Get-Bits $kb 114 1
 
 # ===============================================================================================================================
+# CRC checksum validation
+# ===============================================================================================================================
+
+$mask32 = [int64]([Math]::Pow(2, 32)) - 1
+$bit31 = [int64]([Math]::Pow(2, 31))
+$poly = [int64]79764919
+
+$crcTable = New-Object System.Int64[] 256
+for ($i = 0; $i -lt 256; $i++) {
+    [int64]$cval = [int64]($i * [Math]::Pow(2, 24))
+    for ($b = 0; $b -lt 8; $b++) {
+        if ($cval -band $bit31) {
+            $cval = [int64](($cval * 2) -bxor $poly)
+            $cval = $cval -band $mask32
+        }
+        else {
+            $cval = [int64](($cval * 2) -band $mask32)
+        }
+    }
+    $crcTable[$i] = $cval
+}
+
+function Get-PKey2009Checksum([byte[]]$Data) {
+    [int64]$crc = $mask32
+    foreach ($b in $Data) {
+        [int64]$idx = ([int64][Math]::Truncate($crc / 16777216)) -bxor $b
+        $idx = $idx -band 255
+        $crc = ([int64]($crc * 256)) -bxor $crcTable[$idx]
+        $crc = $crc -band $mask32
+    }
+    return [int](($crc -bxor $mask32) -band 1023)
+}
+
+$checkBytes = New-Object byte[] 16
+Set-Bits $checkBytes   0 $grp 20
+Set-Bits $checkBytes  20 $ser 30
+Set-Bits $checkBytes  50 $sec 53
+Set-Bits $checkBytes 113 $upg  1
+Set-Bits $checkBytes 114 $ext  1
+$expected = Get-PKey2009Checksum $checkBytes
+$valid = ($csum -eq [int64]$expected)
+
+# ===============================================================================================================================
 # Console output
 # ===============================================================================================================================
 
 $upgText = if ($upg -eq 1) { "Yes" } else { "No" }
+$csumStatus = if ($valid) { "Valid" } else { "Invalid" }
+$csumText = "$csum ($csumStatus)"
 $f = "{0,-18}: {1}"
 
 Write-Output ""
@@ -109,11 +167,15 @@ Write-Output ($f -f "Product Key", $Key)
 Write-Output ($f -f "Group", $grp)
 Write-Output ($f -f "Serial", $ser)
 Write-Output ($f -f "Security", $sec)
-Write-Output ($f -f "Checksum", $csum)
+if ($valid) {
+    Write-Output ($f -f "Checksum", $csumText)
+}
+else {
+    Write-Color ($f -f "Checksum", $csumText) "BgRed"
+}
 Write-Output ($f -f "Upgrade", $upgText)
 Write-Output ($f -f "Extra", $ext)
 Write-Output ""
-Write-Output "Note: Key is decoded but not verified."
 
 # ===============================================================================================================================
 # Object return (PassThru)
@@ -121,13 +183,14 @@ Write-Output "Note: Key is decoded but not verified."
 
 if ($PassThru) {
     New-Object PSObject -Property @{
-        Key      = $Key
-        Group    = $grp
-        Serial   = $ser
-        Security = $sec
-        Checksum = $csum
-        Upgrade  = $upg
-        Extra    = $ext
+        Key           = $Key
+        Group         = $grp
+        Serial        = $ser
+        Security      = $sec
+        Checksum      = $csum
+        ChecksumValid = $valid
+        Upgrade       = $upg
+        Extra         = $ext
     }
 }
 
