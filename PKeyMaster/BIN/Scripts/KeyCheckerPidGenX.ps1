@@ -411,6 +411,128 @@ function Invoke-GetInstallationId($Key, $Config) {
 }
 
 # ===============================================================================================================================
+
+function Add-Mod7CheckDigit {
+    param([long]$Value)
+
+    $sum = 0
+    $temp = $Value
+    while ($temp -gt 0) {
+        $sum += [int]($temp % 10)
+        $temp = [Math]::Floor($temp / 10)
+    }
+
+    return ($Value * 10) + (7 - ($sum % 7))
+}
+
+# ===============================================================================================================================
+
+function Get-LicenseType {
+    param(
+        [string]$KeyType = "",
+        [bool]$IsUpgrade = $false
+    )
+
+    switch -Wildcard ($KeyType) {
+        "OEM*" { return 2 }
+        "Volume*" { return 3 }
+        "Retail*" { if ($IsUpgrade) { return 1 } return 0 }
+        "PGS:TB*" { return 4 }
+        default { return 0 }
+    }
+}
+
+# ===============================================================================================================================
+
+function Get-ProductId {
+    param(
+        [string]$Algorithm = "pkey/2009",
+        [int]$GroupId = 0,
+        [long]$Serial = 0,
+        [bool]$IsOem = $false,
+        [bool]$IsUpgrade = $false
+    )
+
+    $random = [int]([Math]::Abs([Environment]::TickCount / 10) % 1000)
+
+    if ($Algorithm -match "2009") {
+        $groupHigh = [int]([Math]::Floor($GroupId / 10) % 100000)
+        $groupLow = [int]($GroupId % 10)
+        $serialMid = [int]([Math]::Floor($Serial / 100000) % 10000)
+        $serialLow = [int]($Serial % 100000)
+        $tag = if ($IsUpgrade) { "AB" } else { "AA" }
+
+        if ($IsOem) {
+            return "{0:D5}-{1:D1}{2:D4}-{3:D5}-{4}OEM" -f $groupHigh, $groupLow, $serialMid, $serialLow, $tag
+        }
+        else {
+            return "{0:D5}-{1:D1}{2:D4}-{3:D5}-{4}{5:D3}" -f $groupHigh, $groupLow, $serialMid, $serialLow, $tag, $random
+        }
+    }
+    else {
+        $mpc = "00000"
+        $groupPart = [int]([Math]::Floor($GroupId / 2) % 100)
+        $channelId = [int]([Math]::Floor($Serial / 1000000) % 1000)
+        $sequence = [int]($Serial % 1000000)
+
+        if ($IsOem) {
+            $seqHighDigit = [int]([Math]::Floor($sequence / 100000) % 10)
+            $baseNumber = (($groupPart * 1000 + $channelId) * 10) + $seqHighDigit
+            $baseWithCheck = Add-Mod7CheckDigit -Value $baseNumber
+            $sequenceLow = [int]($sequence % 100000)
+
+            return "{0}-OEM-{1:D7}-{2:D5}" -f $mpc, $baseWithCheck, $sequenceLow
+        }
+        else {
+            $seqWithCheck = Add-Mod7CheckDigit -Value $sequence
+            $groupWithRandom = [int]($groupPart * 1000 + $random)
+
+            return "{0}-{1:D3}-{2:D7}-{3:D5}" -f $mpc, $channelId, $seqWithCheck, $groupWithRandom
+        }
+    }
+}
+
+# ===============================================================================================================================
+
+function Get-ExtendedProductId {
+    param(
+        [int]$GroupId = 0,
+        [long]$Serial = 0,
+        [int]$LicenseType = 0
+    )
+
+    $mpc = "00000"
+    $channelId = [int]([Math]::Floor($Serial / 1000000) % 1000)
+    $sequence = [int]($Serial % 1000000)
+    $groupPart = [int]($GroupId % 100000)
+    $buildNumber = [Environment]::OSVersion.Version.Build
+    $currentDate = Get-Date
+
+    $langId = 1033
+    try {
+        $langId = [System.Globalization.CultureInfo]::InstalledUICulture.LCID
+    }
+    catch {
+        $langId = 1033
+    }
+
+    $dayOfYear = [int]$currentDate.DayOfYear
+    $year = [int]$currentDate.Year
+
+    return "{0}-{1:D5}-{2:D3}-{3:D6}-{4:D2}-{5:D4}-{6:D4}.0000-{7:D3}{8:D4}" -f (
+        $mpc,
+        $groupPart,
+        $channelId,
+        $sequence,
+        $LicenseType,
+        $langId,
+        $buildNumber,
+        $dayOfYear,
+        $year
+    )
+}
+
+# ===============================================================================================================================
 # Main execution
 # ===============================================================================================================================
 
@@ -619,13 +741,23 @@ try {
             if ($null -ne $pkey2009DecodedExtra) { Write-Output ($f -f "PKey2009 Extra", ("{0} (0x{0:X})" -f $pkey2009DecodedExtra)) }
             if ($null -ne $pkey2005Security) { Write-Output ($f -f "Security", ("{0} (0x{0:X})" -f $pkey2005Security)) }
 
+            # Calculate License Type, Product ID, and Extended PID
+            $isUpgrade = ($parsedDpid4.IsUpgrade -eq 1)
+            $lt = Get-LicenseType -KeyType $info.KeyType -IsUpgrade $isUpgrade
+            $isOem = ($lt -eq 2)
+            $productId = Get-ProductId -Algorithm $info.Algorithm -GroupId $groupId -Serial $keyId -IsOem $isOem -IsUpgrade $isUpgrade
+            $advPid = Get-ExtendedProductId -GroupId $groupId -Serial $keyId -LicenseType $lt
+            if ($advPid -and $advPid.Length -ge 22) {
+                $labelId = $advPid.Substring(6, 13) + "-" + $advPid.Substring(19, 3)
+            }
+
             Write-Output ""
 
             # IDs & Licensing details
-            Write-Output ($f -f "License Type", $parsedDpid3.Lt)
+            Write-Output ($f -f "License Type", $lt)
             if (-not $isPreVistaCustomPkeyConfig) { Write-Output ($f -f "Part number", $parsedDpid4.EditionId) }
             Write-Output ($f -f "Label ID", $labelId)
-            Write-Output ($f -f "Product ID", $parsedDpid3.ProductId)
+            Write-Output ($f -f "Product ID", $productId)
             Write-Output ($f -f "Algorithm ID", $info.Algorithm)
             if (-not $isPreVistaCustomPkeyConfig) { Write-Output ($f -f "Activation ID", $activationId) }
             Write-Output ($f -f "Extended PID", $advPid)
