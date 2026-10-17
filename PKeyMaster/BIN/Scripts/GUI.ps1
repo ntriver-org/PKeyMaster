@@ -204,6 +204,42 @@ function Show-PKeyMasterGui {
 
     # ===============================================================================================================================
 
+    function Select-FolderDialog {
+        param(
+            [string]$Title = 'Select Folder',
+            [string]$InitialDirectory = '',
+            $OwnerWindow = $null
+        )
+
+        $dialog = New-Object System.Windows.Forms.OpenFileDialog
+        $dialog.Title = $Title
+        if ($InitialDirectory -and (Test-Path -LiteralPath $InitialDirectory)) {
+            $dialog.InitialDirectory = $InitialDirectory
+        }
+        $dialog.ValidateNames = $false
+        $dialog.CheckFileExists = $false
+        $dialog.CheckPathExists = $true
+        $dialog.FileName = 'Select Folder'
+        $dialog.Filter = 'All files (*.*)|*.*'
+
+        if ((Show-OwnedDialog -Dialog $dialog -OwnerWindow $OwnerWindow) -eq [System.Windows.Forms.DialogResult]::OK) {
+            $selectedPath = if (Test-Path -LiteralPath $dialog.FileName -PathType Container) {
+                $dialog.FileName
+            }
+            else {
+                [System.IO.Path]::GetDirectoryName($dialog.FileName)
+            }
+
+            if ($selectedPath -and (Test-Path -LiteralPath $selectedPath)) {
+                return [System.IO.Path]::GetFullPath($selectedPath)
+            }
+        }
+
+        return $null
+    }
+
+    # ===============================================================================================================================
+
     function Test-SelectedPathText {
         param([string]$PathText)
 
@@ -1286,6 +1322,7 @@ function Show-PKeyMasterGui {
     $readerFolderLabel = New-FormLabel -Text 'Folder'
     $readerFolderTextBox = New-FormTextBox -ReadOnly $true -Tooltip 'Select a folder containing PKeyConfig files to export as CSV.' -Placeholder $browsePlaceholder
     $readerRecurseCheckBox = New-FormCheckBox -Text 'Recurse' -Tooltip 'When checked, searches subfolders recursively for PKeyConfig files.' -AutoSize $false
+    $readerRecurseCheckBox.Checked = $true
     $exportCsvButton = New-FormButton -Text 'Export CSV' -Tooltip 'Exports the selected PKeyConfig files to CSV format under the PKeyMaster-Logs folder on the Desktop.'
     $readerTopPanel.Controls.AddRange(@($readerFileLabel, $readerFileTextBox, $readerFolderLabel, $readerFolderTextBox, $readerRecurseCheckBox, $exportCsvButton))
 
@@ -1773,11 +1810,9 @@ function Show-PKeyMasterGui {
         })
     $readerFolderTextBox.Add_MouseDown({
             Invoke-UiAction {
-                $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
-                $dialog.Description = 'Select a folder containing PKeyConfig files'
-                $dialog.SelectedPath = Get-DefaultConfigRoot
-                if ((Show-OwnedDialog -Dialog $dialog -OwnerWindow $mainWindow) -eq [System.Windows.Forms.DialogResult]::OK) {
-                    $readerFolderTextBox.Text = [System.IO.Path]::GetFullPath($dialog.SelectedPath)
+                $selectedPath = Select-FolderDialog -Title 'Select a folder containing PKeyConfig files' -InitialDirectory (Get-DefaultConfigRoot) -OwnerWindow $mainWindow
+                if ($selectedPath) {
+                    $readerFolderTextBox.Text = $selectedPath
                     $readerFileTextBox.Text = $browsePlaceholder
                 }
             }
@@ -1844,11 +1879,9 @@ function Show-PKeyMasterGui {
         })
     $scanFolderTextBox.Add_MouseDown({
             Invoke-UiAction {
-                $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
-                $dialog.Description = 'Select a folder to scan for product keys'
-                $dialog.SelectedPath = 'C:\Windows\System32'
-                if ((Show-OwnedDialog -Dialog $dialog -OwnerWindow $mainWindow) -eq [System.Windows.Forms.DialogResult]::OK) {
-                    $scanFolderTextBox.Text = [System.IO.Path]::GetFullPath($dialog.SelectedPath)
+                $selectedPath = Select-FolderDialog -Title 'Select a folder to scan for product keys' -InitialDirectory 'C:\Windows\System32' -OwnerWindow $mainWindow
+                if ($selectedPath) {
+                    $scanFolderTextBox.Text = $selectedPath
                     $scanFileTextBox.Text = $browsePlaceholder
                     $scanLogsCheckBox.Checked = $true
                 }
