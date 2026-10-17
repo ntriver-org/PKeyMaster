@@ -73,3 +73,32 @@ function Write-Color {
 }
 
 # ===============================================================================================================================
+# PKeyConfigsMap JSON Global Cache
+# ===============================================================================================================================
+
+if (-not $global:PKeyConfigsMap) {
+    $jsonPath = Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Definition) "..\..\PKeyConfigsMap.json"
+
+    if (Test-Path $jsonPath) {
+        Add-Type -AssemblyName System.Web.Extensions
+
+        $js = New-Object System.Web.Script.Serialization.JavaScriptSerializer
+        $js.MaxJsonLength = [int]::MaxValue
+
+        $global:PKeyConfigsMap = $js.DeserializeObject([System.IO.File]::ReadAllText($jsonPath))
+    }
+}
+
+# ===============================================================================================================================
+# PreVistaRanges CSV Global Cache
+# ===============================================================================================================================
+
+if (-not $global:PreVistaRanges) {
+    $preVistaCsvPath = Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Definition) "..\..\PreVistaRanges.csv"
+
+    if (Test-Path $preVistaCsvPath) {
+        $global:PreVistaRanges = @((Get-Content -LiteralPath $preVistaCsvPath) | Where-Object { $_ -notmatch '^\s*sep\s*=' } | ConvertFrom-Csv)
+    }
+}
+
+# ===============================================================================================================================

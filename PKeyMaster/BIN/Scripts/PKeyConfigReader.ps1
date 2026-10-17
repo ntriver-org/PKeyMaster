@@ -6,8 +6,8 @@
     Two modes:
 
     1. GetKeyInfo Mode (-GetKeyInfo)
-       Looks up an ActConfigId in a PKeyConfig file and returns product description,
-       edition, key type, and algorithm. Used by KeyCheckerPidGenX.ps1 via -PassThru.
+       Looks up key metadata in a PKeyConfig file by GroupId and KeyId.
+       Used by KeyCheckerPidGenX.ps1 via -PassThru.
 
     2. Export Mode (default)
        Parses PKeyConfig files and exports configuration/key-range data to CSV.
@@ -25,18 +25,18 @@
 .PARAMETER GetKeyInfo
     Switch to enable GetKeyInfo mode.
 
-.PARAMETER ActConfigId
-    (GetKeyInfo mode) The Activation Config ID (GUID) to look up.
-
 .PARAMETER GroupId
-    (GetKeyInfo mode) Optional Group ID to resolve the Algorithm ID.
+    (GetKeyInfo mode) Group ID to look up.
+
+.PARAMETER KeyId
+    (GetKeyInfo mode) Key ID (Serial) to resolve configuration and key range.
 
 .PARAMETER PassThru
     (GetKeyInfo mode) Returns a PSObject instead of printing to console.
 
 .EXAMPLE
     # Look up key info (used by KeyCheckerPidGenX.ps1)
-    .\PKeyConfigReader.ps1 -GetKeyInfo -File "C:\PKeyConfigs\pkeyconfig.xrm-ms" -ActConfigId "{guid}" -GroupId 123 -PassThru
+    .\PKeyConfigReader.ps1 -GetKeyInfo -File "C:\PKeyConfigs\pkeyconfig.xrm-ms" -GroupId 123 -KeyId 456789 -PassThru
 
 .EXAMPLE
     # Export a single PKeyConfig to CSV (saved to Desktop\PKeyMaster-Logs)
@@ -67,10 +67,10 @@ param(
     [switch]$GetKeyInfo,
 
     [Parameter(ParameterSetName = 'GetKeyInfo', Mandatory = $true)]
-    [string]$ActConfigId,
-
-    [Parameter(ParameterSetName = 'GetKeyInfo')]
     [uint32]$GroupId = 0,
+
+    [Parameter(ParameterSetName = 'GetKeyInfo', Mandatory = $true)]
+    [int64]$KeyId = 0,
 
     [Parameter(ParameterSetName = 'GetKeyInfo')]
     [switch]$PassThru
@@ -131,51 +131,66 @@ function Get-NodeText($Node, $LocalName) {
 # GetKeyInfo mode
 # ===============================================================================================================================
 
-# Look up Description, Edition, KeyType, Algorithm for an ActConfigId + GroupId
+# Look up Description, Edition, KeyType, EULA, PartNumber, AlgorithmId, ActivationId by GroupId and KeyId
 function Get-PKeyInfo {
     param(
         [string]$FilePath,
-        [string]$ActConfigId,
-        [uint32]$GroupId
+        [uint32]$GroupId,
+        [int64]$KeyId
     )
 
     $xml = Read-PKeyConfigXml $FilePath
     if (-not $xml) { if ($script:Script_ReadPKeyConfigXmlError) { Write-Output $script:Script_ReadPKeyConfigXmlError }; return $null }
-    # Find the Configuration node matching our ActConfigId
+
     $desc = ''
     $ed = ''
     $ktype = ''
-    $needle = $ActConfigId.Trim().Trim('{', '}').ToLower()
+    $eula = ''
+    $partNum = ''
+    $actId = ''
+    $gStr = [string]$GroupId
 
     foreach ($cfg in @($xml.SelectNodes("//*[local-name()='Configuration']"))) {
-        $n = $cfg.SelectSingleNode("*[local-name()='ActConfigId']")
-        if ($n -and $n.InnerText.Trim().Trim('{', '}').ToLower() -eq $needle) {
-            $desc = Get-NodeText $cfg 'ProductDescription'
-            $ed = Get-NodeText $cfg 'EditionId'
-            $ktype = Get-NodeText $cfg 'ProductKeyType'
+        if ((Get-NodeText $cfg 'RefGroupId') -ne $gStr) { continue }
+
+        $cfgAct = Get-NodeText $cfg 'ActConfigId'
+        $needle = $cfgAct.Trim().Trim('{', '}').ToLower()
+
+        foreach ($kr in @($xml.SelectNodes("//*[local-name()='KeyRange']"))) {
+            if ((Get-NodeText $kr 'RefActConfigId').Trim().Trim('{', '}').ToLower() -eq $needle) {
+                $start = [int64](Get-NodeText $kr 'Start')
+                $end = [int64](Get-NodeText $kr 'End')
+                if ($KeyId -ge $start -and $KeyId -le $end) {
+                    $actId = $cfgAct
+                    $desc = Get-NodeText $cfg 'ProductDescription'
+                    $ed = Get-NodeText $cfg 'EditionId'
+                    $ktype = Get-NodeText $cfg 'ProductKeyType'
+                    $eula = Get-NodeText $kr 'EulaType'
+                    $partNum = Get-NodeText $kr 'PartNumber'
+                    break
+                }
+            }
+        }
+        if ($actId) { break }
+    }
+
+    # Look up the AlgorithmId from matching PublicKey
+    $algId = ''
+    foreach ($pk in @($xml.SelectNodes("//*[local-name()='PublicKey']"))) {
+        if ((Get-NodeText $pk 'GroupId') -eq $gStr) {
+            $algId = Get-NodeText $pk 'AlgorithmId'
             break
         }
     }
 
-    # Look up the AlgorithmId from the matching PublicKey
-    $algId = ''
-    if ($null -ne $GroupId) {
-        $gStr = [string]$GroupId
-        foreach ($pk in @($xml.SelectNodes("//*[local-name()='PublicKey']"))) {
-            $gn = $pk.SelectSingleNode("*[local-name()='GroupId']")
-            $an = $pk.SelectSingleNode("*[local-name()='AlgorithmId']")
-            if ($gn -and $gn.InnerText.Trim() -eq $gStr -and $an) {
-                $algId = $an.InnerText.Trim()
-                break
-            }
-        }
-    }
-
     return New-Object PSObject -Property @{
-        Description = $desc
-        Edition     = $ed
-        KeyType     = $ktype
-        Algorithm   = $algId
+        Description  = $desc
+        Edition      = $ed
+        EULA         = $eula
+        KeyType      = $ktype
+        PartNumber   = $partNum
+        AlgorithmId  = $algId
+        ActivationId = $actId
     }
 }
 
@@ -286,7 +301,7 @@ if ($GetKeyInfo) {
     # --- GetKeyInfo mode: look up key metadata and return ---
     try {
         if (-not $File) { Write-Color "File parameter is required for GetKeyInfo." "BgRed"; return }
-        $outObj = Get-PKeyInfo -FilePath $File -ActConfigId $ActConfigId -GroupId $GroupId
+        $outObj = Get-PKeyInfo -FilePath $File -GroupId $GroupId -KeyId $KeyId
         if ($PassThru) { return $outObj }
         $outObj | Format-List
     }

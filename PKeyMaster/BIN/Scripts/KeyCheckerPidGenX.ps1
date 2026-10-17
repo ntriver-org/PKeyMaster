@@ -45,7 +45,7 @@
     Requires Libs\DigitalProductId.ps1, PKeyConfigReader.ps1,
     KeyCertification.ps1, KeyActivation.ps1, MakCount.ps1, GetCID.ps1,
     DecodePKey2009.ps1, DecodePKey980-PKey986.ps1 for optional features.
-    Requires PKeyConfigsMap.csv and PreVistaRanges.csv in the application root.
+    Requires PKeyConfigsMap.json and PreVistaRanges.csv in the application root.
     Requires Libs\Common.ps1 for shared helper functions.
 
 .EXAMPLE
@@ -88,6 +88,8 @@ $readerPath = Join-Path $scriptDir "PKeyConfigReader.ps1"
 if (Test-Path $digitalPidPath) { . $digitalPidPath }
 if (Test-Path $commonPath) { . $commonPath }
 
+$f = "{0,-18}: {1}"
+
 # ===============================================================================================================================
 # P/Invoke type compilation
 # ===============================================================================================================================
@@ -126,14 +128,10 @@ if (-not $Script:PidGenXNativeType) {
 
 function Write-ProductMatch($GroupId, $KeyId, $f, $scriptDir) {
     # Look up Group ID + Key ID in PreVistaRanges.csv for product editions.
-    if ($null -eq $KeyId) { return }
-    
-    $csvPath = Join-Path (Split-Path -Parent $scriptDir) "PreVistaRanges.csv"
-    if (-not (Test-Path $csvPath)) { return }
+    if ($null -eq $GroupId -or $null -eq $KeyId -or -not $global:PreVistaRanges) { return }
 
     $editionMatches = @{}
-    $csvRows = (Get-Content -LiteralPath $csvPath) | Where-Object { $_ -notmatch '^\s*sep\s*=' } | ConvertFrom-Csv
-    foreach ($row in $csvRows) {
+    foreach ($row in $global:PreVistaRanges) {
         if (-not $row.BinkID_Dec -or [int]$row.BinkID_Dec -ne $GroupId) { continue }
 
         $min = ([int64]$row.Channel_Min * 1000000) + [int64]$row.Sequence_Min
@@ -430,15 +428,31 @@ function Add-Mod7CheckDigit {
 function Get-LicenseType {
     param(
         [string]$KeyType = "",
-        [bool]$IsUpgrade = $false
+        [Parameter(Mandatory = $true)][bool]$IsUpgrade,
+        [Parameter(Mandatory = $true)][string]$AlgorithmId,
+        [Parameter(Mandatory = $true)][long]$Serial,
+        [Parameter(Mandatory = $true)][int]$GroupId
     )
 
-    switch -Wildcard ($KeyType) {
-        "OEM*" { return 2 }
-        "Volume*" { return 3 }
-        "Retail*" { if ($IsUpgrade) { return 1 } return 0 }
-        "PGS:TB*" { return 4 }
-        default { return 0 }
+    if ($AlgorithmId -match "980|986") {
+        if ($GroupId % 2 -ne 0) { return 2 }
+
+        $channelId = [int]([Math]::Floor($Serial / 1000000) % 1000)
+        if ($channelId -eq 270) { return 3 }
+        if ($channelId -eq 335) { return 6 }
+
+        if ($IsUpgrade) { return 1 }
+        return 0
+    }
+
+    if ($AlgorithmId -match "2005|2009") {
+        switch -Wildcard ($KeyType) {
+            "OEM*" { return 2 }
+            "Volume*" { return 3 }
+            "Retail*" { if ($IsUpgrade) { return 1 } return 0 }
+            "PGS:TB*" { return 4 }
+            default { return 0 }
+        }
     }
 }
 
@@ -446,11 +460,11 @@ function Get-LicenseType {
 
 function Get-ProductId {
     param(
-        [string]$Algorithm = "pkey/2009",
-        [int]$GroupId = 0,
-        [long]$Serial = 0,
-        [bool]$IsOem = $false,
-        [bool]$IsUpgrade = $false
+        [Parameter(Mandatory = $true)][string]$Algorithm,
+        [Parameter(Mandatory = $true)][int]$GroupId,
+        [Parameter(Mandatory = $true)][long]$Serial,
+        [Parameter(Mandatory = $true)][bool]$IsOem,
+        [Parameter(Mandatory = $true)][bool]$IsUpgrade
     )
 
     $random = [int]([Math]::Abs([Environment]::TickCount / 10) % 1000)
@@ -496,9 +510,9 @@ function Get-ProductId {
 
 function Get-ExtendedProductId {
     param(
-        [int]$GroupId = 0,
-        [long]$Serial = 0,
-        [int]$LicenseType = 0
+        [Parameter(Mandatory = $true)][int]$GroupId,
+        [Parameter(Mandatory = $true)][long]$Serial,
+        [Parameter(Mandatory = $true)][int]$LicenseType
     )
 
     $mpc = "00000"
@@ -508,13 +522,7 @@ function Get-ExtendedProductId {
     $buildNumber = [Environment]::OSVersion.Version.Build
     $currentDate = Get-Date
 
-    $langId = 1033
-    try {
-        $langId = [System.Globalization.CultureInfo]::InstalledUICulture.LCID
-    }
-    catch {
-        $langId = 1033
-    }
+    $langId = try { [System.Globalization.CultureInfo]::InstalledUICulture.LCID } catch { 1033 }
 
     $dayOfYear = [int]$currentDate.DayOfYear
     $year = [int]$currentDate.Year
@@ -533,28 +541,110 @@ function Get-ExtendedProductId {
 }
 
 # ===============================================================================================================================
+
+function Show-RedeemKeyStatus {
+    param(
+        [string]$AlgorithmId = $algorithmId,
+        [string]$Eula = '',
+        [int]$GroupId = 0
+    )
+
+    if ($CheckRedeemKey) {
+        Invoke-CheckRedeemKey $ProductKey $LogFolder $f $scriptDir
+    }
+    elseif (-not $AlgorithmId -or $Eula -eq "ltPIN" -or $GroupId -eq 28) {
+        Write-Output ""
+        Write-Color ($f -f "Tip", "This may be a Redeem key. Enable Redeem Status for details.") "FgYellow"
+    }
+}
+
+# ===============================================================================================================================
 # Main execution
 # ===============================================================================================================================
 
-$f = "{0,-18}: {1}"
 if (-not (Test-Path $dllPath)) { Write-Color "PidGenX DLL not found: $dllPath" "BgRed"; return }
+if (-not $global:PKeyConfigsMap) { Write-Color "PKeyConfigsMap cache not found." "BgRed"; return }
 
-# Determine PKey2009 vs Non-PKey2009
+# ===============================================================================================================================
 
-$isPKey2009 = $ProductKey -match 'N'
+# If manual path is specified, check only the specified pkeyconfig with PidGenX
+# If manual path is not specified, check only the two custom pkeyconfigs for PKey2005 and PKey980-986 with PidGenX (PKey2009 keys are decoded manually)
 
-if ($isPKey2009) {
+$configTargets = @()
+
+if ($ProductKey -notmatch 'Z') {
+    if (-not $ManualPKeyConfigPath) {
+        if ($ProductKey -notmatch 'N') {
+            $pkeyConfigsDir = Join-Path (Split-Path -Parent $scriptDir) "PKeyConfigs"
+            $customProfiles = @($global:PKeyConfigsMap | Where-Object { $_.Profile -match "custom" })
+            foreach ($entry in $customProfiles) {
+                $relativePath = $entry.Path.TrimStart('\')
+                $configTargets += Join-Path $pkeyConfigsDir $relativePath
+            }
+        }
+    }
+    else {
+        $configTargets += $ManualPKeyConfigPath
+    }
+}
+
+# ===============================================================================================================================
+
+# Here we are checking the key with the pkeyconfig files (see above) by passing it to PidGenX
+# Only Group ID, Key ID, and IsUpgrade are extracted here; the rest of the info will be calculated manually or fetched directly from pkeyconfig
+
+$hr = $null
+
+if ($configTargets.Count -gt 0) {
+
+    # Allocate DPID4 buffer
+
+    $d4 = New-Object byte[] 1272; $d4[0] = 0xF8; $d4[1] = 0x04
+    $gh4 = [System.Runtime.InteropServices.GCHandle]::Alloc($d4, "Pinned")
+
+    try {
+        foreach ($currentPath in $configTargets) {
+            if (-not (Test-Path $currentPath)) { continue }
+
+            # Call PidGenX
+            $hr = $Script:PidGenXNativeType::PidGenX($ProductKey, $currentPath, "00000", "", [IntPtr]::Zero, [IntPtr]::Zero, $gh4.AddrOfPinnedObject())
+
+            if ($hr -eq 0) {
+                $parsedDpid4 = Get-DigitalProductIdV4 $d4
+                if ($parsedDpid4 -and $parsedDpid4.AdvancedPid) {
+                    $preAdvPid = $parsedDpid4.AdvancedPid
+                    $preAdvPidParts = $preAdvPid -split '-'
+                    if ($preAdvPidParts.Count -ge 4) {
+                        $groupId = [int]$preAdvPidParts[1]
+                        $keyId = [int64]($preAdvPidParts[2] + $preAdvPidParts[3])
+                    }
+                }
+                $isUpgrade = ($parsedDpid4.IsUpgrade -eq 1)
+                break
+            }
+        }
+    }
+    finally {
+        if ($gh4) { $gh4.Free() }
+    }
+}
+
+# ===============================================================================================================================
+
+# Decode PKey2009 key
+
+if ($ProductKey -match 'N' -and $ProductKey -notmatch 'Z') {
     $decodeScript = Join-Path $scriptDir "DecodePKey2009.ps1"
     if (Test-Path $decodeScript) {
         $decodeOutput = @(& $decodeScript -Key $ProductKey -PassThru 2>$null)
         if ($decodeOutput) {
             # Last item in the array is the data object
             $dataObj = $decodeOutput[-1]
-            if ($dataObj) {
-                $pkey2009DecodedGroup = $dataObj.Group
-                $pkey2009DecodedSerial = $dataObj.Serial
+            if ($dataObj -and $dataObj.ChecksumValid) {
+                $groupId = $dataObj.Group
+                $keyId = $dataObj.Serial
+                $isUpgrade = $dataObj.Upgrade
                 $pkey2009DecodedSecurity = $dataObj.Security
-                $pkey2009DecodedUpgrade = $dataObj.Upgrade
                 $pkey2009DecodedExtra = $dataObj.Extra
             }
         }
@@ -563,271 +653,219 @@ if ($isPKey2009) {
 
 # ===============================================================================================================================
 
-# Auto-search: find matching PKeyConfig files
+# Search PKeyConfig file from PKeyConfigsMap.json map using GroupId and KeyId
 
-$configTargets = @()
-$targetProfileNames = @()
+$matchedConfigPath = $null
+$matchedProfileName = $null
 
-if (-not $ManualPKeyConfigPath) {
-
-    $csvPath = Join-Path (Split-Path -Parent $scriptDir) "PKeyConfigsMap.csv"
-    if (-not (Test-Path $csvPath)) {
-        Write-Color "PKeyConfigsMap.csv not found: $csvPath" "BgRed"
-        return
-    }
-
-    $configsMap = (Get-Content -LiteralPath $csvPath) | Where-Object { $_ -notmatch '^\s*sep\s*=' } | ConvertFrom-Csv
-
-    $sortedRows = @()
-    if ($isPKey2009) {
-        for ($p = 1; $p -le 4; $p++) {
-            $sortedRows += @($configsMap | Where-Object { [int]$_.PKey2009Priority -eq $p })
+if ($null -ne $groupId -and $null -ne $keyId) {
+    if (-not $ManualPKeyConfigPath) {
+        $pkeyConfigsDir = Join-Path (Split-Path -Parent $scriptDir) "PKeyConfigs"
+        $gStr = [string]$groupId
+        $configsMap = @($global:PKeyConfigsMap | Where-Object { $_.Profile -notmatch "custom" }) + @($global:PKeyConfigsMap | Where-Object { $_.Profile -match "custom" })
+        foreach ($entry in $configsMap) {
+            $foundInEntry = $false
+            if ($entry.Algorithms) {
+                foreach ($algoKey in $entry.Algorithms.Keys) {
+                    $algoGroups = $entry.Algorithms[$algoKey]
+                    if ($algoGroups -and $algoGroups.ContainsKey($gStr)) {
+                        foreach ($range in $algoGroups[$gStr]) {
+                            if ($keyId -ge $range[0] -and $keyId -le $range[1]) {
+                                $foundInEntry = $true
+                                break
+                            }
+                        }
+                    }
+                    if ($foundInEntry) { break }
+                }
+            }
+            if ($foundInEntry) {
+                $matchedConfigPath = Join-Path $pkeyConfigsDir $entry.Path.TrimStart('\')
+                $matchedProfileName = $entry.Profile
+                break
+            }
         }
     }
     else {
-        for ($p = 1; $p -le 4; $p++) {
-            $sortedRows += @($configsMap | Where-Object { [int]$_.'PKey986-980Priority' -eq $p })
-        }
-        for ($p = 1; $p -le 4; $p++) {
-            $sortedRows += @($configsMap | Where-Object { [int]$_.PKey2005Priority -eq $p })
-        }
+        $matchedConfigPath = $ManualPKeyConfigPath
+        $matchedProfileName = if ($ManualProfileName) { $ManualProfileName } else { $ManualPKeyConfigPath }
     }
-
-    if ($sortedRows.Count -eq 0) {
-        Write-Color "No valid pkeyconfig files found in priority list for this key type." "BgRed"
-        return
-    }
-
-    $pkeyConfigsDir = Join-Path (Split-Path -Parent $scriptDir) "PKeyConfigs"
-    foreach ($row in $sortedRows) {
-        $configTargets += Join-Path $pkeyConfigsDir $row.Path
-        $targetProfileNames += $row.Profile
-    }
-}
-else {
-    $configTargets += $ManualPKeyConfigPath
-    $targetProfileNames += if ($ManualProfileName) { $ManualProfileName } else { $ManualPKeyConfigPath }
 }
 
 # ===============================================================================================================================
 
-# Allocate DPID buffers (pinned for P/Invoke)
+# Get info from PKeyConfig file
 
-$d2 = New-Object byte[] 50
-$d3 = New-Object byte[] 164; $d3[0] = 0xA4
-$d4 = New-Object byte[] 1272; $d4[0] = 0xF8; $d4[1] = 0x04
-
-$gh2 = [System.Runtime.InteropServices.GCHandle]::Alloc($d2, "Pinned")
-$gh3 = [System.Runtime.InteropServices.GCHandle]::Alloc($d3, "Pinned")
-$gh4 = [System.Runtime.InteropServices.GCHandle]::Alloc($d4, "Pinned")
-
-$matchFound = $false
-$hr = $null
-
-# PidGenX iteration: try each config until a match is found
-
-try {
-    for ($i = 0; $i -lt $configTargets.Count; $i++) {
-        $currentPath = $configTargets[$i]
-        $currentProfile = $targetProfileNames[$i]
-
-        if (-not (Test-Path $currentPath)) { continue }
-
-        # Call PidGenX
-        $hr = $Script:PidGenXNativeType::PidGenX($ProductKey, $currentPath, "00000", "", $gh2.AddrOfPinnedObject(), $gh3.AddrOfPinnedObject(), $gh4.AddrOfPinnedObject())
-        
-        if ($hr -eq 0) {
-            if ($LogFolder -and (Test-Path $LogFolder)) {
-                try {
-                    [System.IO.File]::WriteAllBytes((Join-Path $LogFolder "DPID2.bin"), $d2)
-                    [System.IO.File]::WriteAllBytes((Join-Path $LogFolder "DPID3.bin"), $d3)
-                    [System.IO.File]::WriteAllBytes((Join-Path $LogFolder "DPID4.bin"), $d4)
-                }
-                catch {}
-            }
-            # Parse DPID (Core Metadata)
-            $parsedDpid3 = Get-DigitalProductIdV3 $d3
-            $parsedDpid4 = Get-DigitalProductIdV4 $d4
-            $activationId = $parsedDpid4.ActivationId
-            $groupId = $parsedDpid3.KeyIndex
-
-            # PKeyConfigReader matches this DPID activation GUID against the config XML ActConfigId node.
-            $infoOutput = @(& $readerPath -GetKeyInfo -File $currentPath -ActConfigId $activationId -GroupId $groupId -PassThru 2>$null)
-            $info = if ($infoOutput) { $infoOutput[-1] } else { New-Object PSObject -Property @{ Description = ''; Edition = ''; KeyType = ''; Algorithm = '' } }
-
-            # Extract Label ID and Key ID from Advanced PID
-            $advPid = $parsedDpid4.AdvancedPid
-            $labelId = ""
-            $keyId = 0
-            if ($advPid -and $advPid.Length -ge 22) {
-                $labelId = $advPid.Substring(6, 13) + "-" + $advPid.Substring(19, 3)
-                $keyIdStr = $advPid.Substring(12, 3) + $advPid.Substring(16, 6)
-                $keyId = [int64]$keyIdStr
-            }
-
-            $isPreVistaCustomPkeyConfig = ($info.Description -eq "TEST" -and $info.Edition -eq "TEST" -and $info.Algorithm -notmatch "2005|2009")
-
-            $pkActConfigId = ""
-            $pkey2005Security = $null
-            $iid = ""
-            if ($info.Algorithm -match "2005|2009") {
-                if ($info.Algorithm -match "2005") {
-                    $pkey2005Security = Read-PidGenXPKey2005Security
-                    $pkActConfigId = Get-PKey2005ActConfigId $activationId $parsedDpid4.IsUpgrade $keyId $pkey2005Security
-                }
-                elseif ($null -ne $pkey2009DecodedSecurity) {
-                    $pkActConfigId = Get-PKey2009ActConfigId $activationId $parsedDpid4.IsUpgrade $keyId $groupId $pkey2009DecodedSecurity
-                }
-                if ($GetInstallationId -or $GetConfirmationId) {
-                    $iid = Invoke-GetInstallationId $ProductKey $currentPath
-                }
-            }
-
-            # Pre-calculate 980/986 Bink and Cryptography
-            $bink = $null
-            $channel = $null
-            $seq = $null
-            $decodeHash = $null
-            $decodeAuth = $null
-            $decodeSig = $null
-            if ($info.Algorithm -match "980|986") {
-                $bink = if ($info.Algorithm -match "980") { "Bink1998" } else { "Bink2002" }
-                $channel = [int64][Math]::Floor($keyId / 1000000)
-                $seq = $keyId % 1000000
-
-                $decode980Script = Join-Path $scriptDir "DecodePKey980-PKey986.ps1"
-                if (Test-Path $decode980Script) {
-                    $decodeOutput = @(& $decode980Script -productKey $ProductKey -binkIdHex ("0x{0:X}" -f $groupId) -PassThru 2>$null)
-                    if ($decodeOutput) {
-                        $dataObj = $decodeOutput[-1]
-                        if ($dataObj) {
-                            $decodeHash = $dataObj.Hash
-                            $decodeAuth = $dataObj.Auth
-                            $decodeSig = $dataObj.Signature
-                        }
-                    }
-                }
-            }
-
-            # Output Result
-            Write-Output ""
-            Write-Output ($f -f "Product Key", $ProductKey)
-            Write-Output ($f -f "Profile", $currentProfile)
-
-            # Summary Block
-            if ($isPreVistaCustomPkeyConfig) {
-                Write-ProductMatch $groupId $keyId $f $scriptDir
-            }
-            else {
-                Write-Color ($f -f "Description", $info.Description) "BgGreen"
-                Write-Output ($f -f "Edition", $info.Edition)
-                Write-Output ($f -f "Key Type", $info.KeyType)
-                if ($parsedDpid4.EULA) { Write-Output ($f -f "EULA", $parsedDpid4.EULA) }
-            }
-            Write-Output ($f -f "Upgrade Key", $(if ($parsedDpid4.IsUpgrade -eq 1) { "Yes" } else { "No" }))
-
-            Write-Output ""
-
-            # Crypto & Algorithm-specific block
-            if ($bink) { Write-Output ($f -f "Bink", $bink) }
-            Write-Output ($f -f "Group ID", ("{0} (0x{0:X})" -f $groupId))
-            Write-Output ($f -f "Key ID", ("{0} (0x{0:X})" -f $keyId))
-            if ($null -ne $channel) { Write-Output ($f -f "Channel ID", ("{0} (0x{0:X})" -f $channel)) }
-            if ($null -ne $seq) { Write-Output ($f -f "Sequence", ("{0} (0x{0:X})" -f $seq)) }
-            if ($null -ne $decodeHash) { Write-Output ($f -f "Hash", ("{0} (0x{0:X})" -f $decodeHash)) }
-            if ($null -ne $decodeAuth) { Write-Output ($f -f "Auth", ("{0} (0x{0:X})" -f $decodeAuth)) }
-            if ($null -ne $decodeSig) { Write-Output ($f -f "Signature", ("{0} (0x{0:X})" -f $decodeSig)) }
-            if ($null -ne $pkey2009DecodedSecurity) { Write-Output ($f -f "Security", ("{0} (0x{0:X})" -f $pkey2009DecodedSecurity)) }
-            if ($null -ne $pkey2009DecodedExtra) { Write-Output ($f -f "PKey2009 Extra", ("{0} (0x{0:X})" -f $pkey2009DecodedExtra)) }
-            if ($null -ne $pkey2005Security) { Write-Output ($f -f "Security", ("{0} (0x{0:X})" -f $pkey2005Security)) }
-
-            # Calculate License Type, Product ID, and Extended PID
-            $isUpgrade = ($parsedDpid4.IsUpgrade -eq 1)
-            $lt = Get-LicenseType -KeyType $info.KeyType -IsUpgrade $isUpgrade
-            $isOem = ($lt -eq 2)
-            $productId = Get-ProductId -Algorithm $info.Algorithm -GroupId $groupId -Serial $keyId -IsOem $isOem -IsUpgrade $isUpgrade
-            $advPid = Get-ExtendedProductId -GroupId $groupId -Serial $keyId -LicenseType $lt
-            if ($advPid -and $advPid.Length -ge 22) {
-                $labelId = $advPid.Substring(6, 13) + "-" + $advPid.Substring(19, 3)
-            }
-
-            Write-Output ""
-
-            # IDs & Licensing details
-            Write-Output ($f -f "License Type", $lt)
-            if (-not $isPreVistaCustomPkeyConfig) { Write-Output ($f -f "Part number", $parsedDpid4.EditionId) }
-            Write-Output ($f -f "Label ID", $labelId)
-            Write-Output ($f -f "Product ID", $productId)
-            Write-Output ($f -f "Algorithm ID", $info.Algorithm)
-            if (-not $isPreVistaCustomPkeyConfig) { Write-Output ($f -f "Activation ID", $activationId) }
-            Write-Output ($f -f "Extended PID", $advPid)
-            if ($iid) { Write-Output ($f -f "Installation ID", $iid) }
-            if ($pkActConfigId) { Write-Output ($f -f "ActConfig ID", $pkActConfigId) }
-
-            # Sub-actions (Cert, Act, Mak, Cid)
-            if ($info.Algorithm -match "2005|2009") {
-                $doCert = $KeyCertification -and $pkActConfigId
-                $doAct = $KeyActivation -and $pkActConfigId
-                $doMak = $MAKCount -and $info.KeyType -match "Volume:MAK"
-                $doCid = $GetConfirmationId -and $iid
-
-                if ($doCert -or $doAct -or $doMak -or $doCid) {
-                    Write-Output ""
-                }
-
-                $script:SubActionLastState = $null
-
-                if ($doCert) { Invoke-KeyCertification $ProductKey $pkActConfigId $LogFolder $f $scriptDir }
-                if ($doAct) { Invoke-KeyActivation $ProductKey $pkActConfigId $LogFolder $f $scriptDir }
-                if ($doMak) { Invoke-MakCount $parsedDpid4.AdvancedPid $LogFolder $f $scriptDir }
-                if ($doCid) { Invoke-GetConfirmationId $iid $LogFolder $f $scriptDir }
-            }
-            $matchFound = $true
-            break
+if ($matchedConfigPath -and (Test-Path $matchedConfigPath)) {
+    $infoOutput = @(& $readerPath -GetKeyInfo -File $matchedConfigPath -GroupId $groupId -KeyId $keyId -PassThru 2>$null)
+    if ($infoOutput) {
+        $info = $infoOutput[-1]
+        $algorithmId = $info.AlgorithmId
+        if ($info.Description -ne "CustomMade") {
+            $description = $info.Description
+            $edition = $info.Edition
+            $eula = $info.EULA
+            $keyType = $info.KeyType
+            $partNumber = $info.PartNumber
+            $activationId = if ($info.ActivationId) { $info.ActivationId.Trim('{', '}').ToLower() }
         }
-    }
-
-    if (-not $matchFound) {
-        $resultText = "Failed (No matching configuration found)"
-        if ($null -ne $hr) {
-            $hrHex = "0x{0:X8}" -f [int]$hr
-            $desc = switch ($hr) {
-                -2147024809 { 'The parameter is incorrect' }
-                -1979645695 { 'Invalid key or no matching profile found' }
-                -1979645951 { 'Valid key, but no matching profile found' }
-                -2147024894 { "Can't find specified pkeyconfig file" }
-                -2147024893 { 'Specified pkeyconfig path does not exist' }
-                15 { 'Key is blacklisted' }
-                default { '' }
-            }
-            $resultText = if ($desc) { "$desc ($hrHex)" } else { "Error: $hrHex" }
-        }
-
-        Write-Output ""
-        Write-Output ($f -f "Product Key", $ProductKey)
-        Write-Color ($f -f "Result", $resultText) "BgGray"
-        if ($hr -eq -1979645951 -and $null -ne $pkey2009DecodedGroup) {
-            Write-Output ($f -f "Upgrade Key", $(if ($pkey2009DecodedUpgrade -eq 1) { "Yes" } else { "No" }))
-            Write-Output ($f -f "Group ID", ("{0} (0x{0:X})" -f $pkey2009DecodedGroup))
-            Write-Output ($f -f "Key ID", ("{0} (0x{0:X})" -f $pkey2009DecodedSerial))
-            Write-Output ($f -f "Security", ("{0} (0x{0:X})" -f $pkey2009DecodedSecurity))
-            Write-Output ($f -f "PKey2009 Extra", ("{0} (0x{0:X})" -f $pkey2009DecodedExtra))
-            Write-Output ($f -f "Algorithm ID", "msft:rm/algorithm/pkey/2009")
-        }
-    }
-
-    if ($CheckRedeemKey) {
-        Invoke-CheckRedeemKey $ProductKey $LogFolder $f $scriptDir
-    }
-    elseif (-not $matchFound -or $parsedDpid4.EULA -eq "ltPIN" -or $groupId -eq 28) {
-        Write-Output ""
-        Write-Color ($f -f "Tip", "This may be a Redeem key. Enable Redeem Status for details.") "FgYellow"
     }
 }
-finally {
-    if ($gh2) { $gh2.Free() }
-    if ($gh3) { $gh3.Free() }
-    if ($gh4) { $gh4.Free() }
+
+# ===============================================================================================================================
+
+# If no matching PKeyConfig found or info could not be retrieved, exit the script
+
+if (-not $algorithmId) {
+    $resultText = if ($null -ne $pkey2009DecodedSecurity -or ($null -ne $hr -and $hr -eq 0)) {
+        "Valid key, but matching profile not found"
+    }
+    else {
+        "Invalid key, or matching profile not found"
+    }
+
+    Write-Output ""
+    Write-Output ($f -f "Product Key", $ProductKey)
+    Write-Color ($f -f "Result", $resultText) "BgGray"
+
+    if ($null -ne $pkey2009DecodedSecurity) {
+        Write-Output ($f -f "Upgrade Key", $(if ($isUpgrade) { "Yes" } else { "No" }))
+        Write-Output ($f -f "Group ID", ("{0} (0x{0:X})" -f $groupId))
+        Write-Output ($f -f "Key ID", ("{0} (0x{0:X})" -f $keyId))
+        Write-Output ($f -f "Security", ("{0} (0x{0:X})" -f $pkey2009DecodedSecurity))
+        Write-Output ($f -f "PKey2009 Extra", ("{0} (0x{0:X})" -f $pkey2009DecodedExtra))
+        Write-Output ($f -f "Algorithm ID", "msft:rm/algorithm/pkey/2009")
+    }
+
+    Show-RedeemKeyStatus
+    return
 }
+
+# ===============================================================================================================================
+
+# PKey980/986 Bink and Cryptography
+
+if ($algorithmId -match "980|986") {
+    $bink = if ($algorithmId -match "980") { "Bink1998" } else { "Bink2002" }
+    $channel = [int64][Math]::Floor($keyId / 1000000)
+    $seq = $keyId % 1000000
+
+    $decode980Script = Join-Path $scriptDir "DecodePKey980-PKey986.ps1"
+    if (Test-Path $decode980Script) {
+        $decodeOutput = @(& $decode980Script -productKey $ProductKey -binkIdHex ("0x{0:X}" -f $groupId) -PassThru 2>$null)
+        if ($decodeOutput) {
+            $dataObj = $decodeOutput[-1]
+            if ($dataObj) {
+                $decodeHash = $dataObj.Hash
+                $decodeAuth = $dataObj.Auth
+                $decodeSig = $dataObj.Signature
+            }
+        }
+    }
+}
+
+# ===============================================================================================================================
+
+# PKey2005/2009 ActConfig ID and Installation ID
+
+if ($algorithmId -match "2005|2009") {
+    if ($algorithmId -match "2005") {
+        $pkey2005Security = Read-PidGenXPKey2005Security
+        $pkActConfigId = Get-PKey2005ActConfigId $activationId $isUpgrade $keyId $pkey2005Security
+    }
+    elseif ($algorithmId -match "2009") {
+        $pkActConfigId = Get-PKey2009ActConfigId $activationId $isUpgrade $keyId $groupId $pkey2009DecodedSecurity
+    }
+    if ($GetInstallationId -or $GetConfirmationId) {
+        $iid = Invoke-GetInstallationId $ProductKey $matchedConfigPath
+    }
+}
+
+# ===============================================================================================================================
+
+# Calculate License Type, Product ID, and Extended PID
+
+if ($keyType -or ($algorithmId -match "980|986")) {
+    $lt = Get-LicenseType -KeyType $keyType -IsUpgrade $isUpgrade -AlgorithmId $algorithmId -Serial $keyId -GroupId $groupId
+    $isOem = ($lt -eq 2)
+    $advPid = Get-ExtendedProductId -GroupId $groupId -Serial $keyId -LicenseType $lt
+    if ($advPid -and $advPid.Length -ge 22) {
+        $labelId = $advPid.Substring(6, 13) + "-" + $advPid.Substring(19, 3)
+    }
+    $productId = Get-ProductId -Algorithm $algorithmId -GroupId $groupId -Serial $keyId -IsOem $isOem -IsUpgrade $isUpgrade
+}
+
+# ===============================================================================================================================
+
+# Output Result
+
+Write-Output ""
+Write-Output ($f -f "Product Key", $ProductKey)
+if ($matchedProfileName) { Write-Output ($f -f "Profile", $matchedProfileName) }
+
+# Summary Block
+
+if ($algorithmId -match "980|986" -and -not $description) {
+    Write-ProductMatch $groupId $keyId $f $scriptDir
+}
+else {
+    if ($description) { Write-Color ($f -f "Description", $description) "BgGreen" }
+    if ($edition) { Write-Output ($f -f "Edition", $edition) }
+    if ($keyType) { Write-Output ($f -f "Key Type", $keyType) }
+    if ($eula) { Write-Output ($f -f "EULA", $eula) }
+}
+Write-Output ($f -f "Upgrade Key", $(if ($isUpgrade) { "Yes" } else { "No" }))
+
+Write-Output ""
+
+# Crypto & Algorithm-specific block
+
+if ($bink) { Write-Output ($f -f "Bink", $bink) }
+if ($null -ne $groupId) { Write-Output ($f -f "Group ID", ("{0} (0x{0:X})" -f $groupId)) }
+if ($null -ne $keyId) { Write-Output ($f -f "Key ID", ("{0} (0x{0:X})" -f $keyId)) }
+if ($null -ne $channel) { Write-Output ($f -f "Channel ID", ("{0} (0x{0:X})" -f $channel)) }
+if ($null -ne $seq) { Write-Output ($f -f "Sequence", ("{0} (0x{0:X})" -f $seq)) }
+if ($null -ne $decodeHash) { Write-Output ($f -f "Hash", ("{0} (0x{0:X})" -f $decodeHash)) }
+if ($null -ne $decodeAuth) { Write-Output ($f -f "Auth", ("{0} (0x{0:X})" -f $decodeAuth)) }
+if ($null -ne $decodeSig) { Write-Output ($f -f "Signature", ("{0} (0x{0:X})" -f $decodeSig)) }
+if ($null -ne $pkey2009DecodedSecurity) { Write-Output ($f -f "Security", ("{0} (0x{0:X})" -f $pkey2009DecodedSecurity)) }
+if ($null -ne $pkey2009DecodedExtra) { Write-Output ($f -f "PKey2009 Extra", ("{0} (0x{0:X})" -f $pkey2009DecodedExtra)) }
+if ($null -ne $pkey2005Security) { Write-Output ($f -f "Security", ("{0} (0x{0:X})" -f $pkey2005Security)) }
+
+Write-Output ""
+
+# IDs & Licensing details
+
+if ($null -ne $lt) { Write-Output ($f -f "License Type", $lt) }
+if ($partNumber) { Write-Output ($f -f "Part number", $partNumber) }
+if ($labelId) { Write-Output ($f -f "Label ID", $labelId) }
+if ($productId) { Write-Output ($f -f "Product ID", $productId) }
+if ($algorithmId) { Write-Output ($f -f "Algorithm ID", $algorithmId) }
+if ($activationId) { Write-Output ($f -f "Activation ID", $activationId) }
+if ($advPid) { Write-Output ($f -f "Extended PID", $advPid) }
+if ($iid) { Write-Output ($f -f "Installation ID", $iid) }
+if ($pkActConfigId) { Write-Output ($f -f "ActConfig ID", $pkActConfigId) }
+
+# Sub-actions (Cert, Act, Mak, Cid)
+
+if ($algorithmId -match "2005|2009") {
+    $doCert = $KeyCertification -and $pkActConfigId
+    $doAct = $KeyActivation -and $pkActConfigId
+    $doMak = $MAKCount -and $keyType -match "Volume:MAK"
+    $doCid = $GetConfirmationId -and $iid
+
+    if ($doCert -or $doAct -or $doMak -or $doCid) {
+        Write-Output ""
+    }
+
+    $script:SubActionLastState = $null
+
+    if ($doCert) { Invoke-KeyCertification $ProductKey $pkActConfigId $LogFolder $f $scriptDir }
+    if ($doAct) { Invoke-KeyActivation $ProductKey $pkActConfigId $LogFolder $f $scriptDir }
+    if ($doMak) { Invoke-MakCount $advPid $LogFolder $f $scriptDir }
+    if ($doCid) { Invoke-GetConfirmationId $iid $LogFolder $f $scriptDir }
+}
+
+Show-RedeemKeyStatus -AlgorithmId $algorithmId -Eula $eula -GroupId $groupId
 
 # ===============================================================================================================================

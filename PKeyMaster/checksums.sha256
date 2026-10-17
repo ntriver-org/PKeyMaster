@@ -67,6 +67,8 @@ f4a4cceb8b72815fb20a42e79cd7e8af1419ff3ebe59463c9232a4721ad07b51 *BIN\PKeyConfig
 e46936571e2552bb7a73f4b54b2a1ff493c179c89b957230bd60b7cae263204a *BIN\PKeyConfigs\Apps\Production\Visual Studio\Visual Studio 2019\pkconfig.xrm-ms
 13f78e597ccfcea4f15958ca8ea48173f05005345324d4aecd8e1519f605e3a8 *BIN\PKeyConfigs\Apps\Production\Visual Studio\Visual Studio 2022\pkconfig.xrm-ms
 10218049e8a23e3a6530ffb0a24d7285b3351ed4182598070095861c23929959 *BIN\PKeyConfigs\Apps\Production\Visual Studio\Visual Studio 2026\pkconfig.xrm-ms
+2908500a0813c600a66f95ba9986b4d0c415b2b646bbcb703123f30a4f71aa58 *BIN\PKeyConfigs\Custom\Custom - PKey2005\custom_pkeyconfig_2005.xrm-ms
+be615309cf848549b3a07fa1306fa71725f9be2669329b4ed779f73a73d8b1a1 *BIN\PKeyConfigs\Custom\Custom - PKey980-986 (Windows 98 to XP - Office 2000 to 2007 - etc)\custom_pkeyconfig_980_986.xrm-ms
 6f748ad1fd50e0a592b0a899ae228398d4b2795388329c5e7f876a16a338bed0 *BIN\PKeyConfigs\Games\Production\Flight Simulator X Acceleration\10.xrm-ms
 1ef6ade8dbb56f0c3474c2eb8ec4ecc0aa998d6afcdb8f0cffa459cb75763f02 *BIN\PKeyConfigs\Games\Production\Flight Simulator X\pkeyconfig.xrm-ms
 90cbf86fd2d5d2a7ffa3546829798f9fd14014e62bf6aef069a195af414d3764 *BIN\PKeyConfigs\Games\Production\Gears of War\Pkeyconfig_GearsofWar_2007-07-25-09-59-52-5952.xml
@@ -85,7 +87,6 @@ edfb49cd35fe352a1d29db39baa949ac23b06795c31f417816185b0c04c82f07 *BIN\PKeyConfig
 12321543ed69de70de79cf9066ae68160f8d4375ff8dea1360ae1e41fbe7f357 *BIN\PKeyConfigs\Office\Production\Main\Office 2013-O365\pkeyconfig-office.xrm-ms
 91a4b0ec0869d1649dadb269e5033ed8c5e3341dbcc69d47d0217b7e74fe9080 *BIN\PKeyConfigs\Office\Production\Main\Office 2016-2019-2021-2024-O365 For Mac\subscription_pkeyconfig.xml
 adc4173b64f1b85b3c92f720b994ef2d758d1702f7728f650f93ada21ae3a802 *BIN\PKeyConfigs\Office\Production\Main\Office 2016-2019-2021-2024-O365\pkeyconfig-office.xrm-ms
-3cde6eea590b6be555e7c01035b1f1e0ab9c0bef45638ce6767b2f8ef6b62b84 *BIN\PKeyConfigs\Pre-Vista Custom Made\Pre-Vista (Windows 98 to XP - Office 2000 to 2007 - etc)\pkeyconfig-custom-made.xrm-ms
 406e0092b5d4a60e2278940477a9f617333ba0b70204a9d4f6ddd55f2dc7cc25 *BIN\PKeyConfigs\Windows - Server\Beta\Csvlk\10143 - Beta - Csvlk - Windows 10\pkeyconfig-csvlk.xrm-ms
 bc898a8e4479e66e6785e26da2bb2a8a26af1d7aec3d8a08f1d0e2b0d7f2a4bb *BIN\PKeyConfigs\Windows - Server\Beta\Csvlk\29531 - Beta - Csvlk - Windows 11\pkeyconfig-csvlk.xrm-ms
 4491f9a083cf45d452bca2478df4374f237954aff99f97698f631fdbc0188446 *BIN\PKeyConfigs\Windows - Server\Beta\Csvlk\8032 - Beta - Csvlk - Windows 8\pkeyconfig-csvlk.xrm-ms
@@ -154,7 +155,7 @@ d74dfb370a19a2adb41bb9880935c0a8db9d475b81edf383427023bd81d15c55 *BIN\PKeyConfig
 d758ff8c9511aad5648b429bc74c076438cee26a8778a8b0db53b498cd4bcbf4 *BIN\PKeyConfigs\Windows - Server\Production\Main\7601 - Windows 7 - Server 2008 R2\pkeyconfig.xrm-ms
 d310e0c0e45d08db12a6010954ffd6400154a206060cb7910af52697aef31be0 *BIN\PKeyConfigs\Windows - Server\Production\Main\9200 - Windows 8 - Server 2012\pkeyconfig.xrm-ms
 b8e8b0ff5c1066562497aede3702089c248382c5d38cd26a70ecfbc8fea90aeb *BIN\PKeyConfigs\Windows - Server\Production\Main\9600 - Windows 8.1 - Server 2012 R2\pkeyconfig.xrm-ms
-514b742eff017387aa122cb69f6e5687dcb503be133a39483fd6c808616246a3 *BIN\PKeyConfigsMap.csv
+dad4149aa125018d4abd70d830254aa6c458122b28d8f539773062ff21a76cc1 *BIN\PKeyConfigsMap.json
 89bc2d22e2d162a3981d224702f6c2ffe9fdfe13be58282d0d16a98d15f37034 *BIN\PreVistaRanges.csv
 c622301660b0f5568d81dffe24a156866643b5f3da89b070f471db21ac1e636d *BIN\PublishLicense.xml
 bc5fa707dbd9df664ec278bd4e8e87852336349ba4af48db0f8b6114dbbc7fea *BIN\Scripts\CheckRedeemKey.ps1
@@ -166,19 +167,19 @@ f78122f42b904a0359d6f44ed36333e95fa74d935e89d39648a7d2fbfd3bef28 *BIN\Scripts\De
 1da5697e6d123e0e8525d2890501f42cdee610d98fa25d1c87880422fa6365dd *BIN\Scripts\GetCidVisualApi.ps1
 62e6fabecacc714258c92f4dce47c3cb31fd4ab1c25ee1d5ead61139350141ef *BIN\Scripts\GetIidCid.ps1
 e9d2042adce8e35ee5abad6e53356da8750ce3e4f114712d0b4982809fb8a532 *BIN\Scripts\GetMSDMKey.ps1
-d9149542edd16e05fda59005e95b2b7c6f977b98d105cc0c4f2d2870c3ffb2e3 *BIN\Scripts\GUI.ps1
+7a4f8fbdda8fa46baa53adc56405958173cc514e81c136bb06cffb1cbc4e4af7 *BIN\Scripts\GUI.ps1
 c6a5aed4ad1c0e105d50aa51a0de2019a9a3689b5aeddae3a5f884111c4a21ca *BIN\Scripts\KeyActivation.ps1
 29dc799c495e7bb33930c4465c33130dbb805908426e3cb551f7950133571796 *BIN\Scripts\KeyCertification.ps1
 ba276d5808dac33ff613a99187895f7c56207e594054f90b1ee02da39cd25c57 *BIN\Scripts\KeyChecker.ps1
-97dc227112a09d05e736a48510ab6fff6af4e7ee498afedd202512b3ea859ce6 *BIN\Scripts\KeyCheckerPidGenX.ps1
+c8c1624b5198c9d983e7ea6975dc89d6e59906e817e06d09ae9a16e283c4fd16 *BIN\Scripts\KeyCheckerPidGenX.ps1
 bd4008d0404e2e060cd259989ee605a641b04d569fc126cff40c21c3c0dbee2d *BIN\Scripts\KeyCheckerPre98.ps1
 5b731756c9a15f896b5134a6f6034dcdc09d2c8d2a2d6bd2632611305fbbfe28 *BIN\Scripts\Launcher.ps1
-63777c2380c22b44189db4e65cd2afc5d8a55279b123dad47c79710bce5c9439 *BIN\Scripts\Libs\Common.ps1
+3041a7c2ee3dd546eab206201966bdac22840c1c95d4ce493ea12429c06ea7a9 *BIN\Scripts\Libs\Common.ps1
 2afb91233b012706a8f7ce0129641050b0d535f970b8ccbb6597687da5eb4cac *BIN\Scripts\Libs\DigitalProductId.ps1
 e8caf409ccb608b4bc14c7c1d7bbaa81f30cbf0950ff59ba13eb1ceb98029938 *BIN\Scripts\Libs\Network.ps1
 c3c10e9bd94538a8f3254855abe24843a95d2f9815c1270cf1156933606e7745 *BIN\Scripts\Libs\WmiSppError.ps1
 0705532c6bc731c34397f768f8470e3c026cb07057efe5dabc7b010f6e08a77d *BIN\Scripts\MakCount.ps1
-67c720e673654d5ff8a74b03a1f464103526b291863dcaabc946b57750dc042d *BIN\Scripts\PKeyConfigReader.ps1
+00cb517608fc120d7ccc813b6205124518bb6915344eecc59e6f87b3f3bacb7b *BIN\Scripts\PKeyConfigReader.ps1
 ded37d82084795710d5b357fff94ad787a61cb6be20f8a095f3122a5ab13e1bb *BIN\Scripts\ScanKeysInDPID.ps1
 f0a5b3ec7f72b220cfd9382e2f785df6b2a9b9799b0a577bbdd66181c583aee2 *BIN\Scripts\ScanKeysInFiles.ps1
 1cce5f9d37f70b6e7c8b42b868c61ba811965ea8876d046626a7f91c1c41af0b *BIN\Scripts\ScanKeysInRegistry.ps1

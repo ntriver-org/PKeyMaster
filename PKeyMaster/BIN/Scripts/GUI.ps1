@@ -12,6 +12,7 @@
     The launcher dot-sources this file and supplies Version.
     Requires the full PKeyMaster file layout with all BIN\Scripts\ files and
     supporting libraries in place.
+    Requires Libs\Common.ps1 for shared helper functions.
 #>
 [CmdletBinding()]
 param()
@@ -21,9 +22,13 @@ param()
 # ===============================================================================================================================
 
 $Script:GuiScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+if (-not $Script:GuiScriptRoot) { $Script:GuiScriptRoot = "." }
 $Script:ApplicationRoot = Split-Path -Parent $Script:GuiScriptRoot
 $BaseUrl = 'https://ntriver.org'
 $GitUrl = 'https://github.com/ntriver-org/PKeyMaster'
+
+$commonPath = Join-Path $Script:GuiScriptRoot "libs\Common.ps1"
+if (Test-Path $commonPath) { . $commonPath }
 
 Add-Type -AssemblyName System.Windows.Forms | Out-Null
 Add-Type -AssemblyName System.Drawing | Out-Null
@@ -1001,17 +1006,14 @@ function Show-PKeyMasterGui {
         [void]$items.Add((New-ProfileItem -Label 'Automatic detection (5x5 keys)' -Mode 'PidGenX' -Path ''))
         [void]$items.Add((New-ProfileItem -Label 'Pre-98 (Windows 95 - NT 4.0 - Office 95-97 - etc)' -Mode 'Pre-98' -Path ''))
 
-        $profileMapPath = Join-Path $Script:ApplicationRoot 'PKeyConfigsMap.csv'
-        if (Test-Path -LiteralPath $profileMapPath) {
+        if ($global:PKeyConfigsMap) {
             try {
-                (Get-Content -LiteralPath $profileMapPath) | Where-Object {
-                    $_ -notmatch '^\s*sep\s*='
-                } | ConvertFrom-Csv | Where-Object {
-                    $_.Path -and $_.Path.Trim()
-                } | ForEach-Object {
-                    $relativePath = $_.Path.TrimStart('\')
-                    $configPath = Join-Path $Script:ApplicationRoot ("PKeyConfigs\" + $relativePath)
-                    [void]$items.Add((New-ProfileItem -Label $_.Profile.Trim() -Mode 'Catalog' -Path $configPath))
+                foreach ($entry in $global:PKeyConfigsMap) {
+                    if ($entry.Path -and $entry.Path.Trim()) {
+                        $relativePath = $entry.Path.TrimStart('\')
+                        $configPath = Join-Path $Script:ApplicationRoot ("PKeyConfigs\" + $relativePath)
+                        [void]$items.Add((New-ProfileItem -Label $entry.Profile.Trim() -Mode 'Catalog' -Path $configPath))
+                    }
                 }
             }
             catch { }
