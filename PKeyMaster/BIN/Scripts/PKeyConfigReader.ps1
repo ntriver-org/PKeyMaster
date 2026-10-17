@@ -230,11 +230,11 @@ function Invoke-ExportCsv([string]$FilePath, [string]$OutPath) {
     }
 
     # Build a lookup of ActConfigId -> list of KeyRange objects
-    $rangeMap = New-Object System.Collections.Specialized.OrderedDictionary
+    $rangeMap = @{}
     foreach ($kr in @($xml.SelectNodes("//*[local-name()='KeyRange']"))) {
         $refId = Get-NodeText $kr 'RefActConfigId'
         if (-not $refId) { continue }
-        if (-not $rangeMap.Contains($refId)) { $rangeMap[$refId] = New-Object 'System.Collections.Generic.List[PSObject]' }
+        if (-not $rangeMap.ContainsKey($refId)) { $rangeMap[$refId] = New-Object 'System.Collections.Generic.List[PSObject]' }
 
         $startVal = 0L; $endVal = 0L
         $s = Get-NodeText $kr 'Start'; if ($s) { $startVal = [long]$s }
@@ -259,14 +259,22 @@ function Invoke-ExportCsv([string]$FilePath, [string]$OutPath) {
     # 7 empty columns used for continuation rows and subtotal rows
     $emptyPrefix = @("", "", "", "", "", "", "")
 
-    foreach ($id in $rangeMap.Keys) {
+    foreach ($id in $configs.Keys) {
         try { [System.Windows.Forms.Application]::DoEvents() } catch { }
 
-        $ranges = $rangeMap[$id]
-        $cfg = if ($configs.Contains($id)) { $configs[$id] } else { @{} }
+        $cfg = $configs[$id]
         $refGroupId = if ($cfg.RefGroupId) { $cfg.RefGroupId } else { '' }
         $algoId = if ($algoMap.ContainsKey($refGroupId)) { $algoMap[$refGroupId] } else { '' }
 
+        if (-not $rangeMap.ContainsKey($id) -or $rangeMap[$id].Count -eq 0) {
+            # Configuration without key ranges
+            $row = @($id, $refGroupId, $algoId, $cfg.EditionId, $cfg.ProductDescription, $cfg.ProductKeyType, $cfg.IsRandomized, '', '', '', '', '', '0')
+            $lines.Add((Format-CsvRow $row))
+            $lines.Add((Format-CsvRow ($emptyPrefix + @("", "", "", "", "[SUBTOTAL]", "0"))))
+            continue
+        }
+
+        $ranges = $rangeMap[$id]
         $subtotal = 0L
         $firstRow = $true
 
