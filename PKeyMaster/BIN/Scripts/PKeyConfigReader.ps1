@@ -131,7 +131,7 @@ function Get-NodeText($Node, $LocalName) {
 # GetKeyInfo mode
 # ===============================================================================================================================
 
-# Look up Description, Edition, KeyType, EULA, PartNumber, AlgorithmId, ActivationId by GroupId and KeyId
+# Look up Description, Edition, KeyType, EULA, PartNumber, AlgorithmId, ActivationId, IsValid by GroupId and KeyId
 function Get-PKeyInfo {
     param(
         [string]$FilePath,
@@ -148,6 +148,7 @@ function Get-PKeyInfo {
     $eula = ''
     $partNum = ''
     $actId = ''
+    $isValid = ''
     $gStr = [string]$GroupId
 
     foreach ($cfg in @($xml.SelectNodes("//*[local-name()='Configuration']"))) {
@@ -167,7 +168,14 @@ function Get-PKeyInfo {
                     $ktype = Get-NodeText $cfg 'ProductKeyType'
                     $eula = Get-NodeText $kr 'EulaType'
                     $partNum = Get-NodeText $kr 'PartNumber'
-                    break
+                    $currentIsValid = Get-NodeText $kr 'IsValid'
+                    if ($currentIsValid -eq 'false') {
+                        $isValid = 'false'
+                        break
+                    }
+                    if ($isValid -ne 'false') {
+                        $isValid = $currentIsValid
+                    }
                 }
             }
         }
@@ -191,6 +199,7 @@ function Get-PKeyInfo {
         PartNumber   = $partNum
         AlgorithmId  = $algId
         ActivationId = $actId
+        IsValid      = $isValid
     }
 }
 

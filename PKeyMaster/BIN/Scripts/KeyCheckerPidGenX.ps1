@@ -708,6 +708,7 @@ if ($matchedConfigPath -and (Test-Path $matchedConfigPath)) {
             $keyType = $info.KeyType
             $partNumber = $info.PartNumber
             $activationId = if ($info.ActivationId) { $info.ActivationId.Trim('{', '}').ToLower() }
+            $isValid = $info.IsValid
         }
     }
 }
@@ -802,6 +803,7 @@ if ($keyType -or ($algorithmId -match "980|986")) {
 Write-Output ""
 Write-Output ($f -f "Product Key", $ProductKey)
 if ($matchedProfileName) { Write-Output ($f -f "Profile", $matchedProfileName) }
+if ("$isValid" -eq "false") { Write-Color ($f -f "Result", "Blocked in PKeyConfig") "BgRed" }
 
 # Summary Block
 
