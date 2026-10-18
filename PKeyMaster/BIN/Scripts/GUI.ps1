@@ -84,6 +84,7 @@ function Show-PKeyMasterGui {
         $windowTitle = "$windowTitle $applicationVersion"
     }
     $browsePlaceholder = 'Click to browse...'
+    $Script:CreatedBatchFiles = New-Object 'System.Collections.Generic.List[string]'
 
     $dpiScale = 1.0
     try {
@@ -1274,8 +1275,12 @@ function Show-PKeyMasterGui {
     }
 
     $keyCheckerTopPanel = New-FormPanel -Height (Get-ScaledDpi 148)
-    $keyLabel = New-FormLabel -Text 'Key'
-    $keyTextBox = New-FormTextBox -Tooltip 'Enter a Microsoft product key (Windows, Office, VS, etc.) from Windows 95 era to present.' -UseMonospaceFont $true
+    $keyLabel = New-FormLabel -Text 'Key(s)'
+    $keyTextBox = New-FormTextBox -Tooltip 'Enter a Microsoft product key, or paste multiple keys from clipboard.' -UseMonospaceFont $true
+    $keyTextBox.Multiline = $true
+    $keyTextBox.AcceptsReturn = $false
+    $keyTextBox.WordWrap = $false
+    $keyTextBox.MaxLength = [int]::MaxValue
     $keyFileLabel = New-FormLabel -Text 'Key File'
     $keyFileTextBox = New-FormTextBox -ReadOnly $true -Tooltip 'Select a file that contains one or more product keys.' -Placeholder $browsePlaceholder
     $profileLabel = New-FormLabel -Text 'Profile'
@@ -1296,8 +1301,12 @@ function Show-PKeyMasterGui {
     $keyCheckerTabPage.Controls.AddRange(@($keyCheckerBottomPanel, $keyCheckerTopPanel))
 
     $iidCidTopPanel = New-FormPanel -Height (Get-ScaledDpi 198)
-    $installationIdLabel = New-FormLabel -Text 'IID'
-    $installationIdTextBox = New-FormTextBox -Tooltip 'Enter a 50, 54, 59, or 63-digit Installation ID.' -UseMonospaceFont $true
+    $installationIdLabel = New-FormLabel -Text 'IID(s)'
+    $installationIdTextBox = New-FormTextBox -Tooltip 'Enter a 50, 54, 59, or 63-digit Installation ID, or paste multiple IIDs from clipboard.' -UseMonospaceFont $true
+    $installationIdTextBox.Multiline = $true
+    $installationIdTextBox.AcceptsReturn = $false
+    $installationIdTextBox.WordWrap = $false
+    $installationIdTextBox.MaxLength = [int]::MaxValue
     $installationIdFileLabel = New-FormLabel -Text 'IID File'
     $installationIdFileTextBox = New-FormTextBox -ReadOnly $true -Tooltip 'Select a text file that contains one or more 50, 54, 59, or 63-digit Installation IDs.' -Placeholder $browsePlaceholder
     $manualCidLogsCheckBox = New-FormCheckBox -Text 'CID Logs' -Tooltip 'Saves the result files and the request and response logs to the PKeyMaster-Logs folder on the Desktop.' -AutoSize $false
@@ -1541,6 +1550,189 @@ function Show-PKeyMasterGui {
     }
 
     # ===============================================================================================================================
+    # Review prompt
+    # ===============================================================================================================================
+
+    function Show-ItemReviewPrompt {
+        param([string]$InitialText = '')
+
+        $displayText = $InitialText -replace "(?<!`r)`n", "`r`n"
+
+        $promptForm = New-Object System.Windows.Forms.Form
+        $promptForm.Text = 'PKeyMaster - Batch Processing'
+        $promptForm.StartPosition = 'CenterParent'
+        $promptForm.FormBorderStyle = 'FixedDialog'
+        $promptForm.MaximizeBox = $false
+        $promptForm.MinimizeBox = $false
+        $promptForm.ShowInTaskbar = $false
+        $promptForm.Size = New-Size -Width (Get-ScaledDpi 700) -Height (Get-ScaledDpi 480)
+        $promptForm.Font = $uiFont
+        $promptForm.AutoScaleMode = 'None'
+
+        $buttonWidth = Get-ScaledDpi 85
+        $buttonHeight = Get-ScaledDpi 28
+        $buttonTop = $promptForm.ClientSize.Height - $buttonHeight - $uiPadding
+
+        $promptTextBox = New-WinFormsControl -TypeName 'TextBox' -Properties @{
+            ReadOnly   = $true
+            Multiline  = $true
+            ScrollBars = 'Both'
+            WordWrap   = $false
+            MaxLength  = [int]::MaxValue
+            BackColor  = [System.Drawing.SystemColors]::Window
+            Font       = $inputFont
+            Text       = $displayText
+            Location   = New-Object System.Drawing.Point($uiPadding, $uiPadding)
+            Size       = New-Size -Width ($promptForm.ClientSize.Width - ($uiPadding * 2)) -Height ($buttonTop - $uiPadding - (Get-ScaledDpi 8))
+            Anchor     = 'Top, Bottom, Left, Right'
+        }
+        $promptTextBox.SelectionStart = 0
+        $promptTextBox.SelectionLength = 0
+        $promptTextBox.Add_KeyDown({
+                if ($_.Control -and $_.KeyCode -eq 'A') {
+                    $promptTextBox.SelectAll()
+                    $_.SuppressKeyPress = $true
+                }
+            })
+
+        $okButton = New-WinFormsControl -TypeName 'Button' -Properties @{
+            Text         = 'OK'
+            Font         = $uiFont
+            Size         = New-Size -Width $buttonWidth -Height $buttonHeight
+            Location     = New-Object System.Drawing.Point(($promptForm.ClientSize.Width - $uiPadding - ($buttonWidth * 2) - (Get-ScaledDpi 6)), $buttonTop)
+            Anchor       = 'Bottom, Right'
+            DialogResult = [System.Windows.Forms.DialogResult]::OK
+        }
+
+        $cancelButton = New-WinFormsControl -TypeName 'Button' -Properties @{
+            Text         = 'Cancel'
+            Font         = $uiFont
+            Size         = New-Size -Width $buttonWidth -Height $buttonHeight
+            Location     = New-Object System.Drawing.Point(($promptForm.ClientSize.Width - $uiPadding - $buttonWidth), $buttonTop)
+            Anchor       = 'Bottom, Right'
+            DialogResult = [System.Windows.Forms.DialogResult]::Cancel
+        }
+
+        $promptForm.AcceptButton = $okButton
+        $promptForm.CancelButton = $cancelButton
+        $promptForm.Controls.AddRange(@($promptTextBox, $okButton, $cancelButton))
+        $promptForm.Add_Shown({
+                $promptTextBox.Select(0, 0)
+                $promptTextBox.ScrollToCaret()
+            })
+
+        try {
+            if ((Show-OwnedDialog -Dialog $promptForm -OwnerWindow $mainWindow) -eq [System.Windows.Forms.DialogResult]::OK) {
+                return $displayText
+            }
+        }
+        finally {
+            $promptForm.Dispose()
+        }
+
+        return $null
+    }
+
+    function Test-MultiItemText {
+        param(
+            [string]$Text,
+            [int]$SingleItemMaxLength = 35
+        )
+
+        if (-not $Text -or $Text -notmatch '[\r\n\s]') { return $false }
+        if ($Text -match '\S[\r\n]+\s*\S') { return $true }
+        $trimmed = $Text.Trim()
+        return ($trimmed -match '\s+' -and $trimmed.Length -gt $SingleItemMaxLength)
+    }
+
+    function New-BatchFileFromText {
+        param([string]$Text)
+
+        $confirmedText = Show-ItemReviewPrompt -InitialText $Text
+        if ($confirmedText -and $confirmedText.Trim() -ne '') {
+            $tempFile = Join-Path "$env:SystemRoot\Temp" "PKeyMaster_Batch_$(Get-Random).txt"
+            [System.IO.File]::WriteAllText($tempFile, $confirmedText, (New-Object System.Text.UTF8Encoding($false)))
+            $Script:CreatedBatchFiles.Add($tempFile)
+            return $tempFile
+        }
+        return $null
+    }
+
+    function Invoke-BatchTextInputChange {
+        param(
+            $InputTextBox,
+            $FileTextBox,
+            $LogsCheckBox,
+            [int]$SingleItemMaxLength
+        )
+
+        $rawText = $InputTextBox.Text
+        if (Test-MultiItemText -Text $rawText -SingleItemMaxLength $SingleItemMaxLength) {
+            $InputTextBox.Text = ''
+            $batchAction = [System.Action[string, object, object]] {
+                param($textToReview, $fBox, $lBox)
+                try {
+                    $batchFile = New-BatchFileFromText -Text $textToReview
+                    if ($batchFile) {
+                        $fBox.Text = $batchFile
+                        $lBox.Checked = $true
+                    }
+                }
+                catch {
+                    Show-ErrorMessage -ErrorObject $_
+                }
+            }
+            [void]$mainWindow.BeginInvoke($batchAction, @($rawText, $FileTextBox, $LogsCheckBox))
+            return
+        }
+
+        if ($rawText -match '[\r\n]') {
+            $trimmed = $rawText.Trim()
+            if ($trimmed -ne $rawText) {
+                $InputTextBox.Text = $trimmed
+                $InputTextBox.SelectionStart = $trimmed.Length
+                return
+            }
+        }
+
+        if ($InputTextBox.Text.Length -gt 0 -and (Test-SelectedPathText -PathText $FileTextBox.Text)) {
+            $FileTextBox.Text = $browsePlaceholder
+        }
+    }
+
+    function Resolve-BatchOrSingleInput {
+        param(
+            $InputTextBox,
+            $FileTextBox,
+            $LogsCheckBox,
+            [int]$SingleItemMaxLength,
+            [string]$FileArgumentKey,
+            [string]$SingleArgumentKey,
+            [hashtable]$Arguments
+        )
+
+        if (Test-SelectedPathText -PathText $FileTextBox.Text) {
+            $Arguments[$FileArgumentKey] = [System.IO.Path]::GetFullPath($FileTextBox.Text)
+            return $true
+        }
+
+        if (Test-MultiItemText -Text $InputTextBox.Text -SingleItemMaxLength $SingleItemMaxLength) {
+            $batchFile = New-BatchFileFromText -Text $InputTextBox.Text
+            if ($batchFile) {
+                $FileTextBox.Text = $batchFile
+                $InputTextBox.Text = ''
+                $LogsCheckBox.Checked = $true
+                $Arguments[$FileArgumentKey] = $batchFile
+                return $true
+            }
+            return $false
+        }
+
+        $Arguments[$SingleArgumentKey] = $InputTextBox.Text.Trim()
+        return $true
+    }
+
+    # ===============================================================================================================================
     # Form event handlers
     # ===============================================================================================================================
 
@@ -1609,8 +1801,8 @@ function Show-PKeyMasterGui {
             }
         })
     $keyTextBox.Add_TextChanged({
-            if ($keyTextBox.Text.Length -gt 0 -and (Test-SelectedPathText -PathText $keyFileTextBox.Text)) {
-                $keyFileTextBox.Text = $browsePlaceholder
+            Invoke-UiAction {
+                Invoke-BatchTextInputChange -InputTextBox $keyTextBox -FileTextBox $keyFileTextBox -LogsCheckBox $keyLogsCheckBox -SingleItemMaxLength 35
             }
         })
     $profileComboBox.Add_SelectionChangeCommitted({
@@ -1658,11 +1850,8 @@ function Show-PKeyMasterGui {
             Invoke-UiAction {
                 $arguments = @{}
 
-                if (Test-SelectedPathText -PathText $keyFileTextBox.Text) {
-                    $arguments['KeyFile'] = [System.IO.Path]::GetFullPath($keyFileTextBox.Text)
-                }
-                else {
-                    $arguments['ProductKey'] = $keyTextBox.Text
+                if (-not (Resolve-BatchOrSingleInput -InputTextBox $keyTextBox -FileTextBox $keyFileTextBox -LogsCheckBox $keyLogsCheckBox -SingleItemMaxLength 35 -FileArgumentKey 'KeyFile' -SingleArgumentKey 'ProductKey' -Arguments $arguments)) {
+                    return
                 }
 
                 if ($profileComboBox.SelectedItem) {
@@ -1724,8 +1913,8 @@ function Show-PKeyMasterGui {
             }
         })
     $installationIdTextBox.Add_TextChanged({
-            if ($installationIdTextBox.Text.Length -gt 0 -and (Test-SelectedPathText -PathText $installationIdFileTextBox.Text)) {
-                $installationIdFileTextBox.Text = $browsePlaceholder
+            Invoke-UiAction {
+                Invoke-BatchTextInputChange -InputTextBox $installationIdTextBox -FileTextBox $installationIdFileTextBox -LogsCheckBox $manualCidLogsCheckBox -SingleItemMaxLength 70
             }
         })
     $installedProductsComboBox.Add_SelectedIndexChanged({
@@ -1749,11 +1938,8 @@ function Show-PKeyMasterGui {
                 }
 
                 $arguments = @{}
-                if (Test-SelectedPathText -PathText $installationIdFileTextBox.Text) {
-                    $arguments['IidFile'] = [System.IO.Path]::GetFullPath($installationIdFileTextBox.Text)
-                }
-                else {
-                    $arguments['InstallationId'] = $installationIdTextBox.Text.Trim()
+                if (-not (Resolve-BatchOrSingleInput -InputTextBox $installationIdTextBox -FileTextBox $installationIdFileTextBox -LogsCheckBox $manualCidLogsCheckBox -SingleItemMaxLength 70 -FileArgumentKey 'IidFile' -SingleArgumentKey 'InstallationId' -Arguments $arguments)) {
+                    return
                 }
                 if ($manualCidLogsCheckBox.Checked) {
                     $arguments['ExportLogs'] = $true
@@ -1978,7 +2164,16 @@ function Show-PKeyMasterGui {
             }
         })
 
-    $mainWindow.ShowDialog() | Out-Null
+    try {
+        $mainWindow.ShowDialog() | Out-Null
+    }
+    finally {
+        foreach ($tempFile in $Script:CreatedBatchFiles) {
+            if ($tempFile -and (Test-Path -LiteralPath $tempFile)) {
+                try { [System.IO.File]::Delete($tempFile) } catch { }
+            }
+        }
+    }
 }
 
 # ===============================================================================================================================
