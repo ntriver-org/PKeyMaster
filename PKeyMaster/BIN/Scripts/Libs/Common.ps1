@@ -73,6 +73,77 @@ function Write-Color {
 }
 
 # ===============================================================================================================================
+# Find-KeysInFile
+# Read file in chunks and extract unique keys matching a regex across multiple encodings (ASCII, UTF-8, Unicode, BigEndianUnicode).
+# ===============================================================================================================================
+
+function Find-KeysInFile {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, Position = 0)]
+        [string]$FilePath,
+
+        [Parameter(Mandatory = $true, Position = 1)]
+        [string]$Pattern
+    )
+
+    $keys = @()
+    $fs = $null
+    try { 
+        $fileInfo = New-Object System.IO.FileInfo($FilePath)
+        if ($fileInfo.Length -eq 0) { return $keys }
+        $fs = New-Object System.IO.FileStream($FilePath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, ([System.IO.FileShare]::ReadWrite -bor [System.IO.FileShare]::Delete))
+    }
+    catch {
+        if ($fs) { $fs.Dispose() }
+        return @()
+    }
+
+    $chunkSize = 8MB
+    $overlapSize = 256
+    $buffer = New-Object byte[] ($chunkSize + $overlapSize)
+    $carry = 0
+    $seen = @{}
+
+    try {
+        while ($true) {
+            $read = 0
+            while ($read -lt $chunkSize) {
+                $n = $fs.Read($buffer, $carry + $read, $chunkSize - $read)
+                if ($n -eq 0) { break }
+                $read += $n
+            }
+            if ($read -eq 0 -and $carry -eq 0) { break }
+            $totalBytes = $carry + $read
+
+            # By reading as ASCII and removing null characters, we can scan UTF-8, Unicode, and BigEndianUnicode in a single pass
+            $text = [System.Text.Encoding]::ASCII.GetString($buffer, 0, $totalBytes).Replace("`0", "")
+            foreach ($m in [regex]::Matches($text.ToUpper(), $Pattern)) {
+                $val = $m.Value
+                if (-not $seen.ContainsKey($val)) {
+                    $seen[$val] = $true
+                    $hash = @{}
+                    foreach ($c in $val.ToCharArray()) { if ($c -ne '-') { $hash[$c] = $true } }
+                    if ($hash.Count -ge 3) { $keys += $val }
+                }
+            }
+
+            if ($read -lt $chunkSize) { break }
+
+            # Retain overlap bytes to catch keys spanning chunk boundaries (UTF-16 key is 58 bytes)
+            $carry = [Math]::Min($overlapSize, $totalBytes)
+            [System.Buffer]::BlockCopy($buffer, $totalBytes - $carry, $buffer, 0, $carry)
+        }
+    }
+    catch { }
+    finally {
+        if ($fs) { $fs.Dispose() }
+    }
+
+    return $keys
+}
+
+# ===============================================================================================================================
 # PKeyConfigsMap JSON Global Cache
 # ===============================================================================================================================
 

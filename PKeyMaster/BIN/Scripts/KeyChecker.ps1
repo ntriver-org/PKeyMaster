@@ -223,20 +223,6 @@ function Get-KeyRegex([string]$Mode) {
     return $regexAll
 }
 
-# ===============================================================================================================================
-
-function Get-KeyFromText([string]$Text, [string]$Mode) {
-    # Extract unique product keys from text using the chosen scan mode.
-    $regex = Get-KeyRegex $Mode
-    $found = @()
-    foreach ($m in [regex]::Matches($Text.ToUpper(), $regex)) {
-        $val = $m.Value
-        $hash = @{}
-        foreach ($c in $val.ToCharArray()) { if ($c -ne '-') { $hash[$c] = $true } }
-        if ($hash.Count -ge 3) { $found += $val }
-    }
-    $found | Select-Object -Unique
-}
 
 # ===============================================================================================================================
 
@@ -336,15 +322,12 @@ if ($KeyFile) {
     }
 
     $fileInfo = Get-Item -LiteralPath $resolvedKeyFile
-    if ($fileInfo.Length -gt 100MB) {
-        Write-Color "File is larger than 100 MB: $resolvedKeyFile" "BgRed"
+    if ($fileInfo.Length -eq 0) {
+        Write-Color "File is empty: $resolvedKeyFile" "BgRed"
         return
     }
 
-    # By reading as ASCII and removing null characters, we can scan UTF-8, Unicode, and BigEndianUnicode in a single pass
-    $bytes = [System.IO.File]::ReadAllBytes($resolvedKeyFile)
-    $content = [System.Text.Encoding]::ASCII.GetString($bytes).Replace("`0", "")
-    $extracted = @(Get-KeyFromText $content $KeyCheckMode | Select-Object -Unique)
+    $extracted = @(Find-KeysInFile -FilePath $resolvedKeyFile -Pattern (Get-KeyRegex $KeyCheckMode))
 
     if ($extracted.Count -eq 0) {
         Write-Color "No product keys matching the selected mode were found in the selected file." "BgRed"

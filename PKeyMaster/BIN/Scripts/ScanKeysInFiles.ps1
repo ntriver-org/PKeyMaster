@@ -54,41 +54,11 @@ if (Test-Path $commonPath) { . $commonPath }
 $KeyChars = 'BCDFGHJKMPQRTVWXY2346789N'
 $KEY_PATTERN = "(?i)([$KeyChars]{5}-){4}[$KeyChars]{4}[${KeyChars}Z]"
 
-function Find-KeysInFile {
-    # Read file in multiple encodings and extract unique 5x5 keys via regex.
-    param([string]$FilePath)
-
-    $keys = @()
-    try { 
-        $fileInfo = New-Object System.IO.FileInfo($FilePath)
-        if ($fileInfo.Length -eq 0 -or $fileInfo.Length -gt 100MB) { return $keys }
-        $bytes = [System.IO.File]::ReadAllBytes($FilePath) 
-    }
-    catch { return @() }
-
-    $seen = @{}
-    
-    # By reading as ASCII and removing null characters, we can scan UTF-8, Unicode, and BigEndianUnicode in a single pass
-    $text = [System.Text.Encoding]::ASCII.GetString($bytes).Replace("`0", "")
-    foreach ($m in [regex]::Matches($text, $KEY_PATTERN)) {
-        $key = $m.Value.ToUpper()
-        if (-not $seen.ContainsKey($key)) {
-            $seen[$key] = $true
-            $hash = @{}
-            foreach ($c in $key.ToCharArray()) { if ($c -ne '-') { $hash[$c] = $true } }
-            if ($hash.Count -ge 3) { $keys += $key }
-        }
-    }
-    return $keys
-}
-
-# ===============================================================================================================================
-
 function Invoke-FileKeyScan {
     # Scan a file for keys, print them, and optionally save them.
     param([string]$FilePath)
     
-    $keys = @(Find-KeysInFile -FilePath $FilePath)
+    $keys = @(Find-KeysInFile -FilePath $FilePath -Pattern $KEY_PATTERN)
     if ($keys.Count -eq 0) { return }
 
     $global:filesWithKeys++
