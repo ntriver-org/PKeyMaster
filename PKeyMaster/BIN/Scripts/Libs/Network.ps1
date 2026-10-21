@@ -108,7 +108,7 @@ function Test-Json([string]$Text) {
         Add-Type -AssemblyName System.Web.Extensions | Out-Null
         (New-Object System.Web.Script.Serialization.JavaScriptSerializer).DeserializeObject($Text) | Out-Null
 
-        if ($Text -match '"(cid|message|reasonCode|token|Pkpn)"\s*:') {
+        if ($Text -match '"(cid|message|reasonCode|token|Pkpn|Product|Products|detail|name)"\s*:') {
             return $true
         }
 

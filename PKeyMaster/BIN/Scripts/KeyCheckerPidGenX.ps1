@@ -203,6 +203,9 @@ function Invoke-CheckRedeemKey($RedeemKey, $LogFolder, $f, $scriptDir) {
         Write-Color ($f -f "Redeem Key Status", $redeemObj.Status) "BgRed"
     }
     if ($redeemObj.Pkpn) {
+        if ($redeemObj.Product) {
+            Write-Color ($f -f "Redeem Product", $redeemObj.Product) "BgGreen"
+        }
         Write-Output ($f -f "Redeem Acid", $redeemObj.Acid)
         Write-Output ($f -f "Redeem GroupId", $redeemObj.GroupId)
         Write-Output ($f -f "Redeem Pkpn", $redeemObj.Pkpn)
@@ -720,6 +723,9 @@ if ($matchedConfigPath -and (Test-Path $matchedConfigPath)) {
 if (-not $algorithmId) {
     $resultText = if ($null -ne $pkey2009DecodedSecurity -or ($null -ne $hr -and $hr -eq 0)) {
         "Valid key, but matching profile not found"
+    }
+    elseif ($ProductKey -match 'Z$') {
+        "Likely a redeem key"
     }
     else {
         "Invalid key, or matching profile not found"
