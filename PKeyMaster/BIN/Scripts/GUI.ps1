@@ -948,7 +948,7 @@ function Show-PKeyMasterGui {
         "`r`n  MAK Count     - Checks the remaining MAK activation count via Batch API." +
         "`r`n  Redeem Status - Checks the status of a redeem key via the OLSC API." +
         "`r`n  IID           - Retrieves the IID via PidGenX.dll." +
-        "`r`n  CID           - Retrieves the CID via Batch/Visual API (consumes activation slot)." +
+        "`r`n  CID           - Retrieves the CID via Visual/Batch API (consumes activation slot)." +
         "`r`n  Logs          - Saves the results to the Desktop.`r`n" +
         "`r`nEnter a key (e.g., NJCF7-PW8QT-3324D-688JX-2YV66) and click Check.`r`n" +
         "`r`nFor more information: $repositoryUrl`r`n"
@@ -956,6 +956,7 @@ function Show-PKeyMasterGui {
 
         $iidCidText = "IID/CID Retrieval & Deposit`r`n" +
         "`r`nUpper Section: Manual CID Retrieval" +
+        "`r`n  Retrieves the CID via VisualApi, with BatchApi fallback." +
         "`r`n  Enter a 50, 54, 59, or 63-digit IID, or select an IID file." +
         "`r`n  Example: 442875505090948411270215934376216135091582729253066826014283446`r`n" +
         "`r`nLower Section: Installed Product Activation" +
@@ -1290,7 +1291,7 @@ function Show-PKeyMasterGui {
     $makCountCheckBox = New-FormCheckBox -Text 'MAK Count' -Tooltip 'Checks the remaining MAK activation count via Batch API. Works with Windows Vista / Office 2010 and later Volume:MAK keys. The MAK count does not guarantee a key is valid for activation. Check the certification status to verify.' -AutoSize $false
     $redeemStatusCheckBox = New-FormCheckBox -Text 'Redeem Status' -Tooltip 'Checks the status of a redeem key via the OLSC API. Works with PKey2009 keys and keys ending in Z.' -AutoSize $false
     $installationIdCheckBox = New-FormCheckBox -Text 'IID' -Tooltip 'Retrieves the IID via PidGenX.dll. Works with PKey2005/2009 keys.' -AutoSize $false
-    $confirmationIdCheckBox = New-FormCheckBox -Text 'CID' -Tooltip 'Retrieves the CID via Batch/Visual API (consumes activation slot). Works with Windows Vista / Office 2010 and later keys.' -AutoSize $false
+    $confirmationIdCheckBox = New-FormCheckBox -Text 'CID' -Tooltip 'Retrieves the CID via Visual/Batch API (consumes activation slot). Works with Windows Vista / Office 2010 and later keys.' -AutoSize $false
     $keyLogsCheckBox = New-FormCheckBox -Text 'Logs' -Tooltip 'Saves the result files and the request and response logs to the PKeyMaster-Logs folder on the Desktop.' -AutoSize $false
     $checkKeyButton = New-FormButton -Text 'Check' -Tooltip 'Checks the key using the selected profile and options.'
     $keyCheckerTopPanel.Controls.AddRange(@($keyLabel, $keyTextBox, $keyFileLabel, $keyFileTextBox, $profileLabel, $profileComboBox, $certificationCheckBox, $activationCheckBox, $makCountCheckBox, $redeemStatusCheckBox, $installationIdCheckBox, $confirmationIdCheckBox, $keyLogsCheckBox, $checkKeyButton))
@@ -1311,7 +1312,7 @@ function Show-PKeyMasterGui {
     $installationIdFileTextBox = New-FormTextBox -ReadOnly $true -Tooltip 'Select a text file that contains one or more 50, 54, 59, or 63-digit Installation IDs.' -Placeholder $browsePlaceholder
     $manualCidLogsCheckBox = New-FormCheckBox -Text 'CID Logs' -Tooltip 'Saves the result files and the request and response logs to the PKeyMaster-Logs folder on the Desktop.' -AutoSize $false
     $installedProductLogsCheckBox = New-FormCheckBox -Text 'CID Logs' -Tooltip 'Saves the result files and the request and response logs to the PKeyMaster-Logs folder on the Desktop.' -AutoSize $false
-    $getCidButton = New-FormButton -Text 'Get CID' -Tooltip 'Retrieves the Confirmation ID using the Microsoft BatchApi, fallbacks to VisualApi. This consumes an activation slot. Works with all kinds of CID supported Windows and Office products.'
+    $getCidButton = New-FormButton -Text 'Get CID' -Tooltip 'Retrieves the Confirmation ID using the Microsoft VisualApi, fallbacks to BatchApi. This consumes an activation slot. Works with all kinds of CID supported Windows and Office products.'
     $iidCidSeparator = New-WinFormsControl -TypeName 'Label' -Properties @{ AutoSize = $false; BorderStyle = 'Fixed3D' }
     $installedProductListLabel = New-FormLabel -Text 'List'
     $installedProductsComboBox = New-FormComboBox -DisplayMember 'DisplayName' -Tooltip 'Shows installed, unactivated Windows and Office products where the installed key supports phone (CID) activation.'

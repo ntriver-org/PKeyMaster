@@ -33,7 +33,7 @@
     Enables MAK remaining count query.
 
 .PARAMETER GetConfirmationId
-    Enables Confirmation ID retrieval via the BatchApi, fallbacks to VisualApi.
+    Enables Confirmation ID retrieval via the VisualApi, fallbacks to BatchApi.
 
 .PARAMETER LogFolder
     Path to save DPID binary dumps and API request/response logs.
@@ -307,21 +307,6 @@ function Invoke-GetConfirmationId($IID, $LogFolder, $f, $scriptDir) {
     $cidObj = $cidOutput[-1]
     
     if ($cidObj) {
-        if ($cidObj.BatchResult) {
-            if ($cidObj.BatchResult -eq "SUCCESS") {
-                if ($script:SubActionLastState -eq 'error') { Write-Output "" }
-                $script:SubActionLastState = 'success'
-                Write-Color ($f -f "CID Batch Api", $cidObj.BatchCID) "BgGreen"
-            }
-            else {
-                if ($script:SubActionLastState) { Write-Output "" }
-                $script:SubActionLastState = 'error'
-                Write-Color ($f -f "CID Batch Api", "Failed") "BgRed"
-                Write-Color ($f -f "Batch Error Code", $cidObj.BatchErrorCode) "BgRed"
-                Write-Color ($f -f "Batch Error Msg", $cidObj.BatchErrorDetail) "BgRed"
-            }
-        }
-
         if ($cidObj.VisualResult) {
             if ($cidObj.VisualResult -eq "SUCCESS") {
                 if ($script:SubActionLastState -eq 'error') { Write-Output "" }
@@ -334,6 +319,21 @@ function Invoke-GetConfirmationId($IID, $LogFolder, $f, $scriptDir) {
                 Write-Color ($f -f "CID Visual Api", "Failed") "BgRed"
                 Write-Color ($f -f "Visual Error Code", $cidObj.VisualErrorCode) "BgRed"
                 Write-Color ($f -f "Visual Error Msg", $cidObj.VisualErrorDetail) "BgRed"
+            }
+        }
+
+        if ($cidObj.BatchResult) {
+            if ($cidObj.BatchResult -eq "SUCCESS") {
+                if ($script:SubActionLastState -eq 'error') { Write-Output "" }
+                $script:SubActionLastState = 'success'
+                Write-Color ($f -f "CID Batch Api", $cidObj.BatchCID) "BgGreen"
+            }
+            else {
+                if ($script:SubActionLastState) { Write-Output "" }
+                $script:SubActionLastState = 'error'
+                Write-Color ($f -f "CID Batch Api", "Failed") "BgRed"
+                Write-Color ($f -f "Batch Error Code", $cidObj.BatchErrorCode) "BgRed"
+                Write-Color ($f -f "Batch Error Msg", $cidObj.BatchErrorDetail) "BgRed"
             }
         }
     }

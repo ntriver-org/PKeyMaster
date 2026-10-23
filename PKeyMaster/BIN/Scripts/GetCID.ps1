@@ -4,7 +4,7 @@
 
 .DESCRIPTION
     Takes a single Installation ID or a text file with multiple IIDs, then queries
-    Microsoft's BatchApi (with VisualApi fallback) to get Confirmation IDs.
+    Microsoft's VisualApi (with BatchApi fallback) to get Confirmation IDs.
     Results can be exported to timestamped or caller-specified log folders.
 
 .PARAMETER InstallationId
@@ -190,7 +190,7 @@ function Invoke-CidApi([string]$ScriptPath, [string]$IID, [string]$LogFolder) {
 # CSV column definitions
 # ===============================================================================================================================
 
-$csvCols = @("Installation ID", "API Source", "Confirmation ID", "Error Code", "Error Detail", "Query Time")
+$csvCols = @("Installation ID", "API Source", "Product Name", "Product ID", "Confirmation ID", "Error Code", "Error Detail", "Query Time")
 
 # ===============================================================================================================================
 # Input resolution
@@ -297,28 +297,28 @@ foreach ($iid in $iidsToCheck) {
         }
     }
 
-    # Try BatchApi
-    $batchResult = Invoke-CidApi $batchApiScript $iid $iidFolder
-    $batchObj = $batchResult.Object
-    $batchLines = @($batchResult.Lines)
+    # Try VisualApi
+    $visualResult = Invoke-CidApi $visualApiScript $iid $iidFolder
+    $visualObj = $visualResult.Object
+    $visualLines = @($visualResult.Lines)
 
-    # Fallback to VisualApi if BatchApi did not succeed
-    $visualObj = $null
-    $visualLines = @()
+    # Fallback to BatchApi if VisualApi did not succeed
+    $batchObj = $null
+    $batchLines = @()
 
-    if (-not $batchObj -or $batchObj.Result -ne "SUCCESS") {
-        $visualResult = Invoke-CidApi $visualApiScript $iid $iidFolder
-        $visualObj = $visualResult.Object
-        $visualLines = @($visualResult.Lines)
+    if (-not $visualObj -or $visualObj.Result -ne "SUCCESS") {
+        $batchResult = Invoke-CidApi $batchApiScript $iid $iidFolder
+        $batchObj = $batchResult.Object
+        $batchLines = @($batchResult.Lines)
     }
 
     # Combine output from both APIs so both are visible on console and in logs
     $allLines = @()
-    if ($batchLines.Count -gt 0) { $allLines += $batchLines }
     if ($visualLines.Count -gt 0) { $allLines += $visualLines }
+    if ($batchLines.Count -gt 0) { $allLines += $batchLines }
 
-    # Final result object: prefer VisualApi when it ran, otherwise keep BatchApi.
-    $finalObj = if ($visualObj) { $visualObj } else { $batchObj }
+    # Final result object: prefer BatchApi when it ran as fallback, otherwise keep VisualApi.
+    $finalObj = if ($batchObj) { $batchObj } else { $visualObj }
 
     if ($IidFile) {
         $pct = [int](($i / $iidsToCheck.Count) * 100)
@@ -334,16 +334,20 @@ foreach ($iid in $iidsToCheck) {
     if ($PassThru) {
         $passThruObjects += New-Object PSObject -Property @{
             InstallationId    = $iid
+            VisualResult      = if ($visualObj) { $visualObj.Result } else { $null }
+            VisualCID         = if ($visualObj) { $visualObj.CID } else { $null }
+            VisualProductName = if ($visualObj) { $visualObj.ProductName } else { $null }
+            VisualProductId   = if ($visualObj) { $visualObj.ProductId } else { $null }
+            VisualErrorCode   = if ($visualObj) { $visualObj.ErrorCode } else { $null }
+            VisualErrorDetail = if ($visualObj) { $visualObj.ErrorDetail } else { $null }
             BatchResult       = if ($batchObj) { $batchObj.Result } else { $null }
             BatchCID          = if ($batchObj) { $batchObj.CID } else { $null }
             BatchErrorCode    = if ($batchObj) { $batchObj.ErrorCode } else { $null }
             BatchErrorDetail  = if ($batchObj) { $batchObj.ErrorDetail } else { $null }
-            VisualResult      = if ($visualObj) { $visualObj.Result } else { $null }
-            VisualCID         = if ($visualObj) { $visualObj.CID } else { $null }
-            VisualErrorCode   = if ($visualObj) { $visualObj.ErrorCode } else { $null }
-            VisualErrorDetail = if ($visualObj) { $visualObj.ErrorDetail } else { $null }
             Result            = if ($finalObj) { $finalObj.Result } else { $null }
             CID               = if ($finalObj) { $finalObj.CID } else { $null }
+            ProductName       = if ($visualObj -and $visualObj.ProductName) { $visualObj.ProductName } else { $null }
+            ProductId         = if ($visualObj -and $visualObj.ProductId) { $visualObj.ProductId } else { $null }
             ErrorCode         = if ($finalObj) { $finalObj.ErrorCode } else { $null }
             ErrorDetail       = if ($finalObj) { $finalObj.ErrorDetail } else { $null }
         }
@@ -363,10 +367,10 @@ foreach ($iid in $iidsToCheck) {
             $allCsv = Join-Path $logRoot ("CidInfoAll-Random{0}.csv" -f $randNum)
             $cleanLines | Out-File $allTxt -Encoding UTF8 -Append
 
-            # Write one CSV row per API used - BatchApi always, VisualApi only when it was a fallback
-            Add-IidToCsv $batchLines $csvCols $allCsv
-            if ($visualObj) {
-                Add-IidToCsv $visualLines $csvCols $allCsv
+            # Write one CSV row per API used - VisualApi always, BatchApi only when it was a fallback
+            Add-IidToCsv $visualLines $csvCols $allCsv
+            if ($batchObj) {
+                Add-IidToCsv $batchLines $csvCols $allCsv
             }
         }
     }

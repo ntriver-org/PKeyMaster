@@ -60,6 +60,8 @@ function New-ResponseObject {
     return @{
         Success        = $false
         CID            = $null
+        ProductName    = $null
+        ProductId      = $null
         ErrorCode      = $null
         ErrorMessage   = $null
         RequestFull    = ""
@@ -240,6 +242,63 @@ function New-VisualApiDpopToken($Url, $Method) {
 }
 
 # ===============================================================================================================================
+
+function Get-ProductNameFromPid($InstallationId, $ProductId) {
+    if (-not $InstallationId -or -not $ProductId) { return $null }
+
+    # Only 63-digit IIDs correspond to PKey2009 keys
+    $cleanIid = $InstallationId -replace '\D', ''
+    if ($cleanIid.Length -ne 63) { return $null }
+
+    # Product ID for PKey2009 format: XXXXX-XXXXX-XXXXX-XXXXX
+    if ($ProductId -notmatch '^\d{5}-\d{5}-\d{5}-') { return $null }
+
+    $parts = $ProductId -split '-'
+    if ($parts.Count -lt 3) { return $null }
+
+    $groupId = ([int]$parts[0] * 10) + [int]($parts[1].Substring(0, 1))
+    $serialMid = [int]($parts[1].Substring(1, 4))
+    $serialLow = [int]$parts[2]
+    $keyId = ([long]$serialMid * 100000) + [long]$serialLow
+
+    if (-not $global:PKeyConfigsMap) { return $null }
+
+    $algoKey = "PKey2009"
+    $gStr = [string]$groupId
+    $pkeyConfigsDir = Join-Path (Split-Path -Parent $scriptDir) "PKeyConfigs"
+    $matchedConfigPath = $null
+
+    $configsMap = @($global:PKeyConfigsMap | Where-Object { $_.Profile -notmatch "custom" })
+    foreach ($entry in $configsMap) {
+        if ($entry.Algorithms -and $entry.Algorithms.ContainsKey($algoKey)) {
+            $algoGroups = $entry.Algorithms[$algoKey]
+            if ($algoGroups -and $algoGroups.ContainsKey($gStr)) {
+                foreach ($range in $algoGroups[$gStr]) {
+                    if ($keyId -ge $range[0] -and $keyId -le $range[1]) {
+                        $matchedConfigPath = Join-Path $pkeyConfigsDir $entry.Path.TrimStart('\')
+                        break
+                    }
+                }
+            }
+        }
+        if ($matchedConfigPath) { break }
+    }
+
+    $readerPath = Join-Path $scriptDir "PKeyConfigReader.ps1"
+    if ($matchedConfigPath -and (Test-Path $matchedConfigPath) -and (Test-Path $readerPath)) {
+        $infoOutput = @(& $readerPath -GetKeyInfo -File $matchedConfigPath -GroupId $groupId -KeyId $keyId -PassThru 2>$null)
+        if ($infoOutput) {
+            $info = $infoOutput[-1]
+            if ($info.Description -and $info.Description -ne "CustomMade") {
+                return $info.Description
+            }
+        }
+    }
+
+    return $null
+}
+
+# ===============================================================================================================================
 # Core API function
 # ===============================================================================================================================
 
@@ -312,6 +371,24 @@ $body
         # Parse the JSON response
         $json = $jsonSerializer.DeserializeObject($ResponseFull)
 
+        $productName = [string]$json["productName"]
+        if ($productName -and $productName.Trim() -and $productName.Trim() -ne "unknown") {
+            $out.ProductName = $productName.Trim()
+        }
+
+        $productId = [string]$json["pid"]
+        if ($productId -and $productId.Trim()) {
+            $out.ProductId = $productId.Trim()
+        }
+
+        # Resolve exact Product Name (Description) from PKeyConfig for PKey2009 (63-digit IID)
+        if ($out.ProductId) {
+            $resolvedDesc = Get-ProductNameFromPid $InstallationId $out.ProductId
+            if ($resolvedDesc) {
+                $out.ProductName = $resolvedDesc
+            }
+        }
+
         $cid = $json["cid"]
         if ($cid) {
             $out.Success = $true
@@ -362,6 +439,12 @@ $f = "{0,-18}: {1}"
 Write-Output ""
 Write-Output ($f -f "API Source", "VisualApi")
 Write-Output ($f -f "Installation ID", $InstallationId)
+if ($res.ProductName) {
+    Write-Output ($f -f "Product Name", $res.ProductName)
+}
+if ($res.ProductId) {
+    Write-Output ($f -f "Product ID", $res.ProductId)
+}
 
 if ($res.Success) {
     Write-Color ($f -f "Confirmation ID", $res.CID) "BgGreen"
@@ -389,6 +472,8 @@ if ($PassThru) {
         InstallationId = $InstallationId
         Result         = if ($res.Success) { "SUCCESS" } else { "FAILED" }
         CID            = $res.CID
+        ProductName    = $res.ProductName
+        ProductId      = $res.ProductId
         LogPath        = $LogPath
         LogStatus      = $logStatus
         ErrorCode      = $res.ErrorCode

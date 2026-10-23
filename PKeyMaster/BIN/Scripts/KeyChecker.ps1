@@ -35,7 +35,7 @@
     Enables Installation ID retrieval via GetPKeyData.
 
 .PARAMETER GetConfirmationId
-    Enables Confirmation ID retrieval via the BatchApi, with VisualApi fallback.
+    Enables Confirmation ID retrieval via the VisualApi, with BatchApi fallback.
 
 .PARAMETER KeyCheckMode
     Routing mode: "Automatic" (default), "PidGenX", or "Pre-98".
@@ -188,8 +188,8 @@ $colsPidGenX = @(
     "Key Certification", "Cert Error Code", "Cert Error Msg",
     "Key Activation", "Act Error Code", "Act Error Msg",
     "MAK Count", "MAK Error Code", "MAK Error Msg",
-    "CID Batch Api", "Batch Error Code", "Batch Error Msg",
     "CID Visual Api", "Visual Error Code", "Visual Error Msg",
+    "CID Batch Api", "Batch Error Code", "Batch Error Msg",
     "Redeem Key Status", "Redeem Product", "Redeem Acid", "Redeem GroupId", "Redeem Pkpn",
     "Query Time"
 )
