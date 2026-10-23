@@ -119,7 +119,7 @@ function Invoke-DPIDFileScan {
     for ($i = 0; $i -lt $blobs.Count; $i++) { 
         $str = Get-DigitalProductIdDisplay -Blob $blobs[$i] -VerifyHash:$VerifyHash
         $block = "[$FilePath]`r`n$str"
-        $block += "`r`n`r`n--------------------------------------------------------------------------------`r`n"
+        $block += "`r`n`r`n________________________________________________________________________________`r`n"
         Write-Output $block
         $formattedStrs += $block
     }

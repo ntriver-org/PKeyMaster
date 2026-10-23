@@ -158,7 +158,7 @@ function Invoke-RegScan {
                         Write-Output ""
                         Format-RegistryKeyResult -Path $fullPath -ValueName $valName -ParsedObj $parsed
                         Write-Output ""
-                        Write-Output "--------------------------------------------------------"
+                        Write-Output "________________________________________________________"
                         $script:FoundAny = $true
                     }
                 }
