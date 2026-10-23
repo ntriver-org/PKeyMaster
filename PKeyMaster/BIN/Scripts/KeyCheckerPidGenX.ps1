@@ -620,10 +620,13 @@ if ($configTargets.Count -gt 0) {
                     if ($preAdvPidParts.Count -ge 4) {
                         $groupId = [int]$preAdvPidParts[1]
                         $keyId = [int64]($preAdvPidParts[2] + $preAdvPidParts[3])
+                        $isUpgrade = ($parsedDpid4.IsUpgrade -eq 1)
+                        if (-not $ManualPKeyConfigPath) {
+                            $algoKey = if ($currentPath -match '980|986') { 'PKey986-980' } else { 'PKey2005' }
+                        }
+                        break
                     }
                 }
-                $isUpgrade = ($parsedDpid4.IsUpgrade -eq 1)
-                break
             }
         }
     }
@@ -647,6 +650,7 @@ if ($ProductKey -match 'N' -and $ProductKey -notmatch 'Z') {
                 $groupId = $dataObj.Group
                 $keyId = $dataObj.Serial
                 $isUpgrade = $dataObj.Upgrade
+                $algoKey = 'PKey2009'
                 $pkey2009DecodedSecurity = $dataObj.Security
                 $pkey2009DecodedExtra = $dataObj.Extra
             }
@@ -663,13 +667,13 @@ $matchedProfileName = $null
 
 if ($null -ne $groupId -and $null -ne $keyId) {
     if (-not $ManualPKeyConfigPath) {
-        $pkeyConfigsDir = Join-Path (Split-Path -Parent $scriptDir) "PKeyConfigs"
-        $gStr = [string]$groupId
-        $configsMap = @($global:PKeyConfigsMap | Where-Object { $_.Profile -notmatch "custom" }) + @($global:PKeyConfigsMap | Where-Object { $_.Profile -match "custom" })
-        foreach ($entry in $configsMap) {
-            $foundInEntry = $false
-            if ($entry.Algorithms) {
-                foreach ($algoKey in $entry.Algorithms.Keys) {
+        if ($algoKey) {
+            $pkeyConfigsDir = Join-Path (Split-Path -Parent $scriptDir) "PKeyConfigs"
+            $gStr = [string]$groupId
+            $configsMap = @($global:PKeyConfigsMap | Where-Object { $_.Profile -notmatch "custom" }) + @($global:PKeyConfigsMap | Where-Object { $_.Profile -match "custom" })
+            foreach ($entry in $configsMap) {
+                $foundInEntry = $false
+                if ($entry.Algorithms -and $entry.Algorithms.ContainsKey($algoKey)) {
                     $algoGroups = $entry.Algorithms[$algoKey]
                     if ($algoGroups -and $algoGroups.ContainsKey($gStr)) {
                         foreach ($range in $algoGroups[$gStr]) {
@@ -679,13 +683,12 @@ if ($null -ne $groupId -and $null -ne $keyId) {
                             }
                         }
                     }
-                    if ($foundInEntry) { break }
                 }
-            }
-            if ($foundInEntry) {
-                $matchedConfigPath = Join-Path $pkeyConfigsDir $entry.Path.TrimStart('\')
-                $matchedProfileName = $entry.Profile
-                break
+                if ($foundInEntry) {
+                    $matchedConfigPath = Join-Path $pkeyConfigsDir $entry.Path.TrimStart('\')
+                    $matchedProfileName = $entry.Profile
+                    break
+                }
             }
         }
     }
