@@ -16,7 +16,6 @@
 
 .NOTES
     Compatible with PowerShell 2.0 and later.
-    Requires Libs\WmiSppError.ps1 for WMI error formatting.
     Requires GetCID.ps1 for Confirmation ID retrieval.
     Requires Libs\Common.ps1 for shared helper functions.
 
@@ -101,7 +100,6 @@ Write-Output ""
 $f = "{0,-18}: {1}"
 $_scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $getCidScript = Join-Path $_scriptDir "GetCID.ps1"
-$wmiSppError = Join-Path $_scriptDir "Libs\WmiSppError.ps1"
 
 # WMI queries for Windows (SoftwareLicensingProduct) and Office (OfficeSoftwareProtectionProduct)
 # Identify the correct system directory (handling 32-bit vs 64-bit redirection)
@@ -158,15 +156,7 @@ foreach ($q in $queries) {
     }
     catch {
         # Capture WMI errors (e.g. OSPP class not registered) for reporting at the end
-        $errData = & $wmiSppError -Exception $_.Exception -PassThru
-        $errObj = $null
-        foreach ($e in $errData) { 
-            if ($e -and $e.PSObject.Properties['ErrorCode']) { 
-                $errObj = $e
-                break 
-            } 
-        }
-        
+        $errObj = Get-WmiSppError -Exception $_.Exception
         if ($errObj) {
             $wmiErrors.Add((New-Object PSObject -Property @{
                         ClassName    = $q.ClassName

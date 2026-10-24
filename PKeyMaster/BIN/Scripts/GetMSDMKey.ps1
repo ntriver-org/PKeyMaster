@@ -10,7 +10,6 @@
 .NOTES
     Compatible with PowerShell 2.0 and later.
     Requires Windows 8.1+ (build 9600+).
-    Requires Libs\WmiSppError.ps1 for WMI error formatting.
     Requires Libs\Common.ps1 for shared helper functions.
 
 .EXAMPLE
@@ -23,7 +22,6 @@
 
 $_scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 if (-not $_scriptDir) { $_scriptDir = "." }
-$wmiSppError = Join-Path $_scriptDir 'Libs\WmiSppError.ps1'
 $commonPath = Join-Path $_scriptDir 'libs\Common.ps1'
 if (Test-Path $commonPath) { . $commonPath }
 
@@ -52,7 +50,7 @@ try {
     $spp = ([wmisearcher]$query).Get() | Select-Object -First 1
 }
 catch {
-    & $wmiSppError -Exception $_.Exception
+    Write-WmiSppError -Exception $_.Exception
     return
 }
 

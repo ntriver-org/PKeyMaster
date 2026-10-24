@@ -11,7 +11,6 @@
 .NOTES
     Compatible with PowerShell 2.0 and later.
     Requires Administrator rights to stop the Software licensing service if the store is locked.
-    Requires Libs\WmiSppError.ps1 for error handling.
     Requires Libs\Common.ps1 for shared helper functions.
 
 .EXAMPLE
@@ -120,7 +119,6 @@ if (Test-Path "$env:SystemRoot\Sysnative\reg.exe") {
 }
 $script:IsVista = $script:Build -lt 7600 -and (Test-Path (Join-Path $script:SysPath 'slsvc.exe'))
 $script:SvcName = if ($script:IsVista) { 'slsvc' } else { 'sppsvc' }
-$script:WmiSppError = Join-Path $scriptDir "Libs\WmiSppError.ps1"
 $script:WmiErrors = New-Object System.Collections.Generic.List[object]
 
 # ===============================================================================================================================
@@ -477,23 +475,13 @@ function Resolve-StoreKeys([System.Collections.ICollection]$DecryptedTexts, [str
         }
     }
     catch {
-        if (Test-Path -LiteralPath $script:WmiSppError) {
-            $errData = & $script:WmiSppError -Exception $_.Exception -PassThru
-            $errObj = $null
-            foreach ($e in $errData) {
-                if ($e -and $e.PSObject.Properties['ErrorCode']) {
-                    $errObj = $e
-                    break
-                }
-            }
-
-            if ($errObj) {
-                $script:WmiErrors.Add((New-Object PSObject -Property @{
-                            ClassName    = $WmiClass
-                            ErrorCode    = $errObj.ErrorCode
-                            ErrorMessage = $errObj.ErrorMessage
-                        }))
-            }
+        $errObj = Get-WmiSppError -Exception $_.Exception
+        if ($errObj) {
+            $script:WmiErrors.Add((New-Object PSObject -Property @{
+                        ClassName    = $WmiClass
+                        ErrorCode    = $errObj.ErrorCode
+                        ErrorMessage = $errObj.ErrorMessage
+                    }))
         }
     }
 

@@ -144,6 +144,89 @@ function Find-KeysInFile {
 }
 
 # ===============================================================================================================================
+# WMI / SPP Error Resolution
+# ===============================================================================================================================
+
+function global:Get-WmiSppError {
+    [CmdletBinding()]
+    param(
+        [int]$ErrorCode = 0,
+        [Exception]$Exception = $null
+    )
+
+    if ($ErrorCode -eq 0 -and -not $Exception) { return $null }
+
+    # Resolve HRESULT from exception if provided
+    $hres = $ErrorCode
+    if ($Exception) {
+        $ex = if ($Exception.InnerException) { $Exception.InnerException } else { $Exception }
+        $hres = [System.Runtime.InteropServices.Marshal]::GetHRForException($ex)
+    }
+
+    $msg = ''
+
+    if ($hres -ne 0) {
+        # Build interop type once per session to avoid recompiling
+        $typeName = 'SPPInterop'
+        $interopType = $typeName -as [type]
+
+        if (-not $interopType) {
+            $TB = [AppDomain]::CurrentDomain.DefineDynamicAssembly((Get-Random), 1).DefineDynamicModule((Get-Random), $False).DefineType($typeName)
+            [void]$TB.DefinePInvokeMethod('LoadLibrary', 'kernel32.dll', 22, 1, [IntPtr], @([string]), 1, 4).SetImplementationFlags(128)
+            [void]$TB.DefinePInvokeMethod('FreeLibrary', 'kernel32.dll', 22, 1, [bool], @([IntPtr]), 1, 4).SetImplementationFlags(128)
+            [void]$TB.DefinePInvokeMethod('FormatMessage', 'kernel32.dll', 22, 1, [int], @([int], [IntPtr], [int], [int], [System.Text.StringBuilder], [int], [IntPtr]), 1, 4).SetImplementationFlags(128)
+            $interopType = $TB.CreateType()
+        }
+
+        # Walk licensing and system DLLs to find the error description
+        $searchDlls = @('slc.dll', 'sppc.dll', 'wmiutils.dll', 'KernelBase.dll')
+        foreach ($dll in $searchDlls) {
+            $hMod = $interopType::LoadLibrary($dll)
+            if ($hMod -eq [IntPtr]::Zero) { continue }
+
+            $sb = New-Object System.Text.StringBuilder 1024
+            # Flags: FORMAT_MESSAGE_FROM_HMODULE (0x800) | FORMAT_MESSAGE_IGNORE_INSERTS (0x200)
+            $res = $interopType::FormatMessage(0x00000A00, $hMod, $hres, 0, $sb, $sb.Capacity, [IntPtr]::Zero)
+            $interopType::FreeLibrary($hMod) | Out-Null
+
+            if ($res -gt 0) {
+                $msg = $sb.ToString().Trim()
+                break
+            }
+        }
+    }
+
+    # Fallback to raw exception message if native resolution failed
+    if (-not $msg -and $Exception) {
+        $ex = if ($Exception.InnerException) { $Exception.InnerException } else { $Exception }
+        $msg = $ex.Message
+    }
+
+    return New-Object PSObject -Property @{
+        ErrorCode    = $hres
+        ErrorMessage = $msg
+    }
+}
+
+# ===============================================================================================================================
+
+function global:Write-WmiSppError {
+    [CmdletBinding()]
+    param(
+        [int]$ErrorCode = 0,
+        [Exception]$Exception = $null
+    )
+
+    $errObj = Get-WmiSppError -ErrorCode $ErrorCode -Exception $Exception
+    if (-not $errObj) { return }
+
+    $f = '{0,-18}: {1}'
+    Write-Color ($f -f 'Error Code', ('0x{0:X8}' -f $errObj.ErrorCode)) "BgRed"
+    Write-Color ($f -f 'Error Message', $errObj.ErrorMessage) "BgRed"
+    Write-Output ""
+}
+
+# ===============================================================================================================================
 # PKeyConfigsMap JSON Global Cache
 # ===============================================================================================================================
 
