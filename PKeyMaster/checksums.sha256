@@ -155,7 +155,7 @@ d74dfb370a19a2adb41bb9880935c0a8db9d475b81edf383427023bd81d15c55 *BIN\PKeyConfig
 d758ff8c9511aad5648b429bc74c076438cee26a8778a8b0db53b498cd4bcbf4 *BIN\PKeyConfigs\Windows - Server\Production\Main\7601 - Windows 7 - Server 2008 R2\pkeyconfig.xrm-ms
 d310e0c0e45d08db12a6010954ffd6400154a206060cb7910af52697aef31be0 *BIN\PKeyConfigs\Windows - Server\Production\Main\9200 - Windows 8 - Server 2012\pkeyconfig.xrm-ms
 b8e8b0ff5c1066562497aede3702089c248382c5d38cd26a70ecfbc8fea90aeb *BIN\PKeyConfigs\Windows - Server\Production\Main\9600 - Windows 8.1 - Server 2012 R2\pkeyconfig.xrm-ms
-dad4149aa125018d4abd70d830254aa6c458122b28d8f539773062ff21a76cc1 *BIN\PKeyConfigsMap.json
+3dc06ff9c3a61b6a43cab8188c0ff199e96403edbe3059a162312e30334732df *BIN\PKeyConfigsMap.json
 89bc2d22e2d162a3981d224702f6c2ffe9fdfe13be58282d0d16a98d15f37034 *BIN\PreVistaRanges.csv
 c622301660b0f5568d81dffe24a156866643b5f3da89b070f471db21ac1e636d *BIN\PublishLicense.xml
 ea5b9d8c425f849c38ae59ef32d3813253e5a0cffacec66ea3d8babfca24f6ca *BIN\Scripts\CheckRedeemKey.ps1
