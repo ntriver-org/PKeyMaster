@@ -99,7 +99,7 @@ if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM') {
     return
 }
 
-if (-not $Script:PidGenXNativeType) {
+if (-not $global:PidGenXNativeType) {
     if (-not (Test-Path $dllPath)) {
         Write-Color "PidGenX DLL not found: $dllPath" "BgRed"
         return
@@ -114,13 +114,14 @@ if (-not $Script:PidGenXNativeType) {
         [void]$TB.DefinePInvokeMethod('GetPKeyData', $dllPath, 22, 1, [int], $iidParams, 1, 3).SetImplementationFlags(128)
         [void]$TB.DefinePInvokeMethod('GetModuleHandle', 'kernel32.dll', 22, 1, [IntPtr], @([string]), 1, 3).SetImplementationFlags(128)
 
-        $Script:PidGenXNativeType = $TB.CreateType()
+        $global:PidGenXNativeType = $TB.CreateType()
     }
     catch {
         Write-Color "Failed to initialize native methods: $($_.Exception.Message)" "BgRed"
         return
     }
 }
+$Script:PidGenXNativeType = $global:PidGenXNativeType
 
 # ===============================================================================================================================
 # Helper functions

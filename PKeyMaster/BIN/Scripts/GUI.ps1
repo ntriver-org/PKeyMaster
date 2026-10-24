@@ -85,6 +85,7 @@ function Show-PKeyMasterGui {
     }
     $browsePlaceholder = 'Click to browse...'
     $Script:CreatedBatchFiles = New-Object 'System.Collections.Generic.List[string]'
+    $Script:TaskRunspace = $null
 
     $dpiScale = 1.0
     try {
@@ -249,8 +250,25 @@ function Show-PKeyMasterGui {
     }
 
     # ===============================================================================================================================
-    # Background task runner
+    # Background task runner & persistent runspace
     # ===============================================================================================================================
+
+    function Get-TaskRunspace {
+        if ($null -eq $Script:TaskRunspace -or $Script:TaskRunspace.RunspaceStateInfo.State -ne [System.Management.Automation.Runspaces.RunspaceState]::Opened) {
+            if ($Script:TaskRunspace) {
+                try { $Script:TaskRunspace.Dispose() } catch { }
+            }
+            $Script:TaskRunspace = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspace()
+            $Script:TaskRunspace.Open()
+
+            $p = [PowerShell]::Create()
+            $p.Runspace = $Script:TaskRunspace
+            [void]$p.AddScript('$global:IsGuiRunspace = $true')
+            [void]$p.Invoke()
+            $p.Dispose()
+        }
+        return $Script:TaskRunspace
+    }
 
     function Start-ToolTask {
         param(
@@ -287,7 +305,9 @@ function Show-PKeyMasterGui {
             $OutputBox.Clear()
         }
 
+        $taskRunspace = Get-TaskRunspace
         $powerShellPipeline = [PowerShell]::Create()
+        $powerShellPipeline.Runspace = $taskRunspace
         $textQueue = [System.Collections.Queue]::Synchronized((New-Object System.Collections.Queue))
         $objectQueue = [System.Collections.Queue]::Synchronized((New-Object System.Collections.Queue))
 
@@ -2169,6 +2189,14 @@ function Show-PKeyMasterGui {
         $mainWindow.ShowDialog() | Out-Null
     }
     finally {
+        if ($Script:TaskRunspace) {
+            try {
+                $Script:TaskRunspace.Close()
+                $Script:TaskRunspace.Dispose()
+            }
+            catch { }
+            $Script:TaskRunspace = $null
+        }
         foreach ($tempFile in $Script:CreatedBatchFiles) {
             if ($tempFile -and (Test-Path -LiteralPath $tempFile)) {
                 try { [System.IO.File]::Delete($tempFile) } catch { }
