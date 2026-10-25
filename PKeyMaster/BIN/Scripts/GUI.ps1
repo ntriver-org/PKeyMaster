@@ -12,7 +12,7 @@
     The launcher dot-sources this file and supplies Version.
     Requires the full PKeyMaster file layout with all BIN\Scripts\ files and
     supporting libraries in place.
-    Requires Libs\Common.ps1 for shared helper functions.
+    Requires Libs\Common.psm1 for shared helper functions.
 #>
 [CmdletBinding()]
 param()
@@ -27,8 +27,7 @@ $Script:ApplicationRoot = Split-Path -Parent $Script:GuiScriptRoot
 $BaseUrl = 'https://ntriver.org'
 $GitUrl = 'https://github.com/ntriver-org/PKeyMaster'
 
-$commonPath = Join-Path $Script:GuiScriptRoot "libs\Common.ps1"
-if (Test-Path $commonPath) { . $commonPath }
+Import-Module "$Script:GuiScriptRoot\Libs\Common.psm1"
 
 Add-Type -AssemblyName System.Windows.Forms | Out-Null
 Add-Type -AssemblyName System.Drawing | Out-Null
@@ -86,6 +85,8 @@ function Show-PKeyMasterGui {
     $browsePlaceholder = 'Click to browse...'
     $Script:CreatedBatchFiles = New-Object 'System.Collections.Generic.List[string]'
     $Script:TaskRunspace = $null
+    $Script:WarmupPipeline = $null
+    $Script:WarmupAsyncResult = $null
 
     $dpiScale = 1.0
     try {
@@ -254,20 +255,47 @@ function Show-PKeyMasterGui {
     # ===============================================================================================================================
 
     function Get-TaskRunspace {
+        if ($Script:WarmupPipeline -and $Script:WarmupAsyncResult) {
+            if (-not $Script:WarmupAsyncResult.IsCompleted) {
+                if (-not $Script:WarmupAsyncResult.AsyncWaitHandle.WaitOne(3000)) {
+                    try { $Script:WarmupPipeline.Stop() } catch { }
+                }
+            }
+            try { [void]$Script:WarmupPipeline.EndInvoke($Script:WarmupAsyncResult) } catch { }
+            try { $Script:WarmupPipeline.Dispose() } catch { }
+            $Script:WarmupPipeline = $null
+            $Script:WarmupAsyncResult = $null
+        }
+
         if ($null -eq $Script:TaskRunspace -or $Script:TaskRunspace.RunspaceStateInfo.State -ne [System.Management.Automation.Runspaces.RunspaceState]::Opened) {
             if ($Script:TaskRunspace) {
                 try { $Script:TaskRunspace.Dispose() } catch { }
             }
             $Script:TaskRunspace = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspace()
             $Script:TaskRunspace.Open()
-
-            $p = [PowerShell]::Create()
-            $p.Runspace = $Script:TaskRunspace
-            [void]$p.AddScript('$global:IsGuiRunspace = $true')
-            [void]$p.Invoke()
-            $p.Dispose()
         }
         return $Script:TaskRunspace
+    }
+
+    function Start-WarmupTask {
+        if ($Script:WarmupPipeline -or $Script:TaskRunspace) { return }
+
+        $Script:WarmupPipeline = [PowerShell]::Create()
+        $Script:WarmupPipeline.Runspace = Get-TaskRunspace
+
+        $initScript = @"
+`$global:IsGuiRunspace = `$true
+# Warm up KeyChecker to pre-compile scriptblocks and preload modules, PidGenX DLL, and caches into the runspace
+`$kc = Join-Path '$($Script:GuiScriptRoot -replace "'", "''")' 'KeyChecker.ps1'
+if (Test-Path `$kc) {
+    try {
+        & `$kc -ProductKey 'VK7JG-NPHTM-C97JM-9MPGT-3V66T' | Out-Null
+        & `$kc -ProductKey 'XCYBK-2B3KV-G8T8F-WXJM7-WCTYT' | Out-Null
+    } catch { }
+}
+"@
+        [void]$Script:WarmupPipeline.AddScript($initScript)
+        $Script:WarmupAsyncResult = $Script:WarmupPipeline.BeginInvoke()
     }
 
     function Start-ToolTask {
@@ -1761,6 +1789,7 @@ function Show-PKeyMasterGui {
             Update-Layout
             Update-ProfileList -TargetMode 'Automatic'
             Restore-IntroText
+            Start-WarmupTask
             if ($Launcher) {
                 try {
                     $p = Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like '*PKeyMaster-Launcher' } | Select-Object -First 1
@@ -2189,6 +2218,11 @@ function Show-PKeyMasterGui {
         $mainWindow.ShowDialog() | Out-Null
     }
     finally {
+        if ($Script:WarmupPipeline) {
+            try { $Script:WarmupPipeline.Stop() } catch { }
+            try { $Script:WarmupPipeline.Dispose() } catch { }
+            $Script:WarmupPipeline = $null
+        }
         if ($Script:TaskRunspace) {
             try {
                 $Script:TaskRunspace.Close()

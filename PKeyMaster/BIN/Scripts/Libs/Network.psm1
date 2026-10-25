@@ -1,16 +1,17 @@
 <#
 .SYNOPSIS
-    HTTP GET/POST helpers for PKeyMaster backend scripts.
+    HTTP GET/POST helpers and network transport for PKeyMaster.
 
 .DESCRIPTION
-    Provides HTTP GET and POST functions with automatic transport selection.
-    Uses wget.exe from BIN\ when available, falling back to .NET HttpWebRequest.
-    For large POST bodies (>5 KB) on pre-Windows 7 systems (build <7600), WebRequest
-    is forced to avoid wget.exe bug.
+    PowerShell script module providing HTTP GET and POST functions with automatic
+    transport selection. Uses wget.exe from BIN\ when available, falling back
+    to .NET HttpWebRequest. For large POST bodies (>5 KB) on pre-Windows 7 systems
+    (build <7600), WebRequest is forced to avoid wget.exe bug.
 
     Failed requests are retried up to 5 times with a 2-second delay unless the
     machine is offline. An optional -ExpectedFormat ("xml" or "json") validates
     that the response body parses correctly and contains expected keywords.
+    This module is intended to be imported via Import-Module, not executed directly.
 
 .NOTES
     Compatible with PowerShell 2.0 and later.
@@ -21,7 +22,7 @@
 # Initialization & Helper functions
 # ===============================================================================================================================
 
-$script:WgetPath = Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) "..\..\wget.exe"
+$script:WgetPath = Join-Path $PSScriptRoot "..\..\wget.exe"
 
 # ===============================================================================================================================
 
@@ -105,8 +106,7 @@ function Test-Json([string]$Text) {
     if (-not $Text) { return $false }
     if ($Text -match '</html>') { return $false }
     try {
-        Add-Type -AssemblyName System.Web.Extensions | Out-Null
-        (New-Object System.Web.Script.Serialization.JavaScriptSerializer).DeserializeObject($Text) | Out-Null
+        $global:JsonSerializer.DeserializeObject($Text) | Out-Null
 
         if ($Text -match '"(cid|message|reasonCode|token|Pkpn|Product|Products|detail|name)"\s*:') {
             return $true
@@ -114,7 +114,9 @@ function Test-Json([string]$Text) {
 
         return $false
     }
-    catch { return $false }
+    catch {
+        return $false
+    }
 }
 
 # ===============================================================================================================================
@@ -334,6 +336,40 @@ function Invoke-GetTextRequest($Url, $Headers = $null, $ContentType = "", $UserA
 function Invoke-PostTextRequest($Url, $Body, $Headers = $null, $ContentType = "", $UserAgent = "", $ExpectedFormat = "") {
     # POST with retries
     return Invoke-TextRequestWithRetry "POST" $Url $Body $Headers $ContentType $UserAgent $ExpectedFormat
+}
+
+# ===============================================================================================================================
+
+function Write-ApiLogs($LogPath, $Prefix, $Obj) {
+    # Dump request/response payloads to disk.
+    if (-not $LogPath) { return $null }
+
+    try {
+        if (-not (Test-Path $LogPath)) { New-Item -Path $LogPath -ItemType Directory -Force | Out-Null }
+        if (-not (Test-Path $LogPath)) { return "Failed to create log folder" }
+
+        $ext = if ($Obj.Token -or $Obj.RequestFull -match '^\s*[\{\[]' -or $Obj.ResponseFull -match '^\s*[\{\[]') {
+            ".json"
+        }
+        else {
+            ".xml"
+        }
+
+        $count = 0
+        if ($Obj.RequestInner) { Set-Content -Path (Join-Path $LogPath "$Prefix`_Request_BodyInner$ext") -Value $Obj.RequestInner -Encoding UTF8; $count++ }
+        if ($Obj.ResponseInner) { Set-Content -Path (Join-Path $LogPath "$Prefix`_Response_BodyInner$ext") -Value $Obj.ResponseInner -Encoding UTF8; $count++ }
+        if ($Obj.RequestFull) { Set-Content -Path (Join-Path $LogPath "$Prefix`_Request_BodyFull$ext") -Value $Obj.RequestFull -Encoding UTF8; $count++ }
+        if ($Obj.Token) { Set-Content -Path (Join-Path $LogPath "$Prefix`_Token.txt") -Value $Obj.Token -Encoding UTF8; $count++ }
+        if ($Obj.ResponseFull) { Set-Content -Path (Join-Path $LogPath "$Prefix`_Response_BodyFull$ext") -Value $Obj.ResponseFull -Encoding UTF8; $count++ }
+        if ($Obj.RequestDetails) { Set-Content -Path (Join-Path $LogPath "$Prefix`_Request_Details.txt") -Value $Obj.RequestDetails -Encoding UTF8; $count++ }
+
+        if ($count -gt 0) { return "Saved to $LogPath" }
+        return "No payloads to save"
+    }
+    catch {
+        $exMsg = if ($_.Exception.InnerException) { $_.Exception.InnerException.Message } else { $_.Exception.Message }
+        return "Failed: $exMsg"
+    }
 }
 
 # ===============================================================================================================================

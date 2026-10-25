@@ -10,7 +10,7 @@
 .NOTES
     Compatible with PowerShell 2.0 and later.
     Requires Windows 8.1+ (build 9600+).
-    Requires Libs\Common.ps1 for shared helper functions.
+    Requires Libs\Common.psm1 for shared helper functions.
 
 .EXAMPLE
     .\GetMSDMKey.ps1
@@ -22,8 +22,7 @@
 
 $_scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 if (-not $_scriptDir) { $_scriptDir = "." }
-$commonPath = Join-Path $_scriptDir 'libs\Common.ps1'
-if (Test-Path $commonPath) { . $commonPath }
+Import-Module "$_scriptDir\Libs\Common.psm1"
 
 Write-Output 'Checking MSDM (BIOS/UEFI) key...'
 Write-Output ''

@@ -22,8 +22,8 @@
 
 .NOTES
     Compatible with PowerShell 2.0 and later.
-    Requires Libs\Network.ps1 for HTTP communication.
-    Requires Libs\Common.ps1 for shared helper functions.
+    Requires Libs\Network.psm1 for HTTP communication.
+    Requires Libs\Common.psm1 for shared helper functions.
 
 .EXAMPLE
     .\GetCidBatchApi.ps1 -InstallationId "123456789012345678901234567890123456789012345678901234"
@@ -43,10 +43,8 @@ param(
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 if (-not $scriptDir) { $scriptDir = "." }
-$networkPath = Join-Path $scriptDir "libs\Network.ps1"
-if (Test-Path $networkPath) { . $networkPath }
-$commonPath = Join-Path $scriptDir "libs\Common.ps1"
-if (Test-Path $commonPath) { . $commonPath }
+Import-Module "$scriptDir\Libs\Common.psm1"
+Import-Module "$scriptDir\Libs\Network.psm1"
 
 # ===============================================================================================================================
 # Helper functions
@@ -74,32 +72,6 @@ function New-ResponseObject {
         RequestFull    = ""
         ResponseFull   = ""
         RequestDetails = ""
-    }
-}
-
-# ===============================================================================================================================
-
-function Write-ApiLogs($LogPath, $Prefix, $Obj) {
-    # Dump BatchApi request/response XML to disk.
-    if (-not $LogPath) { return $null }
-
-    try {
-        if (-not (Test-Path $LogPath)) { New-Item -Path $LogPath -ItemType Directory -Force | Out-Null }
-        if (-not (Test-Path $LogPath)) { return "Failed to create log folder" }
-
-        $count = 0
-        if ($Obj.RequestInner) { Set-Content -Path (Join-Path $LogPath "$Prefix`_Request_BodyInner.xml") -Value $Obj.RequestInner -Encoding UTF8; $count++ }
-        if ($Obj.ResponseInner) { Set-Content -Path (Join-Path $LogPath "$Prefix`_Response_BodyInner.xml") -Value $Obj.ResponseInner -Encoding UTF8; $count++ }
-        if ($Obj.RequestFull) { Set-Content -Path (Join-Path $LogPath "$Prefix`_Request_BodyFull.xml") -Value $Obj.RequestFull -Encoding UTF8; $count++ }
-        if ($Obj.ResponseFull) { Set-Content -Path (Join-Path $LogPath "$Prefix`_Response_BodyFull.xml") -Value $Obj.ResponseFull -Encoding UTF8; $count++ }
-        if ($Obj.RequestDetails) { Set-Content -Path (Join-Path $LogPath "$Prefix`_Request_Details.txt") -Value $Obj.RequestDetails -Encoding UTF8; $count++ }
-
-        if ($count -gt 0) { return "Saved to $LogPath" }
-        return "No payloads to save"
-    }
-    catch {
-        $exMsg = if ($_.Exception.InnerException) { $_.Exception.InnerException.Message } else { $_.Exception.Message }
-        return "Failed: $exMsg"
     }
 }
 

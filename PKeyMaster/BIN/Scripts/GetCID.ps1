@@ -47,13 +47,16 @@
         -ExportLogs -LogPath "D:\Logs\CurrentIID" -ExactLogPath
         Saves directly under: D:\Logs\CurrentIID
 
+.PARAMETER NoOpenFolder
+    Suppresses opening the log folder in Windows Explorer upon completion.
+
 .PARAMETER PassThru
     Returns structured PSObjects instead of only writing to the console.
 
 .NOTES
     Compatible with PowerShell 2.0 and later.
     Requires GetCidBatchApi.ps1 and GetCidVisualApi.ps1 for CID retrieval.
-    Requires Libs\Common.ps1 for shared helper functions.
+    Requires Libs\Common.psm1 for shared helper functions.
 
 .EXAMPLE
     .\GetCID.ps1 -InstallationId "123456789012345678901234567890123456789012345678901234"
@@ -68,7 +71,8 @@ param(
     [string]$LogPath = '',
     [switch]$ExactLogPath,
     [switch]$ExportLogs,
-    [switch]$PassThru
+    [switch]$PassThru,
+    [switch]$NoOpenFolder
 )
 
 # ===============================================================================================================================
@@ -78,8 +82,7 @@ param(
 $_scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 if (-not $_scriptDir) { $_scriptDir = "." }
 
-$commonPath = Join-Path $_scriptDir "libs\Common.ps1"
-if (Test-Path $commonPath) { . $commonPath }
+Import-Module "$_scriptDir\Libs\Common.psm1"
 $batchApiScript = Join-Path $_scriptDir "GetCidBatchApi.ps1"
 $visualApiScript = Join-Path $_scriptDir "GetCidVisualApi.ps1"
 
@@ -389,7 +392,7 @@ if ($IidFile -or ($ExportLogs -and $logRoot)) {
     }
     if ($ExportLogs -and $logRoot) {
         Write-Output ($f -f "Logs Saved To", $logRoot)
-        if (Test-Path $logRoot -PathType Container) {
+        if (-not $NoOpenFolder -and (Test-Path $logRoot -PathType Container)) {
             Invoke-Item -LiteralPath $logRoot
         }
     }

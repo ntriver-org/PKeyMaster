@@ -9,7 +9,7 @@
 
     Note: Microsoft doesn't tie the CID to the token, so random or shared tokens are fine.
 
-    Requires Libs\Network.ps1 for HTTP communication (GET and POST).
+    Requires Libs\Network.psm1 for HTTP communication (GET and POST).
 
 .PARAMETER InstallationId
     The Installation ID string (50, 54, 59, or 63 digits).
@@ -22,9 +22,9 @@
 
 .NOTES
     Compatible with PowerShell 2.0 and later. Requires .NET Framework 3.5 or later.
-    Requires Libs\Network.ps1 for HTTP communication.
+    Requires Libs\Network.psm1 for HTTP communication.
     Optionally reads BIN\CidToken.txt for a local Bearer token.
-    Requires Libs\Common.ps1 for shared helper functions.
+    Requires Libs\Common.psm1 for shared helper functions.
 
 .EXAMPLE
     .\GetCidVisualApi.ps1 -InstallationId "123456789012345678901234567890123456789012345678901234"
@@ -43,13 +43,8 @@ param(
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 if (-not $scriptDir) { $scriptDir = "." }
-$networkPath = Join-Path $scriptDir "libs\Network.ps1"
-if (Test-Path $networkPath) { . $networkPath }
-$commonPath = Join-Path $scriptDir "libs\Common.ps1"
-if (Test-Path $commonPath) { . $commonPath }
-
-Add-Type -AssemblyName System.Web.Extensions | Out-Null
-$jsonSerializer = New-Object System.Web.Script.Serialization.JavaScriptSerializer
+Import-Module "$scriptDir\Libs\Common.psm1"
+Import-Module "$scriptDir\Libs\Network.psm1"
 
 # ===============================================================================================================================
 # Helper functions
@@ -68,31 +63,6 @@ function New-ResponseObject {
         ResponseFull   = ""
         Token          = $null
         RequestDetails = ""
-    }
-}
-
-# ===============================================================================================================================
-
-function Write-ApiLogs($LogPath, $Prefix, $Obj) {
-    # Dump request/response payloads to disk.
-    if (-not $LogPath) { return $null }
-
-    try {
-        if (-not (Test-Path $LogPath)) { New-Item -Path $LogPath -ItemType Directory -Force | Out-Null }
-        if (-not (Test-Path $LogPath)) { return "Failed to create log folder" }
-
-        $count = 0
-        if ($Obj.RequestFull) { Set-Content -Path (Join-Path $LogPath "$Prefix`_Request_BodyFull.json") -Value $Obj.RequestFull -Encoding UTF8; $count++ }
-        if ($Obj.Token) { Set-Content -Path (Join-Path $LogPath "$Prefix`_Token.txt") -Value $Obj.Token -Encoding UTF8; $count++ }
-        if ($Obj.ResponseFull) { Set-Content -Path (Join-Path $LogPath "$Prefix`_Response_BodyFull.json") -Value $Obj.ResponseFull -Encoding UTF8; $count++ }
-        if ($Obj.RequestDetails) { Set-Content -Path (Join-Path $LogPath "$Prefix`_Request_Details.txt") -Value $Obj.RequestDetails -Encoding UTF8; $count++ }
-
-        if ($count -gt 0) { return "Saved to $LogPath" }
-        return "No payloads to save"
-    }
-    catch {
-        $exMsg = if ($_.Exception.InnerException) { $_.Exception.InnerException.Message } else { $_.Exception.Message }
-        return "Failed: $exMsg"
     }
 }
 
@@ -153,7 +123,7 @@ function Get-AccessToken {
     }
 
     try {
-        $tokenJson = $jsonSerializer.DeserializeObject($ResponseFull)
+        $tokenJson = $global:JsonSerializer.DeserializeObject($ResponseFull)
         $token = $tokenJson["token"]
         if ($token) {
             if (-not (Test-AccessTokenFormat $token)) {
@@ -369,7 +339,7 @@ $body
     
     try {
         # Parse the JSON response
-        $json = $jsonSerializer.DeserializeObject($ResponseFull)
+        $json = $global:JsonSerializer.DeserializeObject($ResponseFull)
 
         $productName = [string]$json["productName"]
         if ($productName -and $productName.Trim() -and $productName.Trim() -ne "unknown") {

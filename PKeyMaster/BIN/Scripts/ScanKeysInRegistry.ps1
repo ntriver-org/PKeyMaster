@@ -18,8 +18,8 @@
 
 .NOTES
     Compatible with PowerShell 2.0 and later.
-    Requires Libs\DigitalProductId.ps1 for DPID parsing.
-    Requires Libs\Common.ps1 for shared helper functions.
+    Requires Libs\DigitalProductId.psm1 for DPID parsing.
+    Requires Libs\Common.psm1 for shared helper functions.
 
 .EXAMPLE
     .\ScanKeysInRegistry.ps1 -Windows -Office
@@ -40,10 +40,8 @@ $VerifyHash = $true
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 if (-not $scriptDir) { $scriptDir = "." }
 
-$commonPath = Join-Path $scriptDir "libs\Common.ps1"
-if (Test-Path $commonPath) { . $commonPath }
-$digitalPidPath = Join-Path $scriptDir "libs\DigitalProductId.ps1"
-if (Test-Path $digitalPidPath) { . $digitalPidPath }
+Import-Module "$scriptDir\Libs\Common.psm1"
+Import-Module "$scriptDir\Libs\DigitalProductId.psm1"
 
 # Default to Windows + Office if no mode specified
 if (-not ($Windows -or $Office -or $Other)) {

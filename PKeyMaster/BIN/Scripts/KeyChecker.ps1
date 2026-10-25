@@ -77,7 +77,7 @@
 .NOTES
     Compatible with PowerShell 2.0 and later.
     Requires KeyCheckerPidGenX.ps1 and KeyCheckerPre98.ps1 for key checking.
-    Requires Libs\Common.ps1 for shared helper functions.
+    Requires Libs\Common.psm1 for shared helper functions.
 
 .EXAMPLE
     .\KeyChecker.ps1 -ProductKey "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX"
@@ -111,8 +111,7 @@ param(
 $_scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 if (-not $_scriptDir) { $_scriptDir = "." }
 
-$commonPath = Join-Path $_scriptDir "libs\Common.ps1"
-if (Test-Path $commonPath) { . $commonPath }
+Import-Module "$_scriptDir\Libs\Common.psm1"
 
 $pidGenXScript = Join-Path $_scriptDir "KeyCheckerPidGenX.ps1"
 $pre98Script = Join-Path $_scriptDir "KeyCheckerPre98.ps1"

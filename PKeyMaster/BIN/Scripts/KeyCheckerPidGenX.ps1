@@ -42,11 +42,11 @@
     Compatible with PowerShell 2.0 and later.
     Requires Windows Vista SP1+ (build 6001+).
     Requires pidgenx64.dll or pidgenx32.dll in the BIN directory.
-    Requires Libs\DigitalProductId.ps1, PKeyConfigReader.ps1,
+    Requires Libs\DigitalProductId.psm1, PKeyConfigReader.ps1,
     KeyCertification.ps1, KeyActivation.ps1, MakCount.ps1, GetCID.ps1,
     DecodePKey2009.ps1, DecodePKey980-PKey986.ps1 for optional features.
     Requires PKeyConfigsMap.json and PreVistaRanges.csv in the application root.
-    Requires Libs\Common.ps1 for shared helper functions.
+    Requires Libs\Common.psm1 for shared helper functions.
 
 .EXAMPLE
     .\KeyCheckerPidGenX.ps1 -ProductKey "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX"
@@ -82,11 +82,9 @@ $dllDir = Split-Path -Parent $scriptDir
 $dllName = if ([IntPtr]::Size -eq 8) { "pidgenx64.dll" } else { "pidgenx32.dll" }
 $dllPath = Join-Path $dllDir $dllName
 
-$digitalPidPath = Join-Path $scriptDir "libs\DigitalProductId.ps1"
-$commonPath = Join-Path $scriptDir "libs\Common.ps1"
 $readerPath = Join-Path $scriptDir "PKeyConfigReader.ps1"
-if (Test-Path $digitalPidPath) { . $digitalPidPath }
-if (Test-Path $commonPath) { . $commonPath }
+Import-Module "$scriptDir\Libs\Common.psm1"
+Import-Module "$scriptDir\Libs\DigitalProductId.psm1"
 
 $f = "{0,-18}: {1}"
 
@@ -301,6 +299,7 @@ function Invoke-GetConfirmationId($IID, $LogFolder, $f, $scriptDir) {
         $params['ExportLogs'] = $true
         $params['LogPath'] = $LogFolder
         $params['ExactLogPath'] = $true
+        $params['NoOpenFolder'] = $true
     }
     $cidOutput = Invoke-PassThruScript $getCidScript $params
     
@@ -566,7 +565,6 @@ function Show-RedeemKeyStatus {
 # Main execution
 # ===============================================================================================================================
 
-if (-not (Test-Path $dllPath)) { Write-Color "PidGenX DLL not found: $dllPath" "BgRed"; return }
 if (-not $global:PKeyConfigsMap) { Write-Color "PKeyConfigsMap cache not found." "BgRed"; return }
 
 # ===============================================================================================================================

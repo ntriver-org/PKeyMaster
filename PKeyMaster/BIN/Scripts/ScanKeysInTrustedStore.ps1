@@ -11,7 +11,7 @@
 .NOTES
     Compatible with PowerShell 2.0 and later.
     Requires Administrator rights to stop the Software licensing service if the store is locked.
-    Requires Libs\Common.ps1 for shared helper functions.
+    Requires Libs\Common.psm1 for shared helper functions.
 
 .EXAMPLE
     .\ScanKeysInTrustedStore.ps1
@@ -109,8 +109,7 @@ $OSPP_AES_KEY = [byte[]](
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 if (-not $scriptDir) { $scriptDir = "." }
-$commonPath = Join-Path $scriptDir "libs\Common.ps1"
-if (Test-Path $commonPath) { . $commonPath }
+Import-Module "$scriptDir\Libs\Common.psm1"
 
 $script:Build = [System.Environment]::OSVersion.Version.Build
 $script:SysPath = "$env:SystemRoot\System32"

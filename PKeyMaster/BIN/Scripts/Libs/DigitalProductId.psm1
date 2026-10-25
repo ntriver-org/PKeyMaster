@@ -1,11 +1,13 @@
 <#
 .SYNOPSIS
-    Shared library for parsing and validating Digital Product IDs (DPID).
+    Digital Product ID (DPID) parser and validator for PKeyMaster.
 
 .DESCRIPTION
-    This script provides helper functions to extract binary data, convert raw key bytes
-    to 5x5 product keys (Base24), verify CRC32 and SHA256 integrity hashes, and parse
-    the various DPID versions (v2, v3, v4) used across Windows and Office.
+    PowerShell script module providing helper functions to extract binary data,
+    convert raw key bytes to 5x5 product keys (Base24), verify CRC32 and SHA256
+    integrity hashes, and parse the various DPID versions (v2, v3, v4) used across
+    Windows and Office.
+    This module is intended to be imported via Import-Module, not executed directly.
 
 .NOTES
     Compatible with PowerShell 2.0 and later.

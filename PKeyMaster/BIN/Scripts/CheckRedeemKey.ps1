@@ -18,8 +18,8 @@
 
 .NOTES
     Compatible with PowerShell 2.0 and later.
-    Requires Libs\Network.ps1 for HTTP communication.
-    Requires Libs\Common.ps1 for shared helper functions.
+    Requires Libs\Network.psm1 for HTTP communication.
+    Requires Libs\Common.psm1 for shared helper functions.
 
 .EXAMPLE
     .\CheckRedeemKey.ps1 -RedeemKey "XXXXN-XXXXX-XXXXX-XXXXX-XXXXX"
@@ -38,13 +38,8 @@ param(
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 if (-not $scriptDir) { $scriptDir = "." }
-$networkPath = Join-Path $scriptDir "libs\Network.ps1"
-if (Test-Path $networkPath) { . $networkPath }
-$commonPath = Join-Path $scriptDir "libs\Common.ps1"
-if (Test-Path $commonPath) { . $commonPath }
-
-Add-Type -AssemblyName System.Web.Extensions | Out-Null
-$jsonSerializer = New-Object System.Web.Script.Serialization.JavaScriptSerializer
+Import-Module "$scriptDir\Libs\Common.psm1"
+Import-Module "$scriptDir\Libs\Network.psm1"
 
 # ===============================================================================================================================
 # Helper functions
@@ -61,30 +56,6 @@ function New-ResponseObject {
         GroupId        = $null
         Pkpn           = $null
         Product        = $null
-    }
-}
-
-# ===============================================================================================================================
-
-function Write-ApiLogs($LogPath, $Prefix, $Obj) {
-    # Dump request/response JSON to disk.
-    if (-not $LogPath) { return $null }
-
-    try {
-        if (-not (Test-Path $LogPath)) { New-Item -Path $LogPath -ItemType Directory -Force | Out-Null }
-        if (-not (Test-Path $LogPath)) { return "Failed to create log folder" }
-
-        $count = 0
-        if ($Obj.RequestFull) { Set-Content -Path (Join-Path $LogPath "$Prefix`_Request_BodyFull.json") -Value $Obj.RequestFull -Encoding UTF8; $count++ }
-        if ($Obj.ResponseFull) { Set-Content -Path (Join-Path $LogPath "$Prefix`_Response_BodyFull.json") -Value $Obj.ResponseFull -Encoding UTF8; $count++ }
-        if ($Obj.RequestDetails) { Set-Content -Path (Join-Path $LogPath "$Prefix`_Request_Details.txt") -Value $Obj.RequestDetails -Encoding UTF8; $count++ }
-
-        if ($count -gt 0) { return "Saved to $LogPath" }
-        return "No payloads to save"
-    }
-    catch {
-        $exMsg = if ($_.Exception.InnerException) { $_.Exception.InnerException.Message } else { $_.Exception.Message }
-        return "Failed: $exMsg"
     }
 }
 
@@ -116,7 +87,7 @@ function Invoke-ProductApi([string]$url, [string]$prefix) {
 
     if ($res.Body) {
         try {
-            return $jsonSerializer.DeserializeObject($res.Body)
+            return $global:JsonSerializer.DeserializeObject($res.Body)
         }
         catch {}
     }
@@ -221,7 +192,7 @@ Host: $($uri.Host)
     }
 
     try {
-        $json = $jsonSerializer.DeserializeObject($responseFull)
+        $json = $global:JsonSerializer.DeserializeObject($responseFull)
         if (-not $json) {
             $out.Status = "Failed: JSON parse returned null"
             return $out

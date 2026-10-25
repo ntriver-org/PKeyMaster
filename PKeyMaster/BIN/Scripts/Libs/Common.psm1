@@ -1,6 +1,15 @@
 <#
 .SYNOPSIS
-    Common functions for PKeyMaster backend scripts.
+    Common helper functions and shared caches for PKeyMaster.
+
+.DESCRIPTION
+    PowerShell script module providing shared utilities across PKeyMaster scripts,
+    including ANSI/VT and GUI color formatting (Write-Color), binary key extraction
+    (Find-KeysInFile), native SPP/WMI error message resolution, and global data caches.
+    This module is intended to be imported via Import-Module, not executed directly.
+
+.NOTES
+    Compatible with PowerShell 2.0 and later.
 #>
 
 # ===============================================================================================================================
@@ -147,7 +156,7 @@ function Find-KeysInFile {
 # WMI / SPP Error Resolution
 # ===============================================================================================================================
 
-function global:Get-WmiSppError {
+function Get-WmiSppError {
     [CmdletBinding()]
     param(
         [int]$ErrorCode = 0,
@@ -210,7 +219,7 @@ function global:Get-WmiSppError {
 
 # ===============================================================================================================================
 
-function global:Write-WmiSppError {
+function Write-WmiSppError {
     [CmdletBinding()]
     param(
         [int]$ErrorCode = 0,
@@ -227,19 +236,27 @@ function global:Write-WmiSppError {
 }
 
 # ===============================================================================================================================
+# JSON Serializer Global Cache
+# ===============================================================================================================================
+
+if (-not $global:JsonSerializer) {
+    try {
+        Add-Type -AssemblyName System.Web.Extensions | Out-Null
+        $global:JsonSerializer = New-Object System.Web.Script.Serialization.JavaScriptSerializer
+        $global:JsonSerializer.MaxJsonLength = [int]::MaxValue
+    }
+    catch { }
+}
+
+# ===============================================================================================================================
 # PKeyConfigsMap JSON Global Cache
 # ===============================================================================================================================
 
 if (-not $global:PKeyConfigsMap) {
-    $jsonPath = Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Definition) "..\..\PKeyConfigsMap.json"
+    $jsonPath = Join-Path $PSScriptRoot "..\..\PKeyConfigsMap.json"
 
     if (Test-Path $jsonPath) {
-        Add-Type -AssemblyName System.Web.Extensions
-
-        $js = New-Object System.Web.Script.Serialization.JavaScriptSerializer
-        $js.MaxJsonLength = [int]::MaxValue
-
-        $global:PKeyConfigsMap = $js.DeserializeObject([System.IO.File]::ReadAllText($jsonPath))
+        $global:PKeyConfigsMap = $global:JsonSerializer.DeserializeObject([System.IO.File]::ReadAllText($jsonPath))
     }
 }
 
@@ -248,7 +265,7 @@ if (-not $global:PKeyConfigsMap) {
 # ===============================================================================================================================
 
 if (-not $global:PreVistaRanges) {
-    $preVistaCsvPath = Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Definition) "..\..\PreVistaRanges.csv"
+    $preVistaCsvPath = Join-Path $PSScriptRoot "..\..\PreVistaRanges.csv"
 
     if (Test-Path $preVistaCsvPath) {
         $global:PreVistaRanges = @((Get-Content -LiteralPath $preVistaCsvPath) | Where-Object { $_ -notmatch '^\s*sep\s*=' } | ConvertFrom-Csv)

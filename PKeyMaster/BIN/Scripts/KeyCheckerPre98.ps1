@@ -11,7 +11,7 @@
 
 .NOTES
     Compatible with PowerShell 2.0 and later.
-    Requires Libs\Common.ps1 for shared helper functions.
+    Requires Libs\Common.psm1 for shared helper functions.
 
 .EXAMPLE
     .\KeyCheckerPre98.ps1 -Key "123-4567890"
@@ -28,8 +28,7 @@ param(
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 if (-not $scriptDir) { $scriptDir = "." }
 
-$commonPath = Join-Path $scriptDir "libs\Common.ps1"
-if (Test-Path $commonPath) { . $commonPath }
+Import-Module "$scriptDir\Libs\Common.psm1"
 
 # ===============================================================================================================================
 

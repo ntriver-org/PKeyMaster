@@ -15,7 +15,7 @@
 
 .NOTES
     Compatible with PowerShell 2.0 and later.
-    Requires Libs\Common.ps1 for shared helper functions.
+    Requires Libs\Common.psm1 for shared helper functions.
 
 .EXAMPLE
     .\DecodePKey2009.ps1 -Key "XXXXN-XXXXX-XXXXX-XXXXX-XXXXX"
@@ -32,8 +32,7 @@ param(
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 if (-not $scriptDir) { $scriptDir = "." }
-$commonPath = Join-Path $scriptDir "libs\Common.ps1"
-if (Test-Path $commonPath) { . $commonPath }
+Import-Module "$scriptDir\Libs\Common.psm1"
 
 # ===============================================================================================================================
 # Product key validation & cleanup
