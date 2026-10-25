@@ -117,6 +117,14 @@ function Get-StoreTitleByGuid([string]$guid) {
     return $null
 }
 
+function Get-StoreTitleByToken([string]$token) {
+    $obj = Invoke-ProductApi "https://displaycatalog.mp.microsoft.com/v7.0/products/lookup?alternateId=LegacyTokenIdentifier&value=${token}&market=US&languages=en-us" "CheckRedeemProductName_Store"
+    if ($obj -and $obj.Products -and $obj.Products.Count -gt 0) {
+        return $obj.Products[0].LocalizedProperties[0].ProductTitle
+    }
+    return $null
+}
+
 function Resolve-ProductName([string]$pkpn) {
     if (-not $pkpn -or -not $pkpn.Trim()) { return $null }
 
@@ -125,26 +133,17 @@ function Resolve-ProductName([string]$pkpn) {
         return (Get-StoreTitle $matches[1].ToUpper())
     }
 
-    # 2. Retail SKU (e.g. UGP-00031)
-    if ($pkpn -match '^UGP-') { return "Xbox Game Pass Ultimate" }
-    if ($pkpn -match '^GPS-') { return "Xbox Game Pass Premium" } # Formerly Game Pass Standard
-    if ($pkpn -match '^XGP-') { return "Xbox Game Pass for Console" }
-    if ($pkpn -match '^PGP-') { return "PC Game Pass" }
-    if ($pkpn -match '^GLD-') { return "Xbox Live Gold" }
-    if ($pkpn -match '^MCT-') { return "Minecraft Realms Plus" }
-    if ($pkpn -match '^LPI-') { return "Minecraft Marketplace Pass" }
-
-    # 3. Product GUID
+    # 2. Product GUID
     if ($pkpn -match '^[0-9A-F-]{36}$') {
-        # 3a. Modern Store DLC / Package GUID
+        # 2a. Modern Store DLC / Package GUID
         $title = Get-StoreTitleByGuid $pkpn
         if ($title) { return $title }
 
-        # 3b. Legacy Title ID GUID (ends with 8-character Title ID)
+        # 2b. Legacy Title ID GUID (ends with 8-character Title ID)
         return (Get-DBoxTitle $pkpn.Substring($pkpn.Length - 8).ToUpper())
     }
 
-    # 4. Legacy 64-bit Decimal (High 32 bits = Title ID)
+    # 3. Legacy 64-bit Decimal (High 32 bits = Title ID)
     if ($pkpn -match '^\d+$') {
         try {
             $hex = ([UInt64]$pkpn).ToString("X16")
@@ -152,6 +151,21 @@ function Resolve-ProductName([string]$pkpn) {
         }
         catch { }
     }
+
+    # 4. Legacy Token Identifier (e.g. X21-75511, X23-97249)
+    if ($pkpn -match '^[^-]+-[^-]+$') {
+        $title = Get-StoreTitleByToken $pkpn
+        if ($title) { return $title }
+    }
+
+    # 5. Retail SKU (e.g. UGP-00031)
+    if ($pkpn -match '^UGP-') { return "Xbox Game Pass Ultimate" }
+    if ($pkpn -match '^GPS-') { return "Xbox Game Pass Premium" } # Formerly Game Pass Standard
+    if ($pkpn -match '^XGP-') { return "Xbox Game Pass for Console" }
+    if ($pkpn -match '^PGP-') { return "PC Game Pass" }
+    if ($pkpn -match '^GLD-') { return "Xbox Live Gold" }
+    if ($pkpn -match '^MCT-') { return "Minecraft Realms Plus" }
+    if ($pkpn -match '^LPI-') { return "Minecraft Marketplace Pass" }
 
     return $null
 }
@@ -175,14 +189,8 @@ function Resolve-PKeyConfigProductName([string]$ActivationId, [string]$PartNumbe
             Get-PKeyConfigInfo -FilePath $configPath -ActivationId $ActivationId
         }
 
-        if ($info) {
-            if ($configPath -like '*O365*' -and $info.Edition) {
-                $prefix = if ($info.Description -match '^([^_]+)_') { $matches[1] } else { $info.Description }
-                return "$prefix - $($info.Edition)"
-            }
-            if ($info.Description) {
-                return $info.Description
-            }
+        if ($info -and $info.Description) {
+            return $info.Description
         }
     }
 
