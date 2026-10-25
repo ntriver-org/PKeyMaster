@@ -254,14 +254,10 @@ function Get-ProductNameFromPid($InstallationId, $ProductId) {
         if ($matchedConfigPath) { break }
     }
 
-    $readerPath = Join-Path $scriptDir "PKeyConfigReader.ps1"
-    if ($matchedConfigPath -and (Test-Path $matchedConfigPath) -and (Test-Path $readerPath)) {
-        $infoOutput = @(& $readerPath -GetKeyInfo -File $matchedConfigPath -GroupId $groupId -KeyId $keyId -PassThru 2>$null)
-        if ($infoOutput) {
-            $info = $infoOutput[-1]
-            if ($info.Description -and $info.Description -ne "CustomMade") {
-                return $info.Description
-            }
+    if ($matchedConfigPath -and (Test-Path $matchedConfigPath)) {
+        $info = Get-PKeyConfigInfo -FilePath $matchedConfigPath -GroupId $groupId -KeyId $keyId
+        if ($info -and $info.Description -and $info.Description -ne "CustomMade") {
+            return $info.Description
         }
     }
 

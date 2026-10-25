@@ -1,17 +1,10 @@
 <#
 .SYNOPSIS
-    Reads PKeyConfig (.xrm-ms / .xml / .xrm) files and either looks up key metadata or exports data to CSV.
+    Reads PKeyConfig (.xrm-ms / .xml / .xrm) files and exports configuration and key-range data to CSV.
 
 .DESCRIPTION
-    Two modes:
-
-    1. GetKeyInfo Mode (-GetKeyInfo)
-       Looks up key metadata in a PKeyConfig file by GroupId and KeyId.
-       Used by KeyCheckerPidGenX.ps1 via -PassThru.
-
-    2. Export Mode (default)
-       Parses PKeyConfig files and exports configuration/key-range data to CSV.
-       Output goes to Desktop\PKeyMaster-Logs\PKeyConfigs\<timestamp>.
+    Parses PKeyConfig files and exports configuration/key-range data to CSV.
+    Output goes to Desktop\PKeyMaster-Logs\PKeyConfigs\<timestamp>.
 
 .PARAMETER File
     Path to a single PKeyConfig file.
@@ -20,23 +13,7 @@
     Path to a folder containing PKeyConfig files.
 
 .PARAMETER Recurse
-    (Export mode, batch) Recursively search the folder for PKeyConfig files.
-
-.PARAMETER GetKeyInfo
-    Switch to enable GetKeyInfo mode.
-
-.PARAMETER GroupId
-    (GetKeyInfo mode) Group ID to look up.
-
-.PARAMETER KeyId
-    (GetKeyInfo mode) Key ID (Serial) to resolve configuration and key range.
-
-.PARAMETER PassThru
-    (GetKeyInfo mode) Returns a PSObject instead of printing to console.
-
-.EXAMPLE
-    # Look up key info (used by KeyCheckerPidGenX.ps1)
-    .\PKeyConfigReader.ps1 -GetKeyInfo -File "C:\PKeyConfigs\pkeyconfig.xrm-ms" -GroupId 123 -KeyId 456789 -PassThru
+    (Batch) Recursively search the folder for PKeyConfig files.
 
 .EXAMPLE
     # Export a single PKeyConfig to CSV (saved to Desktop\PKeyMaster-Logs)
@@ -51,29 +28,14 @@
     Requires Libs\Common.psm1 for shared helper functions.
 #>
 
-[CmdletBinding(DefaultParameterSetName = 'Export')]
+[CmdletBinding()]
 param(
-    [Parameter(ParameterSetName = 'Export', Position = 0)]
-    [Parameter(ParameterSetName = 'GetKeyInfo')]
+    [Parameter(Position = 0)]
     [string]$File = '',
 
-    [Parameter(ParameterSetName = 'Export')]
     [string]$Folder = '',
 
-    [Parameter(ParameterSetName = 'Export')]
-    [switch]$Recurse,
-
-    [Parameter(ParameterSetName = 'GetKeyInfo', Mandatory = $true)]
-    [switch]$GetKeyInfo,
-
-    [Parameter(ParameterSetName = 'GetKeyInfo', Mandatory = $true)]
-    [uint32]$GroupId = 0,
-
-    [Parameter(ParameterSetName = 'GetKeyInfo', Mandatory = $true)]
-    [int64]$KeyId = 0,
-
-    [Parameter(ParameterSetName = 'GetKeyInfo')]
-    [switch]$PassThru
+    [switch]$Recurse
 )
 
 # ===============================================================================================================================
@@ -85,137 +47,23 @@ if (-not $scriptDir) { $scriptDir = "." }
 Import-Module "$scriptDir\Libs\Common.psm1"
 
 # ===============================================================================================================================
-# XML helpers
-# ===============================================================================================================================
-
-# Read a .xrm-ms file, decode the base64 pkeyConfigData, return the inner XML.
-function Read-PKeyConfigXml {
-    param([string]$FilePath)
-    $script:Script_ReadPKeyConfigXmlError = $null
-    if (-not (Test-Path -LiteralPath $FilePath)) { $script:Script_ReadPKeyConfigXmlError = "File not found: $FilePath"; return $null }
-
-    $raw = [System.IO.File]::ReadAllText($FilePath, [System.Text.Encoding]::UTF8).TrimStart([char]0xFEFF)
-    [xml]$xrm = $raw
-
-    $binNode = $xrm.SelectSingleNode("//*[local-name()='infoBin' and @name='pkeyConfigData']")
-    if (-not $binNode) { $script:Script_ReadPKeyConfigXmlError = "Not a valid PKeyConfig file (missing pkeyConfigData): $FilePath"; return $null }
-
-    $bytes = [Convert]::FromBase64String($binNode.InnerText.Trim())
-    $xmlStr = [System.Text.Encoding]::UTF8.GetString($bytes).TrimStart([char]0xFEFF)
-    return [xml]$xmlStr
-}
-
-# ===============================================================================================================================
-
-function Test-PKeyConfigFile {
-    # True if the file has a valid pkeyConfigData element.
-    param([string]$FilePath)
-    try {
-        $raw = [System.IO.File]::ReadAllText($FilePath, [System.Text.Encoding]::UTF8)
-        if ($raw.IndexOf('pkeyConfigData') -lt 0) { return $false }
-        return ($raw -match '<[^>]*infoBin[^>]+name\s*=\s*["'']pkeyConfigData["'']')
-    }
-    catch { return $false }
-}
-
-# ===============================================================================================================================
-
-function Get-NodeText($Node, $LocalName) {
-    $n = $Node.SelectSingleNode("*[local-name()='$LocalName']")
-    if ($n) { return $n.InnerText.Trim() }
-    return ''
-}
-
-# ===============================================================================================================================
-# GetKeyInfo mode
-# ===============================================================================================================================
-
-# Look up Description, Edition, KeyType, EULA, PartNumber, AlgorithmId, ActivationId, IsValid by GroupId and KeyId
-function Get-PKeyInfo {
-    param(
-        [string]$FilePath,
-        [uint32]$GroupId,
-        [int64]$KeyId
-    )
-
-    $xml = Read-PKeyConfigXml $FilePath
-    if (-not $xml) { if ($script:Script_ReadPKeyConfigXmlError) { Write-Output $script:Script_ReadPKeyConfigXmlError }; return $null }
-
-    $desc = ''
-    $ed = ''
-    $ktype = ''
-    $eula = ''
-    $partNum = ''
-    $actId = ''
-    $isValid = ''
-    $gStr = [string]$GroupId
-
-    foreach ($cfg in @($xml.SelectNodes("//*[local-name()='Configuration']"))) {
-        if ((Get-NodeText $cfg 'RefGroupId') -ne $gStr) { continue }
-
-        $cfgAct = Get-NodeText $cfg 'ActConfigId'
-        $needle = $cfgAct.Trim().Trim('{', '}').ToLower()
-
-        foreach ($kr in @($xml.SelectNodes("//*[local-name()='KeyRange']"))) {
-            if ((Get-NodeText $kr 'RefActConfigId').Trim().Trim('{', '}').ToLower() -eq $needle) {
-                $start = [int64](Get-NodeText $kr 'Start')
-                $end = [int64](Get-NodeText $kr 'End')
-                if ($KeyId -ge $start -and $KeyId -le $end) {
-                    $actId = $cfgAct
-                    $desc = Get-NodeText $cfg 'ProductDescription'
-                    $ed = Get-NodeText $cfg 'EditionId'
-                    $ktype = Get-NodeText $cfg 'ProductKeyType'
-                    $eula = Get-NodeText $kr 'EulaType'
-                    $partNum = Get-NodeText $kr 'PartNumber'
-                    $currentIsValid = Get-NodeText $kr 'IsValid'
-                    if ($currentIsValid -eq 'false') {
-                        $isValid = 'false'
-                        break
-                    }
-                    if ($isValid -ne 'false') {
-                        $isValid = $currentIsValid
-                    }
-                }
-            }
-        }
-        if ($actId) { break }
-    }
-
-    # Look up the AlgorithmId from matching PublicKey
-    $algId = ''
-    foreach ($pk in @($xml.SelectNodes("//*[local-name()='PublicKey']"))) {
-        if ((Get-NodeText $pk 'GroupId') -eq $gStr) {
-            $algId = Get-NodeText $pk 'AlgorithmId'
-            break
-        }
-    }
-
-    return New-Object PSObject -Property @{
-        Description  = $desc
-        Edition      = $ed
-        EULA         = $eula
-        KeyType      = $ktype
-        PartNumber   = $partNum
-        AlgorithmId  = $algId
-        ActivationId = $actId
-        IsValid      = $isValid
-    }
-}
-
-# ===============================================================================================================================
 # CSV export helpers
 # ===============================================================================================================================
 
 # Format a CSV-safe quoted row from an array of values.
 function Format-CsvRow([string[]]$Values) {
-    return (($Values | ForEach-Object { '"{0}"' -f ($_ -replace '"', '""') }) -join ',')
+    $escaped = foreach ($v in $Values) {
+        '"{0}"' -f ($v -replace '"', '""')
+    }
+    return ($escaped -join ',')
 }
 
 # ===============================================================================================================================
 
 function Invoke-ExportCsv([string]$FilePath, [string]$OutPath) {
     $xml = Read-PKeyConfigXml $FilePath
-    if (-not $xml) { if ($script:Script_ReadPKeyConfigXmlError) { Write-Output $script:Script_ReadPKeyConfigXmlError }; return $null }
+    if (-not $xml) { return $null }
+
     # Build a lookup of ActConfigId -> Configuration properties
     $configs = New-Object System.Collections.Specialized.OrderedDictionary
     foreach ($cfg in @($xml.SelectNodes("//*[local-name()='Configuration']"))) {
@@ -226,7 +74,7 @@ function Invoke-ExportCsv([string]$FilePath, [string]$OutPath) {
             EditionId          = Get-NodeText $cfg 'EditionId'
             ProductDescription = Get-NodeText $cfg 'ProductDescription'
             ProductKeyType     = Get-NodeText $cfg 'ProductKeyType'
-            IsRandomized       = (Get-NodeText $cfg 'IsRandomized').ToUpper()
+            IsRandomized       = Get-NodeText $cfg 'IsRandomized'
         }
     }
 
@@ -242,20 +90,23 @@ function Invoke-ExportCsv([string]$FilePath, [string]$OutPath) {
     foreach ($kr in @($xml.SelectNodes("//*[local-name()='KeyRange']"))) {
         $refId = Get-NodeText $kr 'RefActConfigId'
         if (-not $refId) { continue }
-        if (-not $rangeMap.ContainsKey($refId)) { $rangeMap[$refId] = New-Object 'System.Collections.Generic.List[PSObject]' }
+        if (-not $rangeMap.ContainsKey($refId)) { $rangeMap[$refId] = New-Object 'System.Collections.Generic.List[object]' }
 
-        $startVal = 0L; $endVal = 0L
-        $s = Get-NodeText $kr 'Start'; if ($s) { $startVal = [long]$s }
-        $e = Get-NodeText $kr 'End'; if ($e) { $endVal = [long]$e }
+        $startVal = 0L
+        $endVal = 0L
+        $s = Get-NodeText $kr 'Start'
+        if ($s) { $startVal = [long]$s }
+        $e = Get-NodeText $kr 'End'
+        if ($e) { $endVal = [long]$e }
 
-        $rangeMap[$refId].Add((New-Object PSObject -Property @{
-                    PartNumber = Get-NodeText $kr 'PartNumber'
-                    EulaType   = Get-NodeText $kr 'EulaType'
-                    IsValid    = Get-NodeText $kr 'IsValid'
-                    Start      = $startVal
-                    End        = $endVal
-                    TotalKeys  = $endVal - $startVal + 1L
-                }))
+        $rangeMap[$refId].Add(@{
+                PartNumber = Get-NodeText $kr 'PartNumber'
+                EulaType   = Get-NodeText $kr 'EulaType'
+                IsValid    = Get-NodeText $kr 'IsValid'
+                Start      = $startVal
+                End        = $endVal
+                TotalKeys  = ($endVal - $startVal + 1L)
+            })
     }
 
     # Build CSV output
@@ -268,8 +119,6 @@ function Invoke-ExportCsv([string]$FilePath, [string]$OutPath) {
     $emptyPrefix = @("", "", "", "", "", "", "")
 
     foreach ($id in $configs.Keys) {
-        try { [System.Windows.Forms.Application]::DoEvents() } catch { }
-
         $cfg = $configs[$id]
         $refGroupId = if ($cfg.RefGroupId) { $cfg.RefGroupId } else { '' }
         $algoId = if ($algoMap.ContainsKey($refGroupId)) { $algoMap[$refGroupId] } else { '' }
@@ -305,32 +154,12 @@ function Invoke-ExportCsv([string]$FilePath, [string]$OutPath) {
     }
 
     $utf8Bom = New-Object System.Text.UTF8Encoding $true
-    [System.IO.File]::WriteAllText($OutPath, ($lines -join "`r`n"), $utf8Bom)
+    [System.IO.File]::WriteAllLines($OutPath, [string[]]$lines, $utf8Bom)
     return ($lines.Count - 2)
 }
 
 # ===============================================================================================================================
-# Main execution
-# ===============================================================================================================================
-
-if ($GetKeyInfo) {
-    # --- GetKeyInfo mode: look up key metadata and return ---
-    try {
-        if (-not $File) { Write-Color "File parameter is required for GetKeyInfo." "BgRed"; return }
-        $outObj = Get-PKeyInfo -FilePath $File -GroupId $GroupId -KeyId $KeyId
-        if ($PassThru) { return $outObj }
-        $outObj | Format-List
-    }
-    catch {
-        if ($PassThru) { return $null }
-        Write-Color $_.Exception.Message "BgRed"
-        return
-    }
-    return
-}
-
-# ===============================================================================================================================
-# Export mode
+# Main execution (Export mode)
 # ===============================================================================================================================
 
 if (-not $File -and -not $Folder) {
@@ -344,8 +173,7 @@ $basePath = ''
 if ($File) {
     $resolvedPath = [System.IO.Path]::GetFullPath($File)
     if (-not (Test-Path -LiteralPath $resolvedPath -PathType Leaf)) { Write-Color "File not found: $resolvedPath" "BgRed"; return }
-    if (-not (Test-PKeyConfigFile $resolvedPath)) { Write-Color "Not a valid PKeyConfig file (missing pkeyConfigData): $resolvedPath" "BgRed"; return }
-    $files += Get-Item -LiteralPath $resolvedPath
+    $files = @(Get-Item -LiteralPath $resolvedPath)
 }
 elseif ($Folder) {
     $resolvedPath = [System.IO.Path]::GetFullPath($Folder)
@@ -353,7 +181,7 @@ elseif ($Folder) {
     $basePath = $resolvedPath.TrimEnd('\') + '\'
     
     $files += @(Get-ChildItem -LiteralPath $resolvedPath -Recurse:$Recurse -ErrorAction SilentlyContinue |
-        Where-Object { (-not $_.PSIsContainer) -and ($_.Name -like '*.xrm-ms' -or $_.Name -like '*.xml' -or $_.Name -like '*.xrm') -and (Test-PKeyConfigFile $_.FullName) } |
+        Where-Object { (-not $_.PSIsContainer) -and ($_.Name -like '*.xrm-ms' -or $_.Name -like '*.xml' -or $_.Name -like '*.xrm') } |
         Sort-Object FullName)
 }
 
@@ -428,7 +256,7 @@ else {
     Write-Color ("{0,$pad}: Success {1}, Failed {2}" -f "Summary", $successCount, $failureCount) "BgGreen"
 }
 Write-Output ""
-if (Test-Path $outputDir -PathType Container) {
+if ($successCount -gt 0 -and (Test-Path $outputDir -PathType Container)) {
     Invoke-Item -LiteralPath $outputDir
 }
 

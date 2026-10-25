@@ -42,7 +42,7 @@
     Compatible with PowerShell 2.0 and later.
     Requires Windows Vista SP1+ (build 6001+).
     Requires pidgenx64.dll or pidgenx32.dll in the BIN directory.
-    Requires Libs\DigitalProductId.psm1, PKeyConfigReader.ps1,
+    Requires Libs\DigitalProductId.psm1,
     KeyCertification.ps1, KeyActivation.ps1, MakCount.ps1, GetCID.ps1,
     DecodePKey2009.ps1, DecodePKey980-PKey986.ps1 for optional features.
     Requires PKeyConfigsMap.json and PreVistaRanges.csv in the application root.
@@ -82,7 +82,6 @@ $dllDir = Split-Path -Parent $scriptDir
 $dllName = if ([IntPtr]::Size -eq 8) { "pidgenx64.dll" } else { "pidgenx32.dll" }
 $dllPath = Join-Path $dllDir $dllName
 
-$readerPath = Join-Path $scriptDir "PKeyConfigReader.ps1"
 Import-Module "$scriptDir\Libs\Common.psm1"
 Import-Module "$scriptDir\Libs\DigitalProductId.psm1"
 
@@ -702,9 +701,8 @@ if ($null -ne $groupId -and $null -ne $keyId) {
 # Get info from PKeyConfig file
 
 if ($matchedConfigPath -and (Test-Path $matchedConfigPath)) {
-    $infoOutput = @(& $readerPath -GetKeyInfo -File $matchedConfigPath -GroupId $groupId -KeyId $keyId -PassThru 2>$null)
-    if ($infoOutput) {
-        $info = $infoOutput[-1]
+    $info = Get-PKeyConfigInfo -FilePath $matchedConfigPath -GroupId $groupId -KeyId $keyId
+    if ($info) {
         $algorithmId = $info.AlgorithmId
         if ($info.Description -ne "CustomMade") {
             $description = $info.Description

@@ -5,7 +5,8 @@
 .DESCRIPTION
     PowerShell script module providing shared utilities across PKeyMaster scripts,
     including ANSI/VT and GUI color formatting (Write-Color), binary key extraction
-    (Find-KeysInFile), native SPP/WMI error message resolution, and global data caches.
+    (Find-KeysInFile), native SPP/WMI error message resolution, PKeyConfig metadata
+    resolution (Get-PKeyConfigInfo), and global data caches.
     This module is intended to be imported via Import-Module, not executed directly.
 
 .NOTES
@@ -233,6 +234,164 @@ function Write-WmiSppError {
     Write-Color ($f -f 'Error Code', ('0x{0:X8}' -f $errObj.ErrorCode)) "BgRed"
     Write-Color ($f -f 'Error Message', $errObj.ErrorMessage) "BgRed"
     Write-Output ""
+}
+
+# ===============================================================================================================================
+# PKeyConfig XML & Metadata helpers
+# ===============================================================================================================================
+
+function Read-PKeyConfigXml {
+    param([string]$FilePath)
+
+    if (-not (Test-Path -LiteralPath $FilePath)) {
+        return $null
+    }
+
+    $xr = $null
+    try {
+        $xr = [System.Xml.XmlReader]::Create($FilePath)
+        $base64 = $null
+        while ($xr.Read()) {
+            if ($xr.NodeType -eq [System.Xml.XmlNodeType]::Element -and 
+                $xr.LocalName -eq 'infoBin' -and 
+                $xr.GetAttribute('name') -eq 'pkeyConfigData') {
+                $base64 = $xr.ReadElementContentAsString()
+                break
+            }
+        }
+
+        if (-not $base64) {
+            return $null
+        }
+
+        $bytes = [Convert]::FromBase64String($base64.Trim())
+        $xmlStr = [System.Text.Encoding]::UTF8.GetString($bytes).TrimStart([char]0xFEFF)
+        return [xml]$xmlStr
+    }
+    catch {
+        return $null
+    }
+    finally {
+        if ($xr) { $xr.Close() }
+    }
+}
+
+function Get-NodeText($Node, $LocalName) {
+    $n = $Node.SelectSingleNode("*[local-name()='$LocalName']")
+    if ($n) { return $n.InnerText.Trim() }
+    return ''
+}
+
+function Get-PKeyConfigInfo {
+    [CmdletBinding(DefaultParameterSetName = 'ByKeyId')]
+    param(
+        [Parameter(Mandatory = $true, Position = 0)]
+        [string]$FilePath,
+
+        [Parameter(ParameterSetName = 'ByKeyId', Mandatory = $true)]
+        [uint32]$GroupId,
+
+        [Parameter(ParameterSetName = 'ByKeyId', Mandatory = $true)]
+        [int64]$KeyId,
+
+        [Parameter(ParameterSetName = 'ByActId', Mandatory = $true)]
+        [string]$ActivationId,
+
+        [Parameter(ParameterSetName = 'ByPartNumber', Mandatory = $true)]
+        [string]$PartNumber
+    )
+
+    $xml = Read-PKeyConfigXml $FilePath
+    if (-not $xml) { return $null }
+
+    $matchedCfg = $null
+    $eula = ''
+    $partNum = ''
+    $isValid = ''
+
+    if ($PsCmdlet.ParameterSetName -eq 'ByActId') {
+        $target = $ActivationId.Trim().Trim('{', '}').ToLower()
+        if (-not $target) { return $null }
+
+        foreach ($cfg in @($xml.SelectNodes("//*[local-name()='Configuration']"))) {
+            if ((Get-NodeText $cfg 'ActConfigId').Trim().Trim('{', '}').ToLower() -eq $target) {
+                $matchedCfg = $cfg
+                break
+            }
+        }
+    }
+    elseif ($PsCmdlet.ParameterSetName -eq 'ByPartNumber') {
+        $target = ($PartNumber.Trim() -replace '^\[[^\]]*\]\s*' -split ':')[0].Trim().ToLower()
+        if (-not $target) { return $null }
+
+        $refActId = ''
+        foreach ($kr in @($xml.SelectNodes("//*[local-name()='KeyRange']"))) {
+            $pn = ((Get-NodeText $kr 'PartNumber').Trim() -replace '^\[[^\]]*\]\s*' -split ':')[0].Trim().ToLower()
+            if ($pn -eq $target) {
+                $refActId = (Get-NodeText $kr 'RefActConfigId').Trim().Trim('{', '}').ToLower()
+                $eula = Get-NodeText $kr 'EulaType'
+                $partNum = Get-NodeText $kr 'PartNumber'
+                $isValid = Get-NodeText $kr 'IsValid'
+                break
+            }
+        }
+
+        if (-not $refActId) { return $null }
+
+        foreach ($cfg in @($xml.SelectNodes("//*[local-name()='Configuration']"))) {
+            if ((Get-NodeText $cfg 'ActConfigId').Trim().Trim('{', '}').ToLower() -eq $refActId) {
+                $matchedCfg = $cfg
+                break
+            }
+        }
+    }
+    else {
+        $gStr = [string]$GroupId
+        foreach ($cfg in @($xml.SelectNodes("//*[local-name()='Configuration']"))) {
+            if ((Get-NodeText $cfg 'RefGroupId') -ne $gStr) { continue }
+            $needle = (Get-NodeText $cfg 'ActConfigId').Trim().Trim('{', '}').ToLower()
+
+            foreach ($kr in @($xml.SelectNodes("//*[local-name()='KeyRange']"))) {
+                if ((Get-NodeText $kr 'RefActConfigId').Trim().Trim('{', '}').ToLower() -eq $needle) {
+                    $start = [int64](Get-NodeText $kr 'Start')
+                    $end = [int64](Get-NodeText $kr 'End')
+                    if ($KeyId -ge $start -and $KeyId -le $end) {
+                        $matchedCfg = $cfg
+                        $eula = Get-NodeText $kr 'EulaType'
+                        $partNum = Get-NodeText $kr 'PartNumber'
+                        $isValid = Get-NodeText $kr 'IsValid'
+                        # Revoked keys take precedence in overlapping ranges; stop immediately so a broader 'true' cannot override it.
+                        if ($isValid -eq 'false') { break }
+                    }
+                }
+            }
+            if ($matchedCfg) { break }
+        }
+    }
+
+    if (-not $matchedCfg) { return $null }
+
+    $refGroupId = Get-NodeText $matchedCfg 'RefGroupId'
+    $algId = ''
+    if ($refGroupId) {
+        foreach ($pk in @($xml.SelectNodes("//*[local-name()='PublicKey']"))) {
+            if ((Get-NodeText $pk 'GroupId') -eq $refGroupId) {
+                $algId = Get-NodeText $pk 'AlgorithmId'
+                break
+            }
+        }
+    }
+
+    return New-Object PSObject -Property @{
+        Description  = Get-NodeText $matchedCfg 'ProductDescription'
+        Edition      = Get-NodeText $matchedCfg 'EditionId'
+        EULA         = $eula
+        KeyType      = Get-NodeText $matchedCfg 'ProductKeyType'
+        PartNumber   = $partNum
+        AlgorithmId  = $algId
+        ActivationId = Get-NodeText $matchedCfg 'ActConfigId'
+        IsValid      = $isValid
+    }
 }
 
 # ===============================================================================================================================

@@ -158,6 +158,39 @@ function Resolve-ProductName([string]$pkpn) {
 
 # ===============================================================================================================================
 
+function Resolve-PKeyConfigProductName([string]$ActivationId, [string]$PartNumber) {
+    if (-not $global:PKeyConfigsMap) { return $null }
+    if (-not $ActivationId -and -not $PartNumber) { return $null }
+
+    $baseConfigsDir = Join-Path (Split-Path -Parent $scriptDir) "PKeyConfigs"
+
+    foreach ($entry in $global:PKeyConfigsMap) {
+        $configPath = Join-Path $baseConfigsDir $entry.Path.TrimStart('\')
+        if (-not (Test-Path -LiteralPath $configPath)) { continue }
+
+        $info = if ($PartNumber) {
+            Get-PKeyConfigInfo -FilePath $configPath -PartNumber $PartNumber
+        }
+        else {
+            Get-PKeyConfigInfo -FilePath $configPath -ActivationId $ActivationId
+        }
+
+        if ($info) {
+            if ($configPath -like '*O365*' -and $info.Edition) {
+                $prefix = if ($info.Description -match '^([^_]+)_') { $matches[1] } else { $info.Description }
+                return "$prefix - $($info.Edition)"
+            }
+            if ($info.Description) {
+                return $info.Description
+            }
+        }
+    }
+
+    return $null
+}
+
+# ===============================================================================================================================
+
 function Invoke-RedeemKeyRequest($Key) {
     # Query the Microsoft licensing endpoint to check the status of a redeem key.
     $out = New-ResponseObject
@@ -211,6 +244,14 @@ Host: $($uri.Host)
         }
         if ($acid -and ([string]$acid).Trim() -ne "null") { $out.Acid = [string]$acid }
         if ($null -ne $groupId) { $out.GroupId = $groupId }
+
+        if (-not $out.Product -and $out.Acid -and ($out.Acid -notmatch '99999999-9999-9999-9999-999999999999')) {
+            $out.Product = Resolve-PKeyConfigProductName -ActivationId $out.Acid
+        }
+
+        if (-not $out.Product -and $out.Pkpn -and ($out.Pkpn -match '^[^-]+-[^-]+$')) {
+            $out.Product = Resolve-PKeyConfigProductName -PartNumber $out.Pkpn
+        }
 
         if ($result -eq "Valid") {
             $out.Status = "Valid"
