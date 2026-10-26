@@ -57,6 +57,7 @@ function Initialize-WinForms {
 
         [void]$TB.DefinePInvokeMethod('SetProcessDPIAware', 'user32.dll', 22, 1, [bool], @(), 1, 4).SetImplementationFlags(128)
         [void]$TB.DefinePInvokeMethod('ShowWindow', 'user32.dll', 22, 1, [bool], @([IntPtr], [int]), 1, 4).SetImplementationFlags(128)
+        [void]$TB.DefinePInvokeMethod('SetThreadExecutionState', 'kernel32.dll', 22, 1, [int], @([int]), 1, 4).SetImplementationFlags(128)
 
         $Script:NativeUiMethods = $TB.CreateType()
         [void]$Script:NativeUiMethods::SetProcessDPIAware()
@@ -87,6 +88,26 @@ function Show-PKeyMasterGui {
     $Script:TaskRunspace = $null
     $Script:WarmupPipeline = $null
     $Script:WarmupAsyncResult = $null
+
+    function Enable-SleepPrevention {
+        if ($Script:NativeUiMethods) {
+            try {
+                # ES_CONTINUOUS (0x80000000) | ES_SYSTEM_REQUIRED (0x00000001)
+                [void]$Script:NativeUiMethods::SetThreadExecutionState(0x80000001)
+            }
+            catch { }
+        }
+    }
+
+    function Disable-SleepPrevention {
+        if ($Script:NativeUiMethods) {
+            try {
+                # ES_CONTINUOUS (0x80000000) restores default system sleep behavior
+                [void]$Script:NativeUiMethods::SetThreadExecutionState(0x80000000)
+            }
+            catch { }
+        }
+    }
 
     $dpiScale = 1.0
     try {
@@ -298,6 +319,18 @@ if (Test-Path `$kc) {
         $Script:WarmupAsyncResult = $Script:WarmupPipeline.BeginInvoke()
     }
 
+    function Test-IsBatchTask {
+        param([hashtable]$Arguments)
+
+        if (-not $Arguments) { return $false }
+
+        return [bool](
+            $Arguments['KeyFile'] -or
+            $Arguments['IidFile'] -or
+            (Test-SelectedPathText -PathText $Arguments['Folder'])
+        )
+    }
+
     function Start-ToolTask {
         param(
             [string]$ScriptName,
@@ -317,6 +350,8 @@ if (Test-Path `$kc) {
         if ($null -eq $Arguments) {
             $Arguments = @{}
         }
+
+        $isBatchTask = Test-IsBatchTask -Arguments $Arguments
 
         $setControlsEnabled = {
             param([bool]$Enabled)
@@ -376,6 +411,9 @@ if (Test-Path `$kc) {
         [void]$powerShellPipeline.AddArgument([bool]$CollectObjects)
 
         $asyncResult = $powerShellPipeline.BeginInvoke()
+        if ($isBatchTask) {
+            Enable-SleepPrevention
+        }
         $errorIndex = 0
         $taskSucceeded = $false
         $resultObjects = New-Object 'System.Collections.Generic.List[object]'
@@ -490,6 +528,10 @@ if (Test-Path `$kc) {
                         & $appendOutput @($message)
                     }
                     finally {
+                        if ($isBatchTask) {
+                            Disable-SleepPrevention
+                        }
+
                         $powerShellPipeline.Dispose()
                         
                         if ($OutputBox -and $OutputBox.Text -eq 'Checking, please wait...') {
@@ -2218,6 +2260,9 @@ if (Test-Path `$kc) {
         $mainWindow.ShowDialog() | Out-Null
     }
     finally {
+        if ($Script:NativeUiMethods) {
+            try { [void]$Script:NativeUiMethods::SetThreadExecutionState(0x80000000) } catch { }
+        }
         if ($Script:WarmupPipeline) {
             try { $Script:WarmupPipeline.Stop() } catch { }
             try { $Script:WarmupPipeline.Dispose() } catch { }
