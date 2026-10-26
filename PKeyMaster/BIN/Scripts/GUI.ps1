@@ -89,21 +89,15 @@ function Show-PKeyMasterGui {
     $Script:WarmupPipeline = $null
     $Script:WarmupAsyncResult = $null
 
-    function Enable-SleepPrevention {
-        if ($Script:NativeUiMethods) {
-            try {
-                # ES_CONTINUOUS (0x80000000) | ES_SYSTEM_REQUIRED (0x00000001)
-                [void]$Script:NativeUiMethods::SetThreadExecutionState(0x80000001)
-            }
-            catch { }
-        }
-    }
+    $setSleepPrevention = {
+        param([bool]$Enable)
 
-    function Disable-SleepPrevention {
         if ($Script:NativeUiMethods) {
             try {
-                # ES_CONTINUOUS (0x80000000) restores default system sleep behavior
-                [void]$Script:NativeUiMethods::SetThreadExecutionState(0x80000000)
+                # ES_CONTINUOUS (0x80000000) keeps execution state active until cleared.
+                # ES_SYSTEM_REQUIRED (0x00000001) prevents the computer from sleeping (monitor may still turn off).
+                $executionState = if ($Enable) { 0x80000001 } else { 0x80000000 }
+                [void]$Script:NativeUiMethods::SetThreadExecutionState($executionState)
             }
             catch { }
         }
@@ -352,6 +346,7 @@ if (Test-Path `$kc) {
         }
 
         $isBatchTask = Test-IsBatchTask -Arguments $Arguments
+        $sleepPrevention = $setSleepPrevention
 
         $setControlsEnabled = {
             param([bool]$Enabled)
@@ -412,7 +407,8 @@ if (Test-Path `$kc) {
 
         $asyncResult = $powerShellPipeline.BeginInvoke()
         if ($isBatchTask) {
-            Enable-SleepPrevention
+            # Prevent computer from sleeping during batch operations
+            & $sleepPrevention $true
         }
         $errorIndex = 0
         $taskSucceeded = $false
@@ -529,7 +525,8 @@ if (Test-Path `$kc) {
                     }
                     finally {
                         if ($isBatchTask) {
-                            Disable-SleepPrevention
+                            # Restore default computer sleep behavior
+                            & $sleepPrevention $false
                         }
 
                         $powerShellPipeline.Dispose()
@@ -2260,9 +2257,8 @@ if (Test-Path `$kc) {
         $mainWindow.ShowDialog() | Out-Null
     }
     finally {
-        if ($Script:NativeUiMethods) {
-            try { [void]$Script:NativeUiMethods::SetThreadExecutionState(0x80000000) } catch { }
-        }
+        # Restore default computer sleep behavior on application exit
+        & $setSleepPrevention $false
         if ($Script:WarmupPipeline) {
             try { $Script:WarmupPipeline.Stop() } catch { }
             try { $Script:WarmupPipeline.Dispose() } catch { }
