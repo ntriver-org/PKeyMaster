@@ -15,6 +15,9 @@
 .PARAMETER Recurse
     (Batch) Recursively search the folder for PKeyConfig files.
 
+.PARAMETER Merged
+    (Folder) Export all PKeyConfig files into a single merged CSV. Only valid with -Folder.
+
 .EXAMPLE
     # Export a single PKeyConfig to CSV (saved to Desktop\PKeyMaster-Logs)
     .\PKeyConfigReader.ps1 -File "C:\pkeyconfig.xrm-ms"
@@ -22,6 +25,10 @@
 .EXAMPLE
     # Batch export all PKeyConfig files in a folder
     .\PKeyConfigReader.ps1 -Folder "C:\PKeyConfigs\" -Recurse
+
+.EXAMPLE
+    # Batch export all PKeyConfig files in a folder into a single merged CSV
+    .\PKeyConfigReader.ps1 -Folder "C:\PKeyConfigs\" -Recurse -Merged
 
 .NOTES
     Compatible with PowerShell 2.0 and later.
@@ -35,7 +42,9 @@ param(
 
     [string]$Folder = '',
 
-    [switch]$Recurse
+    [switch]$Recurse,
+
+    [switch]$Merged
 )
 
 # ===============================================================================================================================
@@ -50,6 +59,8 @@ Import-Module "$scriptDir\Libs\Common.psm1"
 # CSV export helpers
 # ===============================================================================================================================
 
+$csvHeaders = @("ActConfigID", "RefGroupID", "AlgorithmId", "EditionID", "ProductDescription", "ProductKeyType", "IsRandomized", "PartNumber", "EULAType", "IsValid", "Start", "End", "Total Keys")
+
 # Format a CSV-safe quoted row from an array of values.
 function Format-CsvRow([string[]]$Values) {
     $escaped = foreach ($v in $Values) {
@@ -60,7 +71,7 @@ function Format-CsvRow([string[]]$Values) {
 
 # ===============================================================================================================================
 
-function Invoke-ExportCsv([string]$FilePath, [string]$OutPath) {
+function Invoke-ExportCsv([string]$FilePath, [string]$OutPath = '', [string]$FolderName = '') {
     $xml = Read-PKeyConfigXml $FilePath
     if (-not $xml) { return $null }
 
@@ -111,21 +122,28 @@ function Invoke-ExportCsv([string]$FilePath, [string]$OutPath) {
 
     # Build CSV output
     $lines = New-Object 'System.Collections.Generic.List[string]'
-    $lines.Add("sep=,")
-    $headers = @("ActConfigID", "RefGroupID", "AlgorithmId", "EditionID", "ProductDescription", "ProductKeyType", "IsRandomized", "PartNumber", "EULAType", "IsValid", "Start", "End", "Total Keys")
-    $lines.Add((Format-CsvRow $headers))
+    if ($OutPath) {
+        $lines.Add("sep=,")
+        $lines.Add((Format-CsvRow $csvHeaders))
+    }
 
-    # 7 empty columns used for continuation rows and subtotal rows
-    $emptyPrefix = @("", "", "", "", "", "", "")
+    # Empty columns used for continuation rows and subtotal rows (8 if FolderName, 7 otherwise)
+    $emptyPrefix = if ($FolderName) { @("", "", "", "", "", "", "", "") } else { @("", "", "", "", "", "", "") }
 
     foreach ($id in $configs.Keys) {
         $cfg = $configs[$id]
         $refGroupId = if ($cfg.RefGroupId) { $cfg.RefGroupId } else { '' }
         $algoId = if ($algoMap.ContainsKey($refGroupId)) { $algoMap[$refGroupId] } else { '' }
+        $configPrefix = if ($FolderName) {
+            @($FolderName, $id, $refGroupId, $algoId, $cfg.EditionId, $cfg.ProductDescription, $cfg.ProductKeyType, $cfg.IsRandomized)
+        }
+        else {
+            @($id, $refGroupId, $algoId, $cfg.EditionId, $cfg.ProductDescription, $cfg.ProductKeyType, $cfg.IsRandomized)
+        }
 
         if (-not $rangeMap.ContainsKey($id) -or $rangeMap[$id].Count -eq 0) {
             # Configuration without key ranges
-            $row = @($id, $refGroupId, $algoId, $cfg.EditionId, $cfg.ProductDescription, $cfg.ProductKeyType, $cfg.IsRandomized, '', '', '', '', '', '0')
+            $row = $configPrefix + @('', '', '', '', '', '0')
             $lines.Add((Format-CsvRow $row))
             $lines.Add((Format-CsvRow ($emptyPrefix + @("", "", "", "", "[SUBTOTAL]", "0"))))
             continue
@@ -140,7 +158,7 @@ function Invoke-ExportCsv([string]$FilePath, [string]$OutPath) {
             $rangeFields = @($kr.PartNumber, $kr.EulaType, $kr.IsValid, [string]$kr.Start, [string]$kr.End, [string]$kr.TotalKeys)
 
             if ($firstRow) {
-                $row = @($id, $refGroupId, $algoId, $cfg.EditionId, $cfg.ProductDescription, $cfg.ProductKeyType, $cfg.IsRandomized) + $rangeFields
+                $row = $configPrefix + $rangeFields
                 $firstRow = $false
             }
             else {
@@ -153,14 +171,26 @@ function Invoke-ExportCsv([string]$FilePath, [string]$OutPath) {
         $lines.Add((Format-CsvRow ($emptyPrefix + @("", "", "", "", "[SUBTOTAL]", [string]$subtotal))))
     }
 
-    $utf8Bom = New-Object System.Text.UTF8Encoding $true
-    [System.IO.File]::WriteAllLines($OutPath, [string[]]$lines, $utf8Bom)
-    return ($lines.Count - 2)
+    if ($OutPath) {
+        $utf8Bom = New-Object System.Text.UTF8Encoding $true
+        [System.IO.File]::WriteAllLines($OutPath, [string[]]$lines, $utf8Bom)
+    }
+    return , $lines
 }
 
 # ===============================================================================================================================
 # Main execution (Export mode)
 # ===============================================================================================================================
+
+if ($File -and $Folder) {
+    Write-Color 'Specify either -File or -Folder, not both.' "BgRed"
+    return
+}
+
+if ($Merged -and -not $Folder) {
+    Write-Color '-Merged option can only be used with -Folder.' "BgRed"
+    return
+}
 
 if (-not $File -and -not $Folder) {
     Write-Color 'Specify -File or -Folder to export.' "BgRed"
@@ -179,7 +209,7 @@ elseif ($Folder) {
     $resolvedPath = [System.IO.Path]::GetFullPath($Folder)
     if (-not (Test-Path -LiteralPath $resolvedPath -PathType Container)) { Write-Color "Folder not found: $resolvedPath" "BgRed"; return }
     $basePath = $resolvedPath.TrimEnd('\') + '\'
-    
+
     $files += @(Get-ChildItem -LiteralPath $resolvedPath -Recurse:$Recurse -ErrorAction SilentlyContinue |
         Where-Object { (-not $_.PSIsContainer) -and ($_.Name -like '*.xrm-ms' -or $_.Name -like '*.xml' -or $_.Name -like '*.xrm') } |
         Sort-Object FullName)
@@ -198,6 +228,8 @@ Write-Output ("{0,$pad}: {1}" -f "Source", $sourceStr)
 if ($Folder) {
     $recurseStr = if ($Recurse) { "Yes" } else { "No" }
     Write-Output ("{0,$pad}: {1}" -f "Recurse", $recurseStr)
+    $mergedStr = if ($Merged) { "Yes" } else { "No" }
+    Write-Output ("{0,$pad}: {1}" -f "Merged", $mergedStr)
 }
 Write-Output ("{0,$pad}: {1}" -f "Output", $outputDir)
 Write-Output ("{0,$pad}: {1}" -f "Files", $files.Count)
@@ -209,28 +241,40 @@ Write-Output ""
 
 Write-Output "Processing..."
 
+$mergedLines = New-Object 'System.Collections.Generic.List[string]'
+if ($Merged) {
+    $mergedLines.Add("sep=,")
+    $mergedLines.Add((Format-CsvRow (@("FolderName") + $csvHeaders)))
+}
 $successCount = 0
 $failureCount = 0
 
 foreach ($f in $files) {
-    # Preserve relative directory structure in output
-    $targetDir = $outputDir
-    if ($basePath -and $f.FullName.StartsWith($basePath, [StringComparison]::OrdinalIgnoreCase)) {
-        $relPath = $f.FullName.Substring($basePath.Length)
-        $relDir = [System.IO.Path]::GetDirectoryName($relPath)
-        if ($relDir) {
-            $targetDir = Join-Path $outputDir $relDir
-            if (-not (Test-Path $targetDir)) { New-Item -ItemType Directory -Path $targetDir -Force | Out-Null }
+    $targetPath = ''
+    if (-not $Merged) {
+        # Preserve relative directory structure in output
+        $targetDir = $outputDir
+        if ($basePath -and $f.FullName.StartsWith($basePath, [StringComparison]::OrdinalIgnoreCase)) {
+            $relPath = $f.FullName.Substring($basePath.Length)
+            $relDir = [System.IO.Path]::GetDirectoryName($relPath)
+            if ($relDir) {
+                $targetDir = Join-Path $outputDir $relDir
+                if (-not (Test-Path $targetDir)) { New-Item -ItemType Directory -Path $targetDir -Force | Out-Null }
+            }
         }
+
+        $randNum = Get-Random -Minimum 1000 -Maximum 10000
+        $targetPath = Join-Path $targetDir ('{0}-Random{1}.csv' -f [System.IO.Path]::GetFileNameWithoutExtension($f.Name), $randNum)
     }
 
-    $randNum = Get-Random -Minimum 1000 -Maximum 10000
-    $targetPath = Join-Path $targetDir ('{0}-Random{1}.csv' -f [System.IO.Path]::GetFileNameWithoutExtension($f.Name), $randNum)
-
     try {
-        $res = Invoke-ExportCsv $f.FullName $targetPath
+        $folderName = if ($Merged) { $f.Directory.Name } else { '' }
+        $res = Invoke-ExportCsv $f.FullName $targetPath $folderName
         if ($null -ne $res) {
             $successCount++
+            if ($Merged) {
+                $mergedLines.AddRange($res)
+            }
             Write-Output ("{0,$pad}: {1}" -f "Success", $f.FullName)
         }
         else {
@@ -242,6 +286,14 @@ foreach ($f in $files) {
         $failureCount++
         Write-Color ("{0,$pad}: {1} ({2})" -f "Failed", $f.FullName, $_.Exception.Message) "BgRed"
     }
+}
+
+if ($Merged -and $successCount -gt 0) {
+    $randNum = Get-Random -Minimum 1000 -Maximum 10000
+    $mergedPath = Join-Path $outputDir ('PKeyConfigs-Merged-Random{0}.csv' -f $randNum)
+    $utf8Bom = New-Object System.Text.UTF8Encoding $true
+    [System.IO.File]::WriteAllLines($mergedPath, [string[]]$mergedLines, $utf8Bom)
+    Write-Output ("{0,$pad}: {1}" -f "Merged", $mergedPath)
 }
 
 # ===============================================================================================================================

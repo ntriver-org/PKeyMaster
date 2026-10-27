@@ -1058,8 +1058,9 @@ if (Test-Path `$kc) {
         "`r`nFeatures:" +
         "`r`n  - Batch Export: Processes files or directories." +
         "`r`n  - CSV Output: Generates product spreadsheets." +
+        "`r`n  - Merged CSV: Combines catalogs into a single spreadsheet (folders only)." +
         "`r`n  - Recursive Search: Finds catalogs in subfolders.`r`n" +
-        "`r`nEnter a source path and click Export CSV to begin.`r`n"
+        "`r`nSelect a source path and click Export CSV or Export Merged CSV to begin.`r`n"
         Set-IntroText -OutputBox $readerOutputBox -Text $readerText
 
         $scanKeysText = "System & File Scanner`r`n" +
@@ -1362,7 +1363,7 @@ if (Test-Path `$kc) {
         $tabStripPanel.Controls.Add($tabButton)
     }
 
-    $keyCheckerTopPanel = New-FormPanel -Height (Get-ScaledDpi 148)
+    $keyCheckerTopPanel = New-FormPanel -Height (Get-ScaledDpi 144)
     $keyLabel = New-FormLabel -Text 'Key(s)'
     $keyTextBox = New-FormTextBox -Tooltip 'Enter a Microsoft product key, or paste multiple keys from clipboard.' -UseMonospaceFont $true
     $keyTextBox.Multiline = $true
@@ -1388,7 +1389,7 @@ if (Test-Path `$kc) {
     $keyCheckerBottomPanel.Controls.Add($keyCheckerOutputBox)
     $keyCheckerTabPage.Controls.AddRange(@($keyCheckerBottomPanel, $keyCheckerTopPanel))
 
-    $iidCidTopPanel = New-FormPanel -Height (Get-ScaledDpi 198)
+    $iidCidTopPanel = New-FormPanel -Height (Get-ScaledDpi 189)
     $installationIdLabel = New-FormLabel -Text 'IID(s)'
     $installationIdTextBox = New-FormTextBox -Tooltip 'Enter a 50, 54, 59, or 63-digit Installation ID, or paste multiple IIDs from clipboard.' -UseMonospaceFont $true
     $installationIdTextBox.Multiline = $true
@@ -1413,15 +1414,16 @@ if (Test-Path `$kc) {
     $iidCidBottomPanel.Controls.Add($iidCidOutputBox)
     $iidCidTabPage.Controls.AddRange(@($iidCidBottomPanel, $iidCidTopPanel))
 
-    $readerTopPanel = New-FormPanel -Height (Get-ScaledDpi 92)
+    $readerTopPanel = New-FormPanel -Height (Get-ScaledDpi 112)
     $readerFileLabel = New-FormLabel -Text 'File'
     $readerFileTextBox = New-FormTextBox -ReadOnly $true -Tooltip 'Select a PKeyConfig file (.xrm-ms, .xml, or .xrm) to export as CSV.' -Placeholder $browsePlaceholder
     $readerFolderLabel = New-FormLabel -Text 'Folder'
     $readerFolderTextBox = New-FormTextBox -ReadOnly $true -Tooltip 'Select a folder containing PKeyConfig files to export as CSV.' -Placeholder $browsePlaceholder
     $readerRecurseCheckBox = New-FormCheckBox -Text 'Recurse' -Tooltip 'When checked, searches subfolders recursively for PKeyConfig files.' -AutoSize $false
     $readerRecurseCheckBox.Checked = $true
+    $exportMergedCsvButton = New-FormButton -Text 'Export Merged CSV' -Tooltip 'Exports all PKeyConfig files found in the selected folder into a single merged CSV under the PKeyMaster-Logs folder on the Desktop.'
     $exportCsvButton = New-FormButton -Text 'Export CSV' -Tooltip 'Exports the selected PKeyConfig files to CSV format under the PKeyMaster-Logs folder on the Desktop.'
-    $readerTopPanel.Controls.AddRange(@($readerFileLabel, $readerFileTextBox, $readerFolderLabel, $readerFolderTextBox, $readerRecurseCheckBox, $exportCsvButton))
+    $readerTopPanel.Controls.AddRange(@($readerFileLabel, $readerFileTextBox, $readerFolderLabel, $readerFolderTextBox, $readerRecurseCheckBox, $exportMergedCsvButton, $exportCsvButton))
 
     $readerBottomPanel = New-FormPanel
     $readerOutputBox = New-OutputBox
@@ -1573,23 +1575,31 @@ if (Test-Path `$kc) {
 
         $readerRow1Top = $uiPadding
         $readerRow2Top = $readerRow1Top + $rowStep
+        $readerRow3Top = $readerRow2Top + $rowStep
         $readerLabelWidth = Get-MaxTextWidth -Controls @($readerFileLabel, $readerFolderLabel) -Minimum (Get-ScaledDpi 60) -Extra (Get-ScaledDpi 6)
         $readerInputLeft = $uiPadding + $readerLabelWidth + $labelGap
-        $readerButtonWidth = Get-ActionWidth -Controls @($exportCsvButton)
-        $readerButtonLeft = $layoutWidth - $uiPadding - $readerButtonWidth
-        $readerInputWidth = [Math]::Max($minimumInputWidth, ($readerButtonLeft - $readerInputLeft - $actionGap))
+        $readerInputWidth = [Math]::Max($minimumInputWidth, ($layoutWidth - $uiPadding - $readerInputLeft))
 
         Set-LabeledControlBounds -Label $readerFileLabel -Control $readerFileTextBox -Top $readerRow1Top -LabelWidth $readerLabelWidth -ControlLeft $readerInputLeft -ControlWidth $readerInputWidth
         Set-LabeledControlBounds -Label $readerFolderLabel -Control $readerFolderTextBox -Top $readerRow2Top -LabelWidth $readerLabelWidth -ControlLeft $readerInputLeft -ControlWidth $readerInputWidth
-        $readerRecurseCheckBox.SetBounds($readerButtonLeft, $readerRow1Top, $readerButtonWidth, $controlHeight)
-        $exportCsvButton.SetBounds($readerButtonLeft, $readerRow2Top, $readerButtonWidth, $controlHeight)
+
+        $exportCsvButtonWidth = Get-ActionWidth -Controls @($exportCsvButton)
+        $exportMergedCsvButtonWidth = Get-ActionWidth -Controls @($exportMergedCsvButton)
+        $exportCsvButtonLeft = $layoutWidth - $uiPadding - $exportCsvButtonWidth
+        $exportMergedCsvButtonLeft = $exportCsvButtonLeft - $actionGap - $exportMergedCsvButtonWidth
+        $readerRecurseWidth = (Get-TextWidth -Text $readerRecurseCheckBox.Text) + (Get-ScaledDpi 22)
+        $readerRecurseLeft = $exportMergedCsvButtonLeft - $actionGap - $readerRecurseWidth
+
+        $readerRecurseCheckBox.SetBounds($readerRecurseLeft, $readerRow3Top, $readerRecurseWidth, $controlHeight)
+        $exportMergedCsvButton.SetBounds($exportMergedCsvButtonLeft, $readerRow3Top, $exportMergedCsvButtonWidth, $controlHeight)
+        $exportCsvButton.SetBounds($exportCsvButtonLeft, $readerRow3Top, $exportCsvButtonWidth, $controlHeight)
 
         $scanPanelWidth = $layoutWidth
         $scanPanelHeight = $scanKeysTopPanel.Height
         $scanSeparatorLeft = [int][Math]::Floor($scanPanelWidth / 2) - 1
         $scanKeysSeparator.SetBounds($scanSeparatorLeft, $uiPadding, 2, ([Math]::Max(2, ($scanPanelHeight - ($uiPadding * 2)))))
 
-        $scanRightColumnLeft = $scanSeparatorLeft + 2 + $uiPadding
+        $scanRightColumnLeft = $scanSeparatorLeft + $actionGap
         $scanRightColumnWidth = [Math]::Max(1, ($scanPanelWidth - $uiPadding - $scanRightColumnLeft))
         $scanRow1Top = $uiPadding
         $scanRow2Top = $scanRow1Top + $rowStep
@@ -2092,24 +2102,37 @@ if (Test-Path `$kc) {
                 }
             }
         })
+    function Start-PKeyConfigExport([bool]$Merged = $false) {
+        $arguments = @{}
+        $filePath = $readerFileTextBox.Text.Trim()
+        $folderPath = $readerFolderTextBox.Text.Trim()
+
+        if (Test-SelectedPathText -PathText $filePath) {
+            $arguments['File'] = $filePath
+        }
+        elseif (Test-SelectedPathText -PathText $folderPath) {
+            $arguments['Folder'] = $folderPath
+        }
+        if ($readerRecurseCheckBox.Checked) {
+            $arguments['Recurse'] = $true
+        }
+        if ($Merged) {
+            $arguments['Merged'] = $true
+        }
+
+        $readerTaskControls = @($readerFileTextBox, $readerFolderTextBox, $readerRecurseCheckBox, $exportMergedCsvButton, $exportCsvButton)
+        Start-ToolTask -ScriptName 'PKeyConfigReader.ps1' -Arguments $arguments -OutputBox $readerOutputBox -ControlsToDisable $readerTaskControls -Completed $null
+    }
+
+    $exportMergedCsvButton.Add_Click({
+            Invoke-UiAction {
+                Start-PKeyConfigExport -Merged $true
+            }
+        })
+
     $exportCsvButton.Add_Click({
             Invoke-UiAction {
-                $arguments = @{}
-                $filePath = $readerFileTextBox.Text.Trim()
-                $folderPath = $readerFolderTextBox.Text.Trim()
-
-                if (Test-SelectedPathText -PathText $filePath) {
-                    $arguments['File'] = $filePath
-                }
-                elseif (Test-SelectedPathText -PathText $folderPath) {
-                    $arguments['Folder'] = $folderPath
-                }
-                if ($readerRecurseCheckBox.Checked) {
-                    $arguments['Recurse'] = $true
-                }
-
-                $readerTaskControls = @($readerFileTextBox, $readerFolderTextBox, $readerRecurseCheckBox, $exportCsvButton)
-                Start-ToolTask -ScriptName 'PKeyConfigReader.ps1' -Arguments $arguments -OutputBox $readerOutputBox -ControlsToDisable $readerTaskControls -Completed $null
+                Start-PKeyConfigExport -Merged $false
             }
         })
 
