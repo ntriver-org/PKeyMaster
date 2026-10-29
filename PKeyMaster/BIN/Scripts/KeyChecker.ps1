@@ -25,7 +25,7 @@
 .PARAMETER KeyActivation
     Enables key activation via the SL activation service.
 
-.PARAMETER CheckRedeemKey
+.PARAMETER RedeemStatus
     Enables redeem key validation via Microsoft licensing endpoint.
 
 .PARAMETER MAKCount
@@ -93,7 +93,7 @@ param(
     [string]$ProfileName = '',
     [switch]$KeyCertification,
     [switch]$KeyActivation,
-    [switch]$CheckRedeemKey,
+    [switch]$RedeemStatus,
     [switch]$MAKCount,
     [switch]$GetInstallationId,
     [switch]$GetConfirmationId,
@@ -358,7 +358,7 @@ if ($PKeyConfigPath) { $pidGenXParams['ManualPKeyConfigPath'] = $PKeyConfigPath 
 if ($ProfileName) { $pidGenXParams['ManualProfileName'] = $ProfileName }
 if ($KeyCertification) { $pidGenXParams['KeyCertification'] = $true }
 if ($KeyActivation) { $pidGenXParams['KeyActivation'] = $true }
-if ($CheckRedeemKey) { $pidGenXParams['CheckRedeemKey'] = $true }
+if ($RedeemStatus) { $pidGenXParams['RedeemStatus'] = $true }
 if ($MAKCount) { $pidGenXParams['MAKCount'] = $true }
 if ($GetInstallationId) { $pidGenXParams['GetInstallationId'] = $true }
 if ($GetConfirmationId) { $pidGenXParams['GetConfirmationId'] = $true }

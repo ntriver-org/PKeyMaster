@@ -22,7 +22,7 @@
     Requires Libs\Common.psm1 for shared helper functions.
 
 .EXAMPLE
-    .\CheckRedeemKey.ps1 -RedeemKey "XXXXN-XXXXX-XXXXX-XXXXX-XXXXX"
+    .\RedeemStatus.ps1 -RedeemKey "XXXXN-XXXXX-XXXXX-XXXXX-XXXXX"
 #>
 [CmdletBinding()]
 param(
@@ -96,13 +96,13 @@ function Invoke-ProductApi([string]$url, [string]$prefix) {
 
 function Get-DBoxTitle([string]$id) {
     if ($id -eq "FFFE07D1") { return "Xbox LIVE" }
-    $obj = Invoke-ProductApi "https://dbox.tools/api/title_ids/$id" "CheckRedeemProductName_DBox"
+    $obj = Invoke-ProductApi "https://dbox.tools/api/title_ids/$id" "RedeemStatusProductName_DBox"
     if ($obj -and $obj.name) { return $obj.name }
     return $null
 }
 
 function Get-StoreTitle([string]$id) {
-    $obj = Invoke-ProductApi "https://displaycatalog.mp.microsoft.com/v7.0/products/${id}?market=US&languages=en-us" "CheckRedeemProductName_Store"
+    $obj = Invoke-ProductApi "https://displaycatalog.mp.microsoft.com/v7.0/products/${id}?market=US&languages=en-us" "RedeemStatusProductName_Store"
     if ($obj -and $obj.Product) {
         return $obj.Product.LocalizedProperties[0].ProductTitle
     }
@@ -110,7 +110,7 @@ function Get-StoreTitle([string]$id) {
 }
 
 function Get-StoreTitleByGuid([string]$guid) {
-    $obj = Invoke-ProductApi "https://displaycatalog.mp.microsoft.com/v7.0/products/lookup?alternateId=LegacyXboxProductId&value=${guid}&market=US&languages=en-us" "CheckRedeemProductName_Store"
+    $obj = Invoke-ProductApi "https://displaycatalog.mp.microsoft.com/v7.0/products/lookup?alternateId=LegacyXboxProductId&value=${guid}&market=US&languages=en-us" "RedeemStatusProductName_Store"
     if ($obj -and $obj.Products -and $obj.Products.Count -gt 0) {
         return $obj.Products[0].LocalizedProperties[0].ProductTitle
     }
@@ -118,7 +118,7 @@ function Get-StoreTitleByGuid([string]$guid) {
 }
 
 function Get-StoreTitleByToken([string]$token) {
-    $obj = Invoke-ProductApi "https://displaycatalog.mp.microsoft.com/v7.0/products/lookup?alternateId=LegacyTokenIdentifier&value=${token}&market=US&languages=en-us" "CheckRedeemProductName_Store"
+    $obj = Invoke-ProductApi "https://displaycatalog.mp.microsoft.com/v7.0/products/lookup?alternateId=LegacyTokenIdentifier&value=${token}&market=US&languages=en-us" "RedeemStatusProductName_Store"
     if ($obj -and $obj.Products -and $obj.Products.Count -gt 0) {
         return $obj.Products[0].LocalizedProperties[0].ProductTitle
     }
@@ -305,7 +305,7 @@ else {
     $res = Invoke-RedeemKeyRequest $cleanKey
 }
 
-$logStatus = Write-ApiLogs $LogPath "CheckRedeemKey" $res
+$logStatus = Write-ApiLogs $LogPath "RedeemStatus" $res
 
 # ===============================================================================================================================
 # Console output

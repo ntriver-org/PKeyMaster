@@ -1972,7 +1972,7 @@ if (Test-Path `$kc) {
                 if ($certificationCheckBox.Checked) { $arguments['KeyCertification'] = $true }
                 if ($activationCheckBox.Checked) { $arguments['KeyActivation'] = $true }
                 if ($makCountCheckBox.Checked) { $arguments['MAKCount'] = $true }
-                if ($redeemStatusCheckBox.Checked) { $arguments['CheckRedeemKey'] = $true }
+                if ($redeemStatusCheckBox.Checked) { $arguments['RedeemStatus'] = $true }
                 if ($confirmationIdCheckBox.Checked) {
                     $arguments['GetInstallationId'] = $true
                     $arguments['GetConfirmationId'] = $true

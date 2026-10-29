@@ -26,7 +26,7 @@
 .PARAMETER KeyActivation
     Enables key activation via the SL activation service.
 
-.PARAMETER CheckRedeemKey
+.PARAMETER RedeemStatus
     Enables redeem key validation via Microsoft licensing endpoint.
 
 .PARAMETER MAKCount
@@ -43,7 +43,7 @@
     Requires Windows Vista SP1+ (build 6001+).
     Requires pidgenx64.dll or pidgenx32.dll in the BIN directory.
     Requires Libs\DigitalProductId.psm1,
-    KeyCertification.ps1, KeyActivation.ps1, MakCount.ps1, GetCID.ps1,
+    KeyCertification.ps1, KeyActivation.ps1, MakCount.ps1, RedeemStatus.ps1, GetCID.ps1,
     DecodePKey2009.ps1, DecodePKey980-PKey986.ps1 for optional features.
     Requires PKeyConfigsMap.json and PreVistaRanges.csv in the application root.
     Requires Libs\Common.psm1 for shared helper functions.
@@ -65,7 +65,7 @@ param(
     [switch]$GetInstallationId,
     [switch]$KeyCertification,
     [switch]$KeyActivation,
-    [switch]$CheckRedeemKey,
+    [switch]$RedeemStatus,
     [switch]$MAKCount,
     [switch]$GetConfirmationId,
     [string]$LogFolder
@@ -183,9 +183,9 @@ function Invoke-PassThruScript([string]$ScriptPath, [hashtable]$Params) {
 
 # ===============================================================================================================================
 
-function Invoke-CheckRedeemKey($RedeemKey, $LogFolder, $f, $scriptDir) {
-    # Run CheckRedeemKey.ps1 and show the redeem-key status.
-    $redeemScript = Join-Path $scriptDir "CheckRedeemKey.ps1"
+function Invoke-RedeemStatus($RedeemKey, $LogFolder, $f, $scriptDir) {
+    # Run RedeemStatus.ps1 and show the redeem-key status.
+    $redeemScript = Join-Path $scriptDir "RedeemStatus.ps1"
     $params = @{ RedeemKey = $RedeemKey }
     if ($LogFolder) { $params['LogPath'] = $LogFolder }
     $redeemOutput = Invoke-PassThruScript $redeemScript $params
@@ -551,8 +551,8 @@ function Show-RedeemKeyStatus {
         [int]$GroupId = 0
     )
 
-    if ($CheckRedeemKey) {
-        Invoke-CheckRedeemKey $ProductKey $LogFolder $f $scriptDir
+    if ($RedeemStatus) {
+        Invoke-RedeemStatus $ProductKey $LogFolder $f $scriptDir
     }
     elseif (-not $AlgorithmId -or $Eula -eq "ltPIN" -or $GroupId -eq 28) {
         Write-Output ""
