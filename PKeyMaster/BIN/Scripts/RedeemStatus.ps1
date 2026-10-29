@@ -76,11 +76,10 @@ function Invoke-ProductApi([string]$url, [string]$prefix) {
     $res = Invoke-GetTextRequest $url $null "" "" "json"
 
     if ($LogPath) {
-        $uri = New-Object System.Uri($url)
         $logObj = @{
             RequestFull    = ""
             ResponseFull   = $res.Body
-            RequestDetails = "GET $url HTTP/1.1`r`nConnection: Keep-Alive`r`nHost: $($uri.Host)`r`n"
+            RequestDetails = Format-RequestDetails "GET" $url
         }
         Write-ApiLogs $LogPath $prefix $logObj | Out-Null
     }
@@ -199,6 +198,42 @@ function Resolve-PKeyConfigProductName([string]$ActivationId, [string]$PartNumbe
 
 # ===============================================================================================================================
 
+function Resolve-SignupProductName([string]$Key) {
+    $body = @"
+{"keys":["$Key"]}
+"@
+
+    $url = "https://signup.microsoft.com/api/signupservice/validatePrepaidKeys?culture=en-us&api-version=1"
+    $contentType = "application/json; charset=utf-8"
+    $userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+
+    $res = Invoke-PostTextRequest $url $body $null $contentType $userAgent "json"
+
+    if ($LogPath) {
+        $logObj = @{
+            RequestFull    = $body
+            ResponseFull   = $res.Body
+            RequestDetails = Format-RequestDetails "POST" $url $body $null $contentType $userAgent
+        }
+        Write-ApiLogs $LogPath "RedeemStatusProductName_Signup" $logObj | Out-Null
+    }
+
+    if ($res.Body) {
+        try {
+            $json = $global:JsonSerializer.DeserializeObject($res.Body)
+            $descriptionResult = $json["prepaidKeysDescriptionResult"]
+            if ($descriptionResult) {
+                return (($descriptionResult["description"] -replace '<[^>]+>', ' ') -replace '\s+', ' ').Trim()
+            }
+        }
+        catch {}
+    }
+
+    return $null
+}
+
+# ===============================================================================================================================
+
 function Invoke-RedeemKeyRequest($Key) {
     # Query the Microsoft licensing endpoint to check the status of a redeem key.
     $out = New-ResponseObject
@@ -207,15 +242,8 @@ function Invoke-RedeemKeyRequest($Key) {
     $url = "https://licensing.m365.svc.cloud.microsoft/olsc/olsconfig.svc/pin/v3/${Key}?id=$correlationId"
     $userAgent = "Microsoft Office/16.0 (Windows NT 10.0; Microsoft Excel 16.0.20520; Pro)"
     $contentType = "application/json"
-    $uri = New-Object System.Uri($url)
     $out.RequestFull = ""
-    $out.RequestDetails = @"
-GET $url HTTP/1.1
-Connection: Keep-Alive
-Content-Type: $contentType
-User-Agent: $userAgent
-Host: $($uri.Host)
-"@
+    $out.RequestDetails = Format-RequestDetails "GET" $url "" $null $contentType $userAgent
 
     $res = Invoke-GetTextRequest $url $null $contentType $userAgent "json"
     $responseFull = $res.Body.Trim()
@@ -253,7 +281,11 @@ Host: $($uri.Host)
         if ($acid -and ([string]$acid).Trim() -ne "null") { $out.Acid = [string]$acid }
         if ($null -ne $groupId) { $out.GroupId = $groupId }
 
-        if (-not $out.Product -and $out.Acid -and ($out.Acid -notmatch '99999999-9999-9999-9999-999999999999')) {
+        if (-not $out.Product -and $out.Pkpn) {
+            $out.Product = Resolve-SignupProductName $Key
+        }
+
+        if (-not $out.Product -and $out.Pkpn -and $out.Acid -and ($out.Acid -notmatch '99999999-9999-9999-9999-999999999999')) {
             $out.Product = Resolve-PKeyConfigProductName -ActivationId $out.Acid
         }
 

@@ -88,20 +88,7 @@ function Submit-BatchActivationRequest([string]$RequestFull, [string]$RequestInn
     $userAgent = "Mozilla/4.0 (compatible; MSIE 6.0; MS Web Services Client Protocol 2.0.50727.5420)"
     $contentType = "text/xml; charset=utf-8"
     $headers = @{ SOAPAction = $action }
-    $contentLength = [Text.Encoding]::UTF8.GetByteCount($RequestFull)
-    $uri = New-Object System.Uri($url)
-    $out.RequestDetails = @"
-POST $url HTTP/1.1
-Host: $($uri.Host)
-Connection: close
-Content-Type: $contentType
-User-Agent: $userAgent
-SOAPAction: $($headers.SOAPAction)
-Content-Length: $contentLength
-
-Body:
-$RequestFull
-"@
+    $out.RequestDetails = Format-RequestDetails "POST" $url $RequestFull $headers $contentType $userAgent
 
     $res = Invoke-PostTextRequest $url $RequestFull $headers $contentType $userAgent "xml"
 

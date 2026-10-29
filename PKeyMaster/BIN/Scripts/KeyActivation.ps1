@@ -117,21 +117,8 @@ function Submit-KeyActivationRequest([string]$RequestFull, [string]$RequestInner
     $userAgent = "SLSSoapClient"
     $contentType = "text/xml; charset=utf-8"
     $headers = @{ SOAPAction = $action }
-    $contentLength = [Text.Encoding]::UTF8.GetByteCount($RequestFull)
-    $uri = New-Object System.Uri($url)
-    $out.RequestDetails = @"
-POST $url HTTP/1.1
-Host: $($uri.Host)
-Connection: close
-Content-Type: $contentType
-User-Agent: $userAgent
-SOAPAction: $($headers.SOAPAction)
-Content-Length: $contentLength
+    $out.RequestDetails = Format-RequestDetails "POST" $url $RequestFull $headers $contentType $userAgent
 
-Body:
-$RequestFull
-"@
-    
     $res = Invoke-PostTextRequest $url $RequestFull $headers $contentType $userAgent "xml"
     
     $ResponseFull = $res.Body.Trim()

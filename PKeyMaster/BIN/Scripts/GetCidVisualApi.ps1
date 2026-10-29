@@ -300,22 +300,7 @@ function Invoke-VisualApiRequest($InstallationId) {
     }
     $userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
     $contentType = "application/json; charset=utf-8"
-    $contentLength = [Text.Encoding]::UTF8.GetByteCount($body)
-    $uri = New-Object System.Uri($url)
-    $out.RequestDetails = @"
-POST $url HTTP/1.1
-Host: $($uri.Host)
-Connection: close
-Content-Type: $contentType
-User-Agent: $userAgent
-Authorization: $($hdrs.Authorization)
-DPoP: $($hdrs.DPoP)
-x-session-id: $($hdrs['x-session-id'])
-Content-Length: $contentLength
-
-Body:
-$body
-"@
+    $out.RequestDetails = Format-RequestDetails "POST" $url $body $hdrs $contentType $userAgent
     
     $res = Invoke-PostTextRequest $url $body $hdrs $contentType $userAgent "json"
     $ResponseFull = $res.Body.Trim()

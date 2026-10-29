@@ -340,6 +340,29 @@ function Invoke-PostTextRequest($Url, $Body, $Headers = $null, $ContentType = ""
 
 # ===============================================================================================================================
 
+function Format-RequestDetails($Method, $Url, $Body = "", $Headers = $null, $ContentType = "", $UserAgent = "", $Connection = "close") {
+    $uri = New-Object System.Uri($Url)
+    $lines = @("$Method $Url HTTP/1.1", "Host: $($uri.Host)")
+    if ($Connection) { $lines += "Connection: $Connection" }
+    if ($ContentType) { $lines += "Content-Type: $ContentType" }
+    if ($UserAgent) { $lines += "User-Agent: $UserAgent" }
+    if ($Headers) {
+        foreach ($k in $Headers.Keys) {
+            $lines += "$k`: $($Headers[$k])"
+        }
+    }
+    if ($Method -eq "POST" -or $Body) {
+        $len = if ($Body) { [System.Text.Encoding]::UTF8.GetByteCount([string]$Body) } else { 0 }
+        $lines += "Content-Length: $len"
+        $lines += ""
+        $lines += "Body:"
+        $lines += $Body
+    }
+    return ($lines -join "`r`n")
+}
+
+# ===============================================================================================================================
+
 function Write-ApiLogs($LogPath, $Prefix, $Obj) {
     # Dump request/response payloads to disk.
     if (-not $LogPath) { return $null }
