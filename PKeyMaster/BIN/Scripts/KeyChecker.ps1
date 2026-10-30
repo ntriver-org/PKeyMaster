@@ -189,7 +189,7 @@ $colsPidGenX = @(
     "MAK Count", "MAK Error Code", "MAK Error Msg",
     "CID Visual Api", "Visual Error Code", "Visual Error Msg",
     "CID Batch Api", "Batch Error Code", "Batch Error Msg",
-    "Redeem Key Status", "Redeem Product", "Redeem Acid", "Redeem GroupId", "Redeem Pkpn",
+    "Redeem Key Status", "Redeem Product", "Redeem Acid", "Redeem GroupId", "Redeem Pkpn", "Redeem Note",
     "Query Time"
 )
 

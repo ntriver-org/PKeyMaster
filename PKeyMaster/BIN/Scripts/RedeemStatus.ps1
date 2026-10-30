@@ -56,6 +56,7 @@ function New-ResponseObject {
         GroupId        = $null
         Pkpn           = $null
         Product        = $null
+        Note           = $null
     }
 }
 
@@ -221,9 +222,23 @@ function Resolve-SignupProductName([string]$Key) {
     if ($res.Body) {
         try {
             $json = $global:JsonSerializer.DeserializeObject($res.Body)
+            $validationResult = $json["prepaidKeysValidationResult"]
             $descriptionResult = $json["prepaidKeysDescriptionResult"]
+            $product = $null
+            $note = $null
+
             if ($descriptionResult) {
-                return (($descriptionResult["description"] -replace '<[^>]+>', ' ') -replace '\s+', ' ').Trim()
+                $product = (($descriptionResult["description"] -replace '<[^>]+>', ' ') -replace '\s+', ' ').Trim()
+            }
+            elseif ($validationResult -and $validationResult["canGetSupport"]) {
+                $note = $validationResult["tokenStatus"][0]["tokenValidationMessage"]
+            }
+
+            if ($product -or $note) {
+                return @{
+                    Product = $product
+                    Note    = $note
+                }
             }
         }
         catch {}
@@ -282,7 +297,11 @@ function Invoke-RedeemKeyRequest($Key) {
         if ($null -ne $groupId) { $out.GroupId = $groupId }
 
         if (-not $out.Product -and $out.Pkpn) {
-            $out.Product = Resolve-SignupProductName $Key
+            $signupInfo = Resolve-SignupProductName $Key
+            if ($signupInfo) {
+                if ($signupInfo.Product) { $out.Product = $signupInfo.Product }
+                if ($signupInfo.Note) { $out.Note = $signupInfo.Note }
+            }
         }
 
         if (-not $out.Product -and $out.Pkpn -and $out.Acid -and ($out.Acid -notmatch '99999999-9999-9999-9999-999999999999')) {
@@ -360,6 +379,9 @@ if ($res.Pkpn) {
     Write-Output ($f -f "Acid", $res.Acid)
     Write-Output ($f -f "GroupId", $res.GroupId)
     Write-Output ($f -f "Pkpn", $res.Pkpn)
+    if ($res.Note) {
+        Write-Output ($f -f "Note", $res.Note)
+    }
 }
 if ($logStatus) {
     if ($logStatus -match '^Failed') {
@@ -388,6 +410,7 @@ if ($PassThru) {
         GroupId        = $res.GroupId
         Pkpn           = $res.Pkpn
         Product        = $res.Product
+        Note           = $res.Note
     }
 }
 

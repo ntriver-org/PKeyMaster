@@ -207,6 +207,9 @@ function Invoke-RedeemStatus($RedeemKey, $LogFolder, $f, $scriptDir) {
         Write-Output ($f -f "Redeem Acid", $redeemObj.Acid)
         Write-Output ($f -f "Redeem GroupId", $redeemObj.GroupId)
         Write-Output ($f -f "Redeem Pkpn", $redeemObj.Pkpn)
+        if ($redeemObj.Note) {
+            Write-Output ($f -f "Redeem Note", $redeemObj.Note)
+        }
     }
 }
 
