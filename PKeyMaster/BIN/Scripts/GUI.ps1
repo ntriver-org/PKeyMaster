@@ -1667,8 +1667,8 @@ if (Test-Path `$kc) {
         $promptForm.Font = $uiFont
         $promptForm.AutoScaleMode = 'None'
 
-        $buttonWidth = Get-ScaledDpi 85
-        $buttonHeight = Get-ScaledDpi 28
+        $buttonWidth = $minimumActionWidth
+        $buttonHeight = $controlHeight
         $buttonTop = $promptForm.ClientSize.Height - $buttonHeight - $uiPadding
 
         $promptTextBox = New-WinFormsControl -TypeName 'TextBox' -Properties @{
@@ -1696,6 +1696,7 @@ if (Test-Path `$kc) {
         $okButton = New-WinFormsControl -TypeName 'Button' -Properties @{
             Text         = 'OK'
             Font         = $uiFont
+            FlatStyle    = 'System'
             Size         = New-Size -Width $buttonWidth -Height $buttonHeight
             Location     = New-Object System.Drawing.Point(($promptForm.ClientSize.Width - $uiPadding - ($buttonWidth * 2) - (Get-ScaledDpi 6)), $buttonTop)
             Anchor       = 'Bottom, Right'
@@ -1705,6 +1706,7 @@ if (Test-Path `$kc) {
         $cancelButton = New-WinFormsControl -TypeName 'Button' -Properties @{
             Text         = 'Cancel'
             Font         = $uiFont
+            FlatStyle    = 'System'
             Size         = New-Size -Width $buttonWidth -Height $buttonHeight
             Location     = New-Object System.Drawing.Point(($promptForm.ClientSize.Width - $uiPadding - $buttonWidth), $buttonTop)
             Anchor       = 'Bottom, Right'
