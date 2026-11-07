@@ -436,7 +436,7 @@ if (Test-Path `$kc) {
                     $currentBackColor = $OutputBox.BackColor
 
                     if ($line -match '\[c:') {
-                        $colorMatches = [regex]::Matches($line, '\[c:(?<f>[^:]+):(?<b>[^:]+)\]')
+                        $colorMatches = [regex]::Matches($line, '\[c:(?<f>[^:\]]+):(?<b>[^:\]]+)\]')
                         $lastIndex = 0
                         
                         foreach ($m in $colorMatches) {
@@ -1027,7 +1027,7 @@ if (Test-Path `$kc) {
     # ===============================================================================================================================
 
     function Restore-IntroText {
-        $keyCheckerText = "KeyChecker`r`n" +
+        $keyCheckerText = "Key Checker`r`n" +
         "`r`nValidates Microsoft keys (Windows, Office, VS, etc.) from Windows 95 era to present.`r`n" +
         "`r`nAvailable options:" +
         "`r`n  Certification - Checks the key certification status via SLCertifyProduct API." +
@@ -1052,6 +1052,18 @@ if (Test-Path `$kc) {
         "`r`n  3. Click 'Deposit CID' to activate it.`r`n" +
         "`r`nLogs: Saves API payloads to the Desktop.`r`n"
         Set-IntroText -OutputBox $iidCidOutputBox -Text $iidCidText
+
+        $idCheckerText = "ID Checker`r`n" +
+        "`r`nDecodes Microsoft ID strings to reveal product licensing details.`r`n" +
+        "`r`nAvailable Options:" +
+        "`r`n  - ActConfig ID        - Decodes ActConfig ID." +
+        "`r`n  - Activation ID       - Looks up Activation ID in PKeyConfigs with Store API fallback." +
+        "`r`n  - Part Number         - Looks up Part Number in PKeyConfigs with Store API fallback." +
+        "`r`n  - Label ID            - Decodes Label ID." +
+        "`r`n  - Product ID          - Decodes 20-digit Product ID (PID)." +
+        "`r`n  - Extended Product ID - Decodes Extended Product ID (EPID).`r`n" +
+        "`r`nEnter an ID above and click the corresponding button.`r`n"
+        Set-IntroText -OutputBox $idCheckerOutputBox -Text $idCheckerText
 
         $readerText = "PKeyConfig Catalog Reader`r`n" +
         "`r`nExtracts metadata from .xrm-ms, .xml, and .xrm catalogs.`r`n" +
@@ -1316,26 +1328,30 @@ if (Test-Path `$kc) {
     }
 
     $keyCheckerTabPage = New-WinFormsControl -TypeName 'TabPage' -Properties @{
-        Text      = 'KeyChecker'
+        Text      = 'Key Checker'
+        BackColor = $mainWindow.BackColor
+    }
+    $idCheckerTabPage = New-WinFormsControl -TypeName 'TabPage' -Properties @{
+        Text      = 'ID Checker'
         BackColor = $mainWindow.BackColor
     }
     $iidCidTabPage = New-WinFormsControl -TypeName 'TabPage' -Properties @{
-        Text      = 'GetCID'
+        Text      = 'CID Tool'
         BackColor = $mainWindow.BackColor
     }
     $readerTabPage = New-WinFormsControl -TypeName 'TabPage' -Properties @{
-        Text      = 'PKeyConfigReader'
+        Text      = 'PKeyConfig Reader'
         BackColor = $mainWindow.BackColor
     }
     $scanKeysTabPage = New-WinFormsControl -TypeName 'TabPage' -Properties @{
-        Text      = 'ScanKeys'
+        Text      = 'Key Scanner'
         BackColor = $mainWindow.BackColor
     }
     $aboutTabPage = New-WinFormsControl -TypeName 'TabPage' -Properties @{
-        Text      = 'Help/About'
+        Text      = 'About'
         BackColor = $mainWindow.BackColor
     }
-    $mainTabControl.TabPages.AddRange(@($keyCheckerTabPage, $iidCidTabPage, $readerTabPage, $scanKeysTabPage, $aboutTabPage))
+    $mainTabControl.TabPages.AddRange(@($keyCheckerTabPage, $idCheckerTabPage, $iidCidTabPage, $readerTabPage, $scanKeysTabPage, $aboutTabPage))
 
     $tabStripPanel = New-WinFormsControl -TypeName 'FlowLayoutPanel' -Properties @{
         Dock         = 'Top'
@@ -1413,6 +1429,28 @@ if (Test-Path `$kc) {
     $iidCidOutputBox = New-OutputBox
     $iidCidBottomPanel.Controls.Add($iidCidOutputBox)
     $iidCidTabPage.Controls.AddRange(@($iidCidBottomPanel, $iidCidTopPanel))
+
+    $idCheckerTopPanel = New-FormPanel -Height (Get-ScaledDpi 144)
+    $idCheckerIdLabel = New-FormLabel -Text 'ID'
+    $idCheckerIdTextBox = New-FormTextBox -Tooltip 'Enter or paste an ID string (Label ID, Product ID, Extended PID, ActConfig ID, Activation ID, or Part Number).' -UseMonospaceFont $true
+    $checkLabelIdButton = New-FormButton -Text 'Check Label ID' -Tooltip 'Checks a Microsoft Label ID string.'
+    $checkProductIdButton = New-FormButton -Text 'Check Product ID' -Tooltip 'Checks a Microsoft Product ID string.'
+    $checkExtendedProductIdButton = New-FormButton -Text 'Check Extended Product ID' -Tooltip 'Checks a Microsoft Extended Product ID string.'
+    $checkActConfigIdButton = New-FormButton -Text 'Check ActConfig ID' -Tooltip 'Checks a Microsoft ActConfig ID string.'
+    $checkActivationIdButton = New-FormButton -Text 'Check Activation ID' -Tooltip 'Looks up a Microsoft Activation ID GUID in PKeyConfigs with Store API fallback.'
+    $checkPartNumberButton = New-FormButton -Text 'Check Part Number' -Tooltip 'Looks up a product part number in PKeyConfigs with Store API fallback.'
+    $idCheckerSeparator = New-WinFormsControl -TypeName 'Label' -Properties @{ AutoSize = $false; BorderStyle = 'Fixed3D' }
+    $idCheckerTopPanel.Controls.AddRange(@(
+            $idCheckerIdLabel, $idCheckerIdTextBox,
+            $checkActConfigIdButton, $checkActivationIdButton, $checkPartNumberButton,
+            $checkLabelIdButton, $checkProductIdButton, $checkExtendedProductIdButton,
+            $idCheckerSeparator
+        ))
+
+    $idCheckerBottomPanel = New-FormPanel
+    $idCheckerOutputBox = New-OutputBox
+    $idCheckerBottomPanel.Controls.Add($idCheckerOutputBox)
+    $idCheckerTabPage.Controls.AddRange(@($idCheckerBottomPanel, $idCheckerTopPanel))
 
     $readerTopPanel = New-FormPanel -Height (Get-ScaledDpi 112)
     $readerFileLabel = New-FormLabel -Text 'File'
@@ -1573,6 +1611,34 @@ if (Test-Path `$kc) {
         $populateInstalledProductsButton.SetBounds($populateButtonLeft, $iidRow5Top, $populateButtonWidth, $controlHeight)
         $depositCidButton.SetBounds($depositButtonLeft, $iidRow5Top, $getCidButtonWidth, $controlHeight)
 
+        $idCheckerRow1Top = $uiPadding
+        $idCheckerRow2Top = $idCheckerRow1Top + $rowStep
+        $idCheckerRow3Top = $idCheckerRow2Top + $rowStep
+        $idCheckerRow4Top = $idCheckerRow3Top + $rowStep
+
+        $idCheckerLabelWidth = Get-MaxTextWidth -Controls @($idCheckerIdLabel) -Minimum (Get-ScaledDpi 60) -Extra (Get-ScaledDpi 6)
+        $idCheckerInputLeft = $uiPadding + $idCheckerLabelWidth + $labelGap
+        $idCheckerInputWidth = [Math]::Max($minimumInputWidth, ($layoutWidth - $uiPadding - $idCheckerInputLeft))
+
+        Set-LabeledControlBounds -Label $idCheckerIdLabel -Control $idCheckerIdTextBox -Top $idCheckerRow1Top -LabelWidth $idCheckerLabelWidth -ControlLeft $idCheckerInputLeft -ControlWidth $idCheckerInputWidth
+
+        $idCheckerSeparatorLeft = $idCheckerInputLeft + [int][Math]::Floor($idCheckerInputWidth / 2) - 1
+        $idCheckerCol1Left = $idCheckerInputLeft
+        $idCheckerCol1Width = ($idCheckerSeparatorLeft - $actionGap) - $idCheckerCol1Left
+        $idCheckerCol2Left = $idCheckerSeparatorLeft + (Get-ScaledDpi 2) + $actionGap
+        $idCheckerCol2Width = ($idCheckerInputLeft + $idCheckerInputWidth) - $idCheckerCol2Left
+
+        $idCheckerSeparatorTop = $idCheckerRow2Top
+        $idCheckerSeparatorHeight = ($idCheckerRow4Top + $controlHeight) - $idCheckerRow2Top
+
+        $checkActConfigIdButton.SetBounds($idCheckerCol1Left, $idCheckerRow2Top, $idCheckerCol1Width, $controlHeight)
+        $checkLabelIdButton.SetBounds($idCheckerCol2Left, $idCheckerRow2Top, $idCheckerCol2Width, $controlHeight)
+        $checkActivationIdButton.SetBounds($idCheckerCol1Left, $idCheckerRow3Top, $idCheckerCol1Width, $controlHeight)
+        $checkProductIdButton.SetBounds($idCheckerCol2Left, $idCheckerRow3Top, $idCheckerCol2Width, $controlHeight)
+        $checkPartNumberButton.SetBounds($idCheckerCol1Left, $idCheckerRow4Top, $idCheckerCol1Width, $controlHeight)
+        $checkExtendedProductIdButton.SetBounds($idCheckerCol2Left, $idCheckerRow4Top, $idCheckerCol2Width, $controlHeight)
+        $idCheckerSeparator.SetBounds($idCheckerSeparatorLeft, $idCheckerSeparatorTop, (Get-ScaledDpi 2), $idCheckerSeparatorHeight)
+
         $readerRow1Top = $uiPadding
         $readerRow2Top = $readerRow1Top + $rowStep
         $readerRow3Top = $readerRow2Top + $rowStep
@@ -1634,6 +1700,7 @@ if (Test-Path `$kc) {
 
     Register-OutputLinks -OutputBox $keyCheckerOutputBox
     Register-OutputLinks -OutputBox $iidCidOutputBox
+    Register-OutputLinks -OutputBox $idCheckerOutputBox
     Register-OutputLinks -OutputBox $readerOutputBox
     Register-OutputLinks -OutputBox $scanKeysOutputBox
 
@@ -2081,6 +2148,82 @@ if (Test-Path `$kc) {
                 }
 
                 Start-ToolTask -ScriptName 'DepositCID.ps1' -Arguments $arguments -OutputBox $iidCidOutputBox -ControlsToDisable $iidCidTaskControls -Completed { Update-DepositCidState }
+            }
+        })
+
+    $idCheckerIdTextBox.Add_KeyDown({
+            if ($_.Control -and $_.KeyCode -eq 'A') {
+                $idCheckerIdTextBox.SelectAll()
+                $_.SuppressKeyPress = $true
+            }
+        })
+
+    $idCheckerTaskControls = @(
+        $idCheckerIdTextBox,
+        $checkActConfigIdButton,
+        $checkActivationIdButton,
+        $checkPartNumberButton,
+        $checkLabelIdButton,
+        $checkProductIdButton,
+        $checkExtendedProductIdButton
+    )
+
+    function Start-IdCheckTask {
+        param(
+            [string]$ScriptName,
+            [string]$ArgumentKey,
+            [switch]$Decode
+        )
+
+        $id = $idCheckerIdTextBox.Text.Trim().Trim('"').Trim("'")
+        if (-not $id) {
+            $idCheckerOutputBox.Text = 'Please enter an ID to check.'
+            return
+        }
+
+        $arguments = @{ $ArgumentKey = $id }
+        if ($Decode) {
+            $arguments['Decode'] = $true
+            $arguments['GetProductDetails'] = $true
+        }
+
+        Start-ToolTask -ScriptName $ScriptName -Arguments $arguments -OutputBox $idCheckerOutputBox -ControlsToDisable $idCheckerTaskControls -Completed $null
+        $idCheckerOutputBox.Text = 'Checking, please wait...'
+    }
+
+    $checkActConfigIdButton.Add_Click({
+            Invoke-UiAction {
+                Start-IdCheckTask -ScriptName 'Ids\ActConfigId.ps1' -ArgumentKey 'ActConfigId' -Decode
+            }
+        })
+
+    $checkActivationIdButton.Add_Click({
+            Invoke-UiAction {
+                Start-IdCheckTask -ScriptName 'Ids\ActivationId-PartNumber.ps1' -ArgumentKey 'ActivationId'
+            }
+        })
+
+    $checkPartNumberButton.Add_Click({
+            Invoke-UiAction {
+                Start-IdCheckTask -ScriptName 'Ids\ActivationId-PartNumber.ps1' -ArgumentKey 'PartNumber'
+            }
+        })
+
+    $checkLabelIdButton.Add_Click({
+            Invoke-UiAction {
+                Start-IdCheckTask -ScriptName 'Ids\LabelId.ps1' -ArgumentKey 'LabelId' -Decode
+            }
+        })
+
+    $checkProductIdButton.Add_Click({
+            Invoke-UiAction {
+                Start-IdCheckTask -ScriptName 'Ids\ProductId.ps1' -ArgumentKey 'ProductId' -Decode
+            }
+        })
+
+    $checkExtendedProductIdButton.Add_Click({
+            Invoke-UiAction {
+                Start-IdCheckTask -ScriptName 'Ids\ExtendedProductId.ps1' -ArgumentKey 'ExtendedProductId' -Decode
             }
         })
 

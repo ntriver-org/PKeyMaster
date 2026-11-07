@@ -17,17 +17,17 @@
 # ANSI / VT support detection
 # ===============================================================================================================================
 
-$script:AnsiSupported = $false
-$script:ColorLineBuffer = ""
+$global:AnsiSupported = $false
+$global:ColorLineBuffer = ""
 if ([System.Environment]::OSVersion.Version.Build -ge 10586) {
     $forceV2 = (Get-ItemProperty -Path 'HKCU:\Console' -Name 'ForceV2' -ErrorAction SilentlyContinue).ForceV2
     if ($null -eq $forceV2 -or $forceV2 -ne 0) {
-        $script:AnsiSupported = $true
+        $global:AnsiSupported = $true
     }
 }
 
 # Color name -> @(AnsiCode, GUI-ForegroundColor, GUI-BackgroundColor)
-$script:ColorMap = @{
+$global:ColorMap = @{
     'BgRed'    = @("41;97", "White", "DarkRed")
     'BgGray'   = @("100;97", "White", "Gray")
     'BgGreen'  = @("42;97", "White", "Green")
@@ -59,13 +59,13 @@ function Write-Color {
         [switch]$NoNewline
     )
 
-    $colorData = $script:ColorMap[$Color]
+    $colorData = $global:ColorMap[$Color]
     $piece = ""
 
     if ($global:IsGuiRunspace) {
         $piece = "[c:$($colorData[1]):$($colorData[2])]$Text"
     }
-    elseif ($script:AnsiSupported) {
+    elseif ($global:AnsiSupported) {
         $piece = "$([char]27)[$($colorData[0])m$Text$([char]27)[0m"
     }
     else {
@@ -73,11 +73,11 @@ function Write-Color {
     }
 
     if ($NoNewline) {
-        $script:ColorLineBuffer += $piece
+        $global:ColorLineBuffer += $piece
     }
     else {
-        $fullLine = $script:ColorLineBuffer + $piece
-        $script:ColorLineBuffer = ""
+        $fullLine = $global:ColorLineBuffer + $piece
+        $global:ColorLineBuffer = ""
         Write-Output $fullLine
     }
 }
@@ -432,3 +432,159 @@ if (-not $global:PreVistaRanges) {
 }
 
 # ===============================================================================================================================
+# PreVista Product Match Query
+# ===============================================================================================================================
+
+# Look up Group ID + Key ID in PreVistaRanges.csv for product editions and return an array of matched descriptions.
+
+function Get-PreVistaProductMatch($GroupId, $KeyId) {
+
+    if ($null -eq $GroupId -or $null -eq $KeyId -or -not $global:PreVistaRanges) { return @() }
+
+    $gStr = [string][int]$GroupId
+    $kId = [int64]$KeyId
+    $editionMatches = @{}
+
+    foreach ($row in $global:PreVistaRanges) {
+        if ($row.BinkID_Dec -ne $gStr) { continue }
+
+        $min = ([int64]$row.Channel_Min * 1000000) + [int64]$row.Sequence_Min
+        $max = ([int64]$row.Channel_Max * 1000000) + [int64]$row.Sequence_Max
+
+        if ($kId -ge $min -and $kId -le $max) {
+            $ed = $row.Edition.Trim()
+            if (-not $editionMatches.ContainsKey($ed)) {
+                $editionMatches[$ed] = @{ Licenses = @(); Stages = @() }
+            }
+            if ($row.License -and $row.License -ne "N/A" -and $editionMatches[$ed].Licenses -notcontains $row.License) {
+                $editionMatches[$ed].Licenses += $row.License
+            }
+            if ($row.Stage -and $row.Stage -ne "N/A" -and $editionMatches[$ed].Stages -notcontains $row.Stage) {
+                $editionMatches[$ed].Stages += $row.Stage
+            }
+        }
+    }
+
+    return @(foreach ($ed in ($editionMatches.Keys | Sort-Object)) {
+            $tags = @($editionMatches[$ed].Licenses | Sort-Object) + @($editionMatches[$ed].Stages | Sort-Object)
+            if ($tags) { "$ed (" + ($tags -join ") (") + ")" } else { $ed }
+        })
+}
+
+# ===============================================================================================================================
+# Product Details Lookup & Display
+# ===============================================================================================================================
+
+# Searches PKeyConfigsMap.json (falling back to PreVistaRanges.csv) for product details using Group ID and Key ID.
+
+function Get-ProductDetails($GroupId, $KeyId, [switch]$SkipPreVista, [switch]$SkipVistaAndLater) {
+    if ($null -eq $GroupId -or $null -eq $KeyId) { return $null }
+
+    $gId = [int]$GroupId
+    $kId = [int64]$KeyId
+    $channel = [int64][Math]::Floor($kId / 1000000)
+    $seq = [int64]($kId % 1000000)
+    $labelId = "{0:D5}-{1:D3}-{2:D3}-{3:D3}" -f $gId, $channel, [int]([Math]::Floor($seq / 1000)), [int]($seq % 1000)
+
+    $pkeyConfigsDir = Join-Path $PSScriptRoot "..\..\PKeyConfigs"
+    if (-not $SkipVistaAndLater -and $global:PKeyConfigsMap -and (Test-Path $pkeyConfigsDir)) {
+        $gStr = [string]$GroupId
+
+        foreach ($entry in ($global:PKeyConfigsMap | Where-Object { $_.Profile -notmatch "custom" })) {
+            if (-not $entry.Algorithms) { continue }
+            $matched = $false
+            foreach ($algoGroups in $entry.Algorithms.Values) {
+                if ($algoGroups -and $algoGroups.ContainsKey($gStr)) {
+                    foreach ($range in $algoGroups[$gStr]) {
+                        if ($kId -ge $range[0] -and $kId -le $range[1]) { $matched = $true; break }
+                    }
+                }
+                if ($matched) { break }
+            }
+
+            if ($matched) {
+                $cfgPath = Join-Path $pkeyConfigsDir $entry.Path.TrimStart('\')
+                if (Test-Path $cfgPath) {
+                    $info = Get-PKeyConfigInfo -FilePath $cfgPath -GroupId $GroupId -KeyId $KeyId
+                    if ($info -and $info.Description -and $info.Description -ne "CustomMade") {
+                        return New-Object PSObject -Property @{
+                            Profile      = $entry.Profile
+                            Description  = $info.Description
+                            Edition      = $info.Edition
+                            KeyType      = $info.KeyType
+                            EULA         = $info.EULA
+                            PartNumber   = $info.PartNumber
+                            AlgorithmId  = $info.AlgorithmId
+                            ActivationId = if ($info.ActivationId) { $info.ActivationId.Trim('{', '}').ToLower() } else { '' }
+                            LabelId      = $labelId
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (-not $SkipPreVista) {
+        $preVistaMatches = @(Get-PreVistaProductMatch $GroupId $KeyId)
+        if ($preVistaMatches.Count -gt 0) {
+            $is2002 = $gId -ge 0x40
+
+            return New-Object PSObject -Property @{
+                Matches     = $preVistaMatches
+                Bink        = if ($is2002) { "Bink2002" } else { "Bink1998" }
+                ChannelId   = $channel
+                Sequence    = $seq
+                AlgorithmId = if ($is2002) { "msft:rm/algorithm/pkey/986" } else { "msft:rm/algorithm/pkey/980" }
+                LabelId     = $labelId
+            }
+        }
+    }
+
+    return New-Object PSObject -Property @{
+        LabelId = $labelId
+    }
+}
+
+function Write-ProductDetails($ProductDetails, $f, [string[]]$Exclude = @()) {
+
+    if (-not $ProductDetails) { return }
+
+    if ($ProductDetails.Matches) {
+        foreach ($m in $ProductDetails.Matches) {
+            Write-Color ($f -f "Product Match", $m) "BgGreen"
+        }
+        if ($ProductDetails.Bink -and ($Exclude -notcontains "Bink")) { Write-Output ($f -f "Bink", $ProductDetails.Bink) }
+        if ($null -ne $ProductDetails.ChannelId -and ($Exclude -notcontains "ChannelId")) { Write-Output ($f -f "Channel ID", ("{0} (0x{0:X})" -f $ProductDetails.ChannelId)) }
+        if ($null -ne $ProductDetails.Sequence -and ($Exclude -notcontains "Sequence")) { Write-Output ($f -f "Sequence", ("{0} (0x{0:X})" -f $ProductDetails.Sequence)) }
+        if ($ProductDetails.LabelId -and ($Exclude -notcontains "LabelId")) { Write-Output ($f -f "Label ID", $ProductDetails.LabelId) }
+        if ($ProductDetails.AlgorithmId -and ($Exclude -notcontains "AlgorithmId")) { Write-Output ($f -f "Algorithm ID", $ProductDetails.AlgorithmId) }
+    }
+    else {
+        if ($ProductDetails.Profile -and ($Exclude -notcontains "Profile")) { Write-Output ($f -f "Profile", $ProductDetails.Profile) }
+        if ($ProductDetails.Description -and ($Exclude -notcontains "Description")) { Write-Color ($f -f "Description", $ProductDetails.Description) "BgGreen" }
+        if ($ProductDetails.Edition -and ($Exclude -notcontains "Edition")) { Write-Output ($f -f "Edition", $ProductDetails.Edition) }
+        if ($ProductDetails.KeyType -and ($Exclude -notcontains "KeyType")) { Write-Output ($f -f "Key Type", $ProductDetails.KeyType) }
+        if ($ProductDetails.EULA -and ($Exclude -notcontains "EULA")) { Write-Output ($f -f "EULA", $ProductDetails.EULA) }
+        if ($ProductDetails.PartNumber -and ($Exclude -notcontains "PartNumber")) { Write-Output ($f -f "Part number", $ProductDetails.PartNumber) }
+        if ($ProductDetails.LabelId -and ($Exclude -notcontains "LabelId")) { Write-Output ($f -f "Label ID", $ProductDetails.LabelId) }
+        if ($ProductDetails.AlgorithmId -and ($Exclude -notcontains "AlgorithmId")) { Write-Output ($f -f "Algorithm ID", $ProductDetails.AlgorithmId) }
+        if ($ProductDetails.ActivationId -and ($Exclude -notcontains "ActivationId")) { Write-Output ($f -f "Activation ID", $ProductDetails.ActivationId) }
+    }
+}
+
+# ===============================================================================================================================
+# Script Execution Helpers
+# ===============================================================================================================================
+
+# Run a script with PassThru and return the result object.
+function Invoke-PassThruScript([string]$ScriptPath, [hashtable]$Params = @{}) {
+    $path = Join-Path (Split-Path -Parent $PSScriptRoot) $ScriptPath
+    if (-not (Test-Path $path)) {
+        if (Test-Path $ScriptPath) { $path = $ScriptPath } else { return $null }
+    }
+
+    & $path @Params -PassThru 2>$null | Where-Object { $_ -is [System.Management.Automation.PSCustomObject] }
+}
+
+# ===============================================================================================================================
+

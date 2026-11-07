@@ -44,7 +44,7 @@
     Requires pidgenx64.dll or pidgenx32.dll in the BIN directory.
     Requires Libs\DigitalProductId.psm1,
     KeyCertification.ps1, KeyActivation.ps1, MakCount.ps1, RedeemStatus.ps1, GetCID.ps1,
-    DecodePKey2009.ps1, DecodePKey980-PKey986.ps1 for optional features.
+    DecodePKey2009.ps1, DecodePKey980-PKey986.ps1, Ids\*.ps1 for features.
     Requires PKeyConfigsMap.json and PreVistaRanges.csv in the application root.
     Requires Libs\Common.psm1 for shared helper functions.
 
@@ -124,73 +124,11 @@ $Script:PidGenXNativeType = $global:PidGenXNativeType
 # Helper functions
 # ===============================================================================================================================
 
-function Write-ProductMatch($GroupId, $KeyId, $f, $scriptDir) {
-    # Look up Group ID + Key ID in PreVistaRanges.csv for product editions.
-    if ($null -eq $GroupId -or $null -eq $KeyId -or -not $global:PreVistaRanges) { return }
-
-    $editionMatches = @{}
-    foreach ($row in $global:PreVistaRanges) {
-        if (-not $row.BinkID_Dec -or [int]$row.BinkID_Dec -ne $GroupId) { continue }
-
-        $min = ([int64]$row.Channel_Min * 1000000) + [int64]$row.Sequence_Min
-        $max = ([int64]$row.Channel_Max * 1000000) + [int64]$row.Sequence_Max
-        
-        if ($KeyId -ge $min -and $KeyId -le $max) {
-            $ed = $row.Edition.Trim()
-            if (-not $editionMatches.ContainsKey($ed)) { $editionMatches[$ed] = @{ 'Licenses' = @(); 'Stages' = @() } }
-            
-            $lic = $row.License.Trim()
-            if ($lic -and $lic -ne "N/A" -and $editionMatches[$ed]['Licenses'] -notcontains $lic) { $editionMatches[$ed]['Licenses'] += $lic }
-            
-            $stg = $row.Stage.Trim()
-            if ($stg -and $stg -ne "N/A" -and $editionMatches[$ed]['Stages'] -notcontains $stg) { $editionMatches[$ed]['Stages'] += $stg }
-        }
-    }
-
-    if ($editionMatches.Count -gt 0) {
-        $sortedEditions = $editionMatches.Keys | Sort-Object
-        foreach ($ed in $sortedEditions) {
-            $tags = @()
-            $licenses = $editionMatches[$ed]['Licenses'] | Sort-Object
-            $stages = $editionMatches[$ed]['Stages'] | Sort-Object
-            
-            if ($licenses) { $tags += $licenses }
-            if ($stages) { $tags += $stages }
-            
-            $m = $ed
-            if ($tags.Count -gt 0) {
-                $m += " (" + ($tags -join ") (") + ")"
-            }
-            Write-Color ($f -f "Product Match", $m) "BgGreen"
-        }
-    }
-}
-
-# ===============================================================================================================================
-
-# Run a script with PassThru and return the result objects.
-function Invoke-PassThruScript([string]$ScriptPath, [hashtable]$Params) {
-    if (-not (Test-Path $ScriptPath)) { return @() }
-
-    $callParams = @{}
-    foreach ($key in $Params.Keys) {
-        $callParams[$key] = $Params[$key]
-    }
-    $callParams['PassThru'] = $true
-
-    return @(& $ScriptPath @callParams 2>$null)
-}
-
-# ===============================================================================================================================
-
 function Invoke-RedeemStatus($RedeemKey, $LogFolder, $f, $scriptDir) {
     # Run RedeemStatus.ps1 and show the redeem-key status.
-    $redeemScript = Join-Path $scriptDir "RedeemStatus.ps1"
     $params = @{ RedeemKey = $RedeemKey }
     if ($LogFolder) { $params['LogPath'] = $LogFolder }
-    $redeemOutput = Invoke-PassThruScript $redeemScript $params
-    if (-not $redeemOutput) { return }
-    $redeemObj = $redeemOutput[-1]
+    $redeemObj = Invoke-PassThruScript "RedeemStatus.ps1" $params
     if (-not $redeemObj -or -not $redeemObj.Status) { return }
 
     Write-Output ""
@@ -217,12 +155,9 @@ function Invoke-RedeemStatus($RedeemKey, $LogFolder, $f, $scriptDir) {
 
 function Invoke-KeyCertification($ProductKey, $ActConfigId, $LogFolder, $f, $scriptDir) {
     # Run KeyCertification.ps1 and display the result.
-    $certScript = Join-Path $scriptDir "KeyCertification.ps1"
     $params = @{ ProductKey = $ProductKey; ActConfigId = $ActConfigId }
     if ($LogFolder) { $params['LogPath'] = $LogFolder }
-    $certOutput = Invoke-PassThruScript $certScript $params
-    if (-not $certOutput) { return }
-    $certObj = $certOutput[-1]
+    $certObj = Invoke-PassThruScript "KeyCertification.ps1" $params
     if (-not $certObj -or -not $certObj.Status) { return }
     
     if ($certObj.Status -eq "Succeeded") {
@@ -243,12 +178,9 @@ function Invoke-KeyCertification($ProductKey, $ActConfigId, $LogFolder, $f, $scr
 
 function Invoke-KeyActivation($ProductKey, $ActConfigId, $LogFolder, $f, $scriptDir) {
     # Run KeyActivation.ps1 and display the result.
-    $actScript = Join-Path $scriptDir "KeyActivation.ps1"
     $params = @{ ProductKey = $ProductKey; ActConfigId = $ActConfigId }
     if ($LogFolder) { $params['LogPath'] = $LogFolder }
-    $actOutput = Invoke-PassThruScript $actScript $params
-    if (-not $actOutput) { return }
-    $actObj = $actOutput[-1]
+    $actObj = Invoke-PassThruScript "KeyActivation.ps1" $params
     if (-not $actObj -or -not $actObj.Status) { return }
     
     if ($actObj.Status -eq "Succeeded") {
@@ -269,12 +201,9 @@ function Invoke-KeyActivation($ProductKey, $ActConfigId, $LogFolder, $f, $script
 
 function Invoke-MakCount($AdvancedPid, $LogFolder, $f, $scriptDir) {
     # Run MakCount.ps1 and show the remaining activation count.
-    $makScript = Join-Path $scriptDir "MakCount.ps1"
     $params = @{ AdvancedPid = $AdvancedPid }
     if ($LogFolder) { $params['LogPath'] = $LogFolder }
-    $makOutput = Invoke-PassThruScript $makScript $params
-    if (-not $makOutput) { return }
-    $makObj = $makOutput[-1]
+    $makObj = Invoke-PassThruScript "MakCount.ps1" $params
     if (-not $makObj -or -not $makObj.Result) { return }
     
     if ($makObj.Result -eq "SUCCESS") {
@@ -295,7 +224,6 @@ function Invoke-MakCount($AdvancedPid, $LogFolder, $f, $scriptDir) {
 
 function Invoke-GetConfirmationId($IID, $LogFolder, $f, $scriptDir) {
     # Run GetCID.ps1 to get a CID for this IID.
-    $getCidScript = Join-Path $scriptDir "GetCID.ps1"
     $params = @{ InstallationId = $IID }
     if ($LogFolder) {
         $params['ExportLogs'] = $true
@@ -303,10 +231,7 @@ function Invoke-GetConfirmationId($IID, $LogFolder, $f, $scriptDir) {
         $params['ExactLogPath'] = $true
         $params['NoOpenFolder'] = $true
     }
-    $cidOutput = Invoke-PassThruScript $getCidScript $params
-    
-    if (-not $cidOutput) { return }
-    $cidObj = $cidOutput[-1]
+    $cidObj = Invoke-PassThruScript "GetCID.ps1" $params
     
     if ($cidObj) {
         if ($cidObj.VisualResult) {
@@ -357,45 +282,6 @@ function Read-PidGenXPKey2005Security {
 
 # ===============================================================================================================================
 
-# ActConfig ID helpers
-
-function Set-ActConfigBits($Data, $Offset, $Length, $Value) {
-    [uint64]$valueMask = 1
-    for ($bit = 0; $bit -lt $Length; $bit++) {
-        if (($Value -band $valueMask) -ne 0) {
-            $byteIndex = [int][Math]::Floor(($Offset + $bit) / 8)
-            $bitIndex = ($Offset + $bit) % 8
-            $Data[$byteIndex] = [byte]($Data[$byteIndex] -bor [int][Math]::Pow(2, $bitIndex))
-        }
-        $valueMask = $valueMask * 2
-    }
-}
-
-function Get-PKey2005ActConfigId($SkuId, $Upgrade, $Serial, $Security) {
-    if ($null -eq $Security -or -not $SkuId) { return "" }
-
-    $data = New-Object byte[] 12
-    Set-ActConfigBits $data 0 1 ([uint64]$Upgrade)
-    Set-ActConfigBits $data 1 30 ([uint64][int64]$Serial)
-    Set-ActConfigBits $data 31 20 ([uint64][int64]$Security)
-
-    return "msft2005:{0}&{1}" -f $SkuId, [Convert]::ToBase64String($data)
-}
-
-function Get-PKey2009ActConfigId($SkuId, $Upgrade, $Serial, $Group, $Security) {
-    if ($null -eq $Security -or -not $SkuId) { return "" }
-
-    $data = New-Object byte[] 13
-    Set-ActConfigBits $data 0 1 ([uint64]$Upgrade)
-    Set-ActConfigBits $data 1 30 ([uint64][int64]$Serial)
-    Set-ActConfigBits $data 31 20 ([uint64][int64]$Group)
-    Set-ActConfigBits $data 51 53 ([uint64][int64]$Security)
-
-    return "msft2009:{0}&{1}" -f $SkuId, [Convert]::ToBase64String($data)
-}
-
-# ===============================================================================================================================
-
 function Invoke-GetInstallationId($Key, $Config) {
     # Get IID from GetPKeyData for this key and config.
     $IID = ""
@@ -411,21 +297,6 @@ function Invoke-GetInstallationId($Key, $Config) {
         return $IID
     }
     return ""
-}
-
-# ===============================================================================================================================
-
-function Add-Mod7CheckDigit {
-    param([long]$Value)
-
-    $sum = 0
-    $temp = $Value
-    while ($temp -gt 0) {
-        $sum += [int]($temp % 10)
-        $temp = [Math]::Floor($temp / 10)
-    }
-
-    return ($Value * 10) + (7 - ($sum % 7))
 }
 
 # ===============================================================================================================================
@@ -459,90 +330,6 @@ function Get-LicenseType {
             default { return 0 }
         }
     }
-}
-
-# ===============================================================================================================================
-
-function Get-ProductId {
-    param(
-        [Parameter(Mandatory = $true)][string]$Algorithm,
-        [Parameter(Mandatory = $true)][int]$GroupId,
-        [Parameter(Mandatory = $true)][long]$Serial,
-        [Parameter(Mandatory = $true)][bool]$IsOem,
-        [Parameter(Mandatory = $true)][bool]$IsUpgrade
-    )
-
-    $random = [int]([Math]::Abs([Environment]::TickCount / 10) % 1000)
-
-    if ($Algorithm -match "2009") {
-        $groupHigh = [int]([Math]::Floor($GroupId / 10) % 100000)
-        $groupLow = [int]($GroupId % 10)
-        $serialMid = [int]([Math]::Floor($Serial / 100000) % 10000)
-        $serialLow = [int]($Serial % 100000)
-        $tag = if ($IsUpgrade) { "AB" } else { "AA" }
-
-        if ($IsOem) {
-            return "{0:D5}-{1:D1}{2:D4}-{3:D5}-{4}OEM" -f $groupHigh, $groupLow, $serialMid, $serialLow, $tag
-        }
-        else {
-            return "{0:D5}-{1:D1}{2:D4}-{3:D5}-{4}{5:D3}" -f $groupHigh, $groupLow, $serialMid, $serialLow, $tag, $random
-        }
-    }
-    else {
-        $mpc = "00000"
-        $groupPart = [int]([Math]::Floor($GroupId / 2) % 100)
-        $channelId = [int]([Math]::Floor($Serial / 1000000) % 1000)
-        $sequence = [int]($Serial % 1000000)
-
-        if ($IsOem) {
-            $seqHighDigit = [int]([Math]::Floor($sequence / 100000) % 10)
-            $baseNumber = (($groupPart * 1000 + $channelId) * 10) + $seqHighDigit
-            $baseWithCheck = Add-Mod7CheckDigit -Value $baseNumber
-            $sequenceLow = [int]($sequence % 100000)
-
-            return "{0}-OEM-{1:D7}-{2:D5}" -f $mpc, $baseWithCheck, $sequenceLow
-        }
-        else {
-            $seqWithCheck = Add-Mod7CheckDigit -Value $sequence
-            $groupWithRandom = [int]($groupPart * 1000 + $random)
-
-            return "{0}-{1:D3}-{2:D7}-{3:D5}" -f $mpc, $channelId, $seqWithCheck, $groupWithRandom
-        }
-    }
-}
-
-# ===============================================================================================================================
-
-function Get-ExtendedProductId {
-    param(
-        [Parameter(Mandatory = $true)][int]$GroupId,
-        [Parameter(Mandatory = $true)][long]$Serial,
-        [Parameter(Mandatory = $true)][int]$LicenseType
-    )
-
-    $mpc = "00000"
-    $channelId = [int]([Math]::Floor($Serial / 1000000) % 1000)
-    $sequence = [int]($Serial % 1000000)
-    $groupPart = [int]($GroupId % 100000)
-    $buildNumber = [Environment]::OSVersion.Version.Build
-    $currentDate = Get-Date
-
-    $langId = try { [System.Globalization.CultureInfo]::InstalledUICulture.LCID } catch { 1033 }
-
-    $dayOfYear = [int]$currentDate.DayOfYear
-    $year = [int]$currentDate.Year
-
-    return "{0}-{1:D5}-{2:D3}-{3:D6}-{4:D2}-{5:D4}-{6:D4}.0000-{7:D3}{8:D4}" -f (
-        $mpc,
-        $groupPart,
-        $channelId,
-        $sequence,
-        $LicenseType,
-        $langId,
-        $buildNumber,
-        $dayOfYear,
-        $year
-    )
 }
 
 # ===============================================================================================================================
@@ -641,21 +428,14 @@ if ($configTargets.Count -gt 0) {
 # Decode PKey2009 key
 
 if ($ProductKey -match 'N' -and $ProductKey -notmatch 'Z') {
-    $decodeScript = Join-Path $scriptDir "DecodePKey2009.ps1"
-    if (Test-Path $decodeScript) {
-        $decodeOutput = @(& $decodeScript -Key $ProductKey -PassThru 2>$null)
-        if ($decodeOutput) {
-            # Last item in the array is the data object
-            $dataObj = $decodeOutput[-1]
-            if ($dataObj -and $dataObj.ChecksumValid) {
-                $groupId = $dataObj.Group
-                $keyId = $dataObj.Serial
-                $isUpgrade = $dataObj.Upgrade
-                $algoKey = 'PKey2009'
-                $pkey2009DecodedSecurity = $dataObj.Security
-                $pkey2009DecodedExtra = $dataObj.Extra
-            }
-        }
+    $dataObj = Invoke-PassThruScript "DecodePKey2009.ps1" @{ Key = $ProductKey }
+    if ($dataObj -and $dataObj.ChecksumValid) {
+        $groupId = $dataObj.Group
+        $keyId = $dataObj.Serial
+        $isUpgrade = $dataObj.Upgrade
+        $algoKey = 'PKey2009'
+        $pkey2009DecodedSecurity = $dataObj.Security
+        $pkey2009DecodedExtra = $dataObj.Extra
     }
 }
 
@@ -760,17 +540,11 @@ if ($algorithmId -match "980|986") {
     $channel = [int64][Math]::Floor($keyId / 1000000)
     $seq = $keyId % 1000000
 
-    $decode980Script = Join-Path $scriptDir "DecodePKey980-PKey986.ps1"
-    if (Test-Path $decode980Script) {
-        $decodeOutput = @(& $decode980Script -productKey $ProductKey -binkIdHex ("0x{0:X}" -f $groupId) -PassThru 2>$null)
-        if ($decodeOutput) {
-            $dataObj = $decodeOutput[-1]
-            if ($dataObj) {
-                $decodeHash = $dataObj.Hash
-                $decodeAuth = $dataObj.Auth
-                $decodeSig = $dataObj.Signature
-            }
-        }
+    $dataObj = Invoke-PassThruScript "DecodePKey980-PKey986.ps1" @{ productKey = $ProductKey; binkIdHex = ("0x{0:X}" -f $groupId) }
+    if ($dataObj) {
+        $decodeHash = $dataObj.Hash
+        $decodeAuth = $dataObj.Auth
+        $decodeSig = $dataObj.Signature
     }
 }
 
@@ -779,13 +553,15 @@ if ($algorithmId -match "980|986") {
 # PKey2005/2009 ActConfig ID and Installation ID
 
 if ($algorithmId -match "2005|2009") {
-    if ($algorithmId -match "2005") {
+    $actParams = if ($algorithmId -match "2005") {
         $pkey2005Security = Read-PidGenXPKey2005Security
-        $pkActConfigId = Get-PKey2005ActConfigId $activationId $isUpgrade $keyId $pkey2005Security
+        @{ Encode = $true; Algorithm = "PKey2005"; ActId = $activationId; Upgrade = $isUpgrade; Serial = $keyId; Security = $pkey2005Security }
     }
-    elseif ($algorithmId -match "2009") {
-        $pkActConfigId = Get-PKey2009ActConfigId $activationId $isUpgrade $keyId $groupId $pkey2009DecodedSecurity
+    else {
+        @{ Encode = $true; Algorithm = "PKey2009"; ActId = $activationId; Upgrade = $isUpgrade; Serial = $keyId; Group = $groupId; Security = $pkey2009DecodedSecurity }
     }
+    $actObj = Invoke-PassThruScript "Ids\ActConfigId.ps1" $actParams
+    if ($actObj -and $actObj.ActConfigId) { $pkActConfigId = $actObj.ActConfigId }
     if ($GetInstallationId -or $GetConfirmationId) {
         $iid = Invoke-GetInstallationId $ProductKey $matchedConfigPath
     }
@@ -793,16 +569,25 @@ if ($algorithmId -match "2005|2009") {
 
 # ===============================================================================================================================
 
-# Calculate License Type, Product ID, and Extended PID
+# Calculate Label ID, License Type, Product ID, and Extended PID
 
+# Label ID
+if ($null -ne $groupId -and $null -ne $keyId) {
+    $labelId = "{0:00000}-{1:000-000-000}" -f [int]$groupId, [int64]$keyId
+}
+
+# License Type, Extended PID, and Product ID
 if ($keyType -or ($algorithmId -match "980|986")) {
     $lt = Get-LicenseType -KeyType $keyType -IsUpgrade $isUpgrade -AlgorithmId $algorithmId -Serial $keyId -GroupId $groupId
     $isOem = ($lt -eq 2)
-    $advPid = Get-ExtendedProductId -GroupId $groupId -Serial $keyId -LicenseType $lt
-    if ($advPid -and $advPid.Length -ge 22) {
-        $labelId = $advPid.Substring(6, 13) + "-" + $advPid.Substring(19, 3)
-    }
-    $productId = Get-ProductId -Algorithm $algorithmId -GroupId $groupId -Serial $keyId -IsOem $isOem -IsUpgrade $isUpgrade
+
+    # Extended PID
+    $epidObj = Invoke-PassThruScript "Ids\ExtendedProductId.ps1" @{ Encode = $true; GroupId = $groupId; Serial = $keyId; LicenseType = $lt }
+    if ($epidObj) { $advPid = $epidObj.ExtendedProductId }
+
+    # Product ID
+    $prodObj = Invoke-PassThruScript "Ids\ProductId.ps1" @{ Encode = $true; Algorithm = $algorithmId; GroupId = $groupId; Serial = $keyId; IsOem = $isOem; IsUpgrade = $isUpgrade }
+    if ($prodObj) { $productId = $prodObj.ProductId }
 }
 
 # ===============================================================================================================================
@@ -817,7 +602,10 @@ if ("$isValid" -eq "false") { Write-Color ($f -f "Result", "Blocked in PKeyConfi
 # Summary Block
 
 if ($algorithmId -match "980|986" -and -not $description) {
-    Write-ProductMatch $groupId $keyId $f $scriptDir
+    $productMatches = @(Get-PreVistaProductMatch -GroupId $groupId -KeyId $keyId)
+    foreach ($m in $productMatches) {
+        Write-Color ($f -f "Product Match", $m) "BgGreen"
+    }
 }
 else {
     if ($description) { Write-Color ($f -f "Description", $description) "BgGreen" }

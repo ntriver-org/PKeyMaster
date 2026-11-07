@@ -213,74 +213,39 @@ function New-VisualApiDpopToken($Url, $Method) {
 
 # ===============================================================================================================================
 
-function Get-ProductNameFromPid($InstallationId, $ProductId) {
-    if (-not $InstallationId -or -not $ProductId) { return $null }
+function Get-ProductNameFromPid($IID, $ProductId, $CID = $null) {
+    if (-not $ProductId) { return $null }
 
-    # Only 63-digit IIDs correspond to PKey2009 keys
-    $cleanIid = $InstallationId -replace '\D', ''
-    if ($cleanIid.Length -ne 63) { return $null }
+    $pattern = if ($IID -and $IID.Length -eq 63) { '2009' }
+    elseif ($CID -and $CID.Length -eq 48) { '2005' }
+    elseif ($CID) { '980|986' }
+    else { '.*' }
 
-    # Product ID for PKey2009 format: XXXXX-XXXXX-XXXXX-XXXXX
-    if ($ProductId -notmatch '^\d{5}-\d{5}-\d{5}-') { return $null }
-
-    $parts = $ProductId -split '-'
-    if ($parts.Count -lt 3) { return $null }
-
-    $groupId = ([int]$parts[0] * 10) + [int]($parts[1].Substring(0, 1))
-    $serialMid = [int]($parts[1].Substring(1, 4))
-    $serialLow = [int]$parts[2]
-    $keyId = ([long]$serialMid * 100000) + [long]$serialLow
-
-    if (-not $global:PKeyConfigsMap) { return $null }
-
-    $algoKey = "PKey2009"
-    $gStr = [string]$groupId
-    $pkeyConfigsDir = Join-Path (Split-Path -Parent $scriptDir) "PKeyConfigs"
-    $matchedConfigPath = $null
-
-    $configsMap = @($global:PKeyConfigsMap | Where-Object { $_.Profile -notmatch "custom" })
-    foreach ($entry in $configsMap) {
-        if ($entry.Algorithms -and $entry.Algorithms.ContainsKey($algoKey)) {
-            $algoGroups = $entry.Algorithms[$algoKey]
-            if ($algoGroups -and $algoGroups.ContainsKey($gStr)) {
-                foreach ($range in $algoGroups[$gStr]) {
-                    if ($keyId -ge $range[0] -and $keyId -le $range[1]) {
-                        $matchedConfigPath = Join-Path $pkeyConfigsDir $entry.Path.TrimStart('\')
-                        break
-                    }
-                }
-            }
-        }
-        if ($matchedConfigPath) { break }
-    }
-
-    if ($matchedConfigPath -and (Test-Path $matchedConfigPath)) {
-        $info = Get-PKeyConfigInfo -FilePath $matchedConfigPath -GroupId $groupId -KeyId $keyId
-        if ($info -and $info.Description -and $info.Description -ne "CustomMade") {
-            return $info.Description
+    $candidates = @(Invoke-PassThruScript "Ids\ProductId.ps1" @{ Decode = $true; ProductId = $ProductId; GetProductDetails = $true })
+    foreach ($c in $candidates) {
+        if ($c.Algorithm -match $pattern -and $c.ProductDetails) {
+            if ($c.ProductDetails.Description) { return $c.ProductDetails.Description }
+            if ($c.ProductDetails.Matches) { return ($c.ProductDetails.Matches -join ", ") }
         }
     }
-
-    return $null
 }
 
 # ===============================================================================================================================
 # Core API function
 # ===============================================================================================================================
 
-function Invoke-VisualApiRequest($InstallationId) {
+function Invoke-VisualApiRequest($cleanIid) {
     # Send IID to VisualSupport API, pull CID from JSON.
     $out = New-ResponseObject
 
-    $cleanIID = $InstallationId -replace '\D', ''
-    if ($cleanIID.Length -ne 50 -and $cleanIID.Length -ne 54 -and $cleanIID.Length -ne 59 -and $cleanIID.Length -ne 63) {
-        $out.ErrorMessage = "Invalid IID length ($($cleanIID.Length)). Must be 50, 54, 59, or 63 digits."
+    if ($cleanIid.Length -ne 50 -and $cleanIid.Length -ne 54 -and $cleanIid.Length -ne 59 -and $cleanIid.Length -ne 63) {
+        $out.ErrorMessage = "Invalid IID length ($($cleanIid.Length)). Must be 50, 54, 59, or 63 digits."
         return $out
     }
 
     $url = "https://visualsupport.microsoft.com/api/productActivation/validateIID"
-    $numDigits = [int]($cleanIID.Length / 9)
-    $body = '{"IID":"' + $cleanIID + '","ProductType":"windows","productGroup":"Windows","productName":"Windows 11","numberOfDigits":' + $numDigits + ',"Country":"USA","Region":"NOAM","InstalledDevices":1,"OverrideStatusCode":"MUL","InitialReasonCode":"45164"}'
+    $numDigits = [int]($cleanIid.Length / 9)
+    $body = '{"IID":"' + $cleanIid + '","ProductType":"windows","productGroup":"Windows","productName":"Windows 11","numberOfDigits":' + $numDigits + ',"Country":"USA","Region":"NOAM","InstalledDevices":1,"OverrideStatusCode":"MUL","InitialReasonCode":"45164"}'
     $out.RequestFull = $body
 
     # Fetch a live Bearer access token
@@ -332,18 +297,21 @@ function Invoke-VisualApiRequest($InstallationId) {
             $out.ProductId = $productId.Trim()
         }
 
-        # Resolve exact Product Name (Description) from PKeyConfig for PKey2009 (63-digit IID)
+        $cid = [string]$json["cid"]
+        if ($cid -and $cid.Trim()) {
+            $out.Success = $true
+            $out.CID = $cid.Trim()
+        }
+
+        # Resolve exact Product Name (Description) via ProductId.ps1
         if ($out.ProductId) {
-            $resolvedDesc = Get-ProductNameFromPid $InstallationId $out.ProductId
+            $resolvedDesc = Get-ProductNameFromPid $cleanIid $out.ProductId $out.CID
             if ($resolvedDesc) {
                 $out.ProductName = $resolvedDesc
             }
         }
 
-        $cid = $json["cid"]
-        if ($cid) {
-            $out.Success = $true
-            $out.CID = $cid
+        if ($out.CID) {
             return $out
         }
         
@@ -370,12 +338,14 @@ function Invoke-VisualApiRequest($InstallationId) {
 # Main execution
 # ===============================================================================================================================
 
+$cleanIid = if ($InstallationId) { $InstallationId -replace '\D', '' } else { "" }
+
 if (-not (Get-Command Invoke-PostTextRequest -ErrorAction SilentlyContinue)) {
     $res = New-ResponseObject
     $res.ErrorMessage = "Network module not loaded"
 }
 else {
-    $res = Invoke-VisualApiRequest $InstallationId
+    $res = Invoke-VisualApiRequest $cleanIid
 }
 
 if (-not $res.ErrorCode) { $res.ErrorCode = "N/A" }
