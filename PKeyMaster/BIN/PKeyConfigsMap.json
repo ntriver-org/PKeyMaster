@@ -1,7 +1,7 @@
 [
 	{
-		"Profile": "Custom - PKey980-986 (Windows 98 to XP - Office 2000 to 2007 - etc)",
-		"Path": "Custom\\Custom - PKey980-986 (Windows 98 to XP - Office 2000 to 2007 - etc)\\custom_pkeyconfig_980_986.xrm-ms",
+		"Profile": "Custom PKey980-986 (Windows 98 to XP - Office 2000 to 2007 - etc)",
+		"Path": "Custom\\Custom PKey980-986 (Windows 98 to XP - Office 2000 to 2007 - etc)\\custom_pkeyconfig_980_986.xrm-ms",
 		"Algorithms": {
 			"PKey2009": {},
 			"PKey2005": {},
@@ -107,8 +107,8 @@
 		}
 	},
 	{
-		"Profile": "Custom - PKey2005",
-		"Path": "Custom\\Custom - PKey2005\\custom_pkeyconfig_2005.xrm-ms",
+		"Profile": "Custom PKey2005",
+		"Path": "Custom\\Custom PKey2005\\custom_pkeyconfig_2005.xrm-ms",
 		"Algorithms": {
 			"PKey2009": {},
 			"PKey2005": {

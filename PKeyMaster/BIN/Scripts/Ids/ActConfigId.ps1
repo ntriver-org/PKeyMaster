@@ -205,7 +205,7 @@ else {
     }
 }
 
-$productDetails = if ($GetProductDetails -and $null -ne $Group) { Get-ProductDetails -GroupId $Group -KeyId $Serial -SkipPreVista } else { $null }
+$productDetails = if ($GetProductDetails -and $null -ne $Group) { Get-ProductDetails -GroupId $Group -KeyId $Serial -Algorithm $Algorithm } else { $null }
 
 # ===============================================================================================================================
 # Console output

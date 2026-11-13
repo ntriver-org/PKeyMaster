@@ -347,23 +347,32 @@ function Get-PKeyConfigInfo {
     }
     else {
         $gStr = [string]$GroupId
-        foreach ($cfg in @($xml.SelectNodes("//*[local-name()='Configuration']"))) {
-            if ((Get-NodeText $cfg 'RefGroupId') -ne $gStr) { continue }
-            $needle = (Get-NodeText $cfg 'ActConfigId').Trim().Trim('{', '}').ToLower()
+        $cfgs = @($xml.SelectNodes("//*[local-name()='Configuration'][normalize-space(*[local-name()='RefGroupId'])='$gStr']"))
+        if ($cfgs.Count -eq 0) { return $null }
 
-            foreach ($kr in @($xml.SelectNodes("//*[local-name()='KeyRange']"))) {
-                if ((Get-NodeText $kr 'RefActConfigId').Trim().Trim('{', '}').ToLower() -eq $needle) {
-                    $start = [int64](Get-NodeText $kr 'Start')
-                    $end = [int64](Get-NodeText $kr 'End')
-                    if ($KeyId -ge $start -and $KeyId -le $end) {
-                        $matchedCfg = $cfg
-                        $eula = Get-NodeText $kr 'EulaType'
-                        $partNum = Get-NodeText $kr 'PartNumber'
-                        $isValid = Get-NodeText $kr 'IsValid'
-                        # Revoked keys take precedence in overlapping ranges; stop immediately so a broader 'true' cannot override it.
-                        if ($isValid -eq 'false') { break }
-                    }
-                }
+        $krs = @($xml.SelectNodes("//*[local-name()='KeyRange'][*[local-name()='Start']<=$KeyId and *[local-name()='End']>=$KeyId]"))
+        if ($krs.Count -eq 0) { return $null }
+
+        $rangesByAct = @{}
+        foreach ($kr in $krs) {
+            $refAct = (Get-NodeText $kr 'RefActConfigId').Trim('{', '}').ToLower()
+            if (-not $rangesByAct.ContainsKey($refAct)) {
+                $rangesByAct[$refAct] = New-Object System.Collections.ArrayList
+            }
+            [void]$rangesByAct[$refAct].Add($kr)
+        }
+
+        foreach ($cfg in $cfgs) {
+            $actId = (Get-NodeText $cfg 'ActConfigId').Trim('{', '}').ToLower()
+            if (-not $rangesByAct.ContainsKey($actId)) { continue }
+
+            foreach ($kr in $rangesByAct[$actId]) {
+                $matchedCfg = $cfg
+                $eula = Get-NodeText $kr 'EulaType'
+                $partNum = Get-NodeText $kr 'PartNumber'
+                $isValid = Get-NodeText $kr 'IsValid'
+                # Revoked keys take precedence in overlapping ranges; stop immediately so a broader 'true' cannot override it.
+                if ($isValid -eq 'false') { break }
             }
             if ($matchedCfg) { break }
         }
@@ -374,12 +383,8 @@ function Get-PKeyConfigInfo {
     $refGroupId = Get-NodeText $matchedCfg 'RefGroupId'
     $algId = ''
     if ($refGroupId) {
-        foreach ($pk in @($xml.SelectNodes("//*[local-name()='PublicKey']"))) {
-            if ((Get-NodeText $pk 'GroupId') -eq $refGroupId) {
-                $algId = Get-NodeText $pk 'AlgorithmId'
-                break
-            }
-        }
+        $pkNode = $xml.SelectSingleNode("//*[local-name()='PublicKey'][normalize-space(*[local-name()='GroupId'])='$refGroupId']/*[local-name()='AlgorithmId']")
+        if ($pkNode) { $algId = $pkNode.InnerText.Trim() }
     }
 
     return New-Object PSObject -Property @{
@@ -391,6 +396,7 @@ function Get-PKeyConfigInfo {
         AlgorithmId  = $algId
         ActivationId = Get-NodeText $matchedCfg 'ActConfigId'
         IsValid      = $isValid
+        IsRandomized = Get-NodeText $matchedCfg 'IsRandomized'
     }
 }
 
@@ -472,104 +478,203 @@ function Get-PreVistaProductMatch($GroupId, $KeyId) {
 }
 
 # ===============================================================================================================================
-# Product Details Lookup & Display
+# PreVista Blocked Key Range & Randomization Query
 # ===============================================================================================================================
 
-# Searches PKeyConfigsMap.json (falling back to PreVistaRanges.csv) for product details using Group ID and Key ID.
+# Checks whether a pre-Vista key-range falls into a blocked/excluded or a randomized PID range.
 
-function Get-ProductDetails($GroupId, $KeyId, [switch]$SkipPreVista, [switch]$SkipVistaAndLater) {
+function Get-PreVistaKeyRangeStatus($GroupId, $KeyId, $ProductDetails = @()) {
+
+    if ($null -eq $GroupId -or $null -eq $KeyId) { return @($false, $false) }
+
+    $gId = [int]$GroupId
+    $kId = [int64]$KeyId
+    $channel = [int64][Math]::Floor($kId / 1000000)
+
+    # Randomization Check
+    $isRandomized = (@(270, 335, 980, 981, 982, 983) -contains $channel) -or ($kId -eq 460000000)
+
+    # Blocked / Excluded Check
+    $isBlocked = ($ProductDetails -match "Windows XP") -and (
+        ($gId -eq 46 -and ($kId -eq 640200176 -or $kId -eq 640000035)) -or # Mexico VL & Intel VL Key (devils0wn)
+        (($gId -eq 42 -or $gId -eq 44) -and ($kId -ge 2000000 -and $kId -le 2999999)) -or # XP Home & Pro Beta (Retail)
+        (($gId -eq 43 -or $gId -eq 45) -and ($kId -ge 3000000 -and $kId -le 3999999))     # XP Home & Pro Beta (OEM)
+    )
+
+    return @($isBlocked, $isRandomized)
+}
+
+# ===============================================================================================================================
+# Product Details Lookup
+# ===============================================================================================================================
+
+# Searches PreVistaRanges.csv and PKeyConfigsMap for product details using Group ID and Key ID (or a specific PKeyConfig path).
+
+function Get-ProductDetails {
+    param(
+        $GroupId,
+        $KeyId,
+        [string]$Algorithm = "",
+        [string]$PKeyConfigPath = "",
+        [string]$ProfileName = "",
+        [switch]$IncludeCustom
+    )
+
     if ($null -eq $GroupId -or $null -eq $KeyId) { return $null }
 
     $gId = [int]$GroupId
     $kId = [int64]$KeyId
     $channel = [int64][Math]::Floor($kId / 1000000)
     $seq = [int64]($kId % 1000000)
-    $labelId = "{0:D5}-{1:D3}-{2:D3}-{3:D3}" -f $gId, $channel, [int]([Math]::Floor($seq / 1000)), [int]($seq % 1000)
+    $labelId = "{0:00000}-{1:000-000-000}" -f ($gId % 100000), $kId
+    $algoTag = if ($Algorithm -match "2009|2005|986|980") { $Matches[0] } else { "" }
 
-    $pkeyConfigsDir = Join-Path $PSScriptRoot "..\..\PKeyConfigs"
-    if (-not $SkipVistaAndLater -and $global:PKeyConfigsMap -and (Test-Path $pkeyConfigsDir)) {
-        $gStr = [string]$GroupId
-
-        foreach ($entry in ($global:PKeyConfigsMap | Where-Object { $_.Profile -notmatch "custom" })) {
-            if (-not $entry.Algorithms) { continue }
-            $matched = $false
-            foreach ($algoGroups in $entry.Algorithms.Values) {
-                if ($algoGroups -and $algoGroups.ContainsKey($gStr)) {
-                    foreach ($range in $algoGroups[$gStr]) {
-                        if ($kId -ge $range[0] -and $kId -le $range[1]) { $matched = $true; break }
-                    }
-                }
-                if ($matched) { break }
-            }
-
-            if ($matched) {
-                $cfgPath = Join-Path $pkeyConfigsDir $entry.Path.TrimStart('\')
-                if (Test-Path $cfgPath) {
-                    $info = Get-PKeyConfigInfo -FilePath $cfgPath -GroupId $GroupId -KeyId $KeyId
-                    if ($info -and $info.Description -and $info.Description -ne "CustomMade") {
-                        return New-Object PSObject -Property @{
-                            Profile      = $entry.Profile
-                            Description  = $info.Description
-                            Edition      = $info.Edition
-                            KeyType      = $info.KeyType
-                            EULA         = $info.EULA
-                            PartNumber   = $info.PartNumber
-                            AlgorithmId  = $info.AlgorithmId
-                            ActivationId = if ($info.ActivationId) { $info.ActivationId.Trim('{', '}').ToLower() } else { '' }
-                            LabelId      = $labelId
-                        }
-                    }
-                }
-            }
+    $createPreVistaObj = {
+        param($productMatches = @(), $profileName = $null, $configPath = $null, $algoId = $null)
+        $isBlocked, $isRandomized = Get-PreVistaKeyRangeStatus -GroupId $gId -KeyId $kId -ProductDetails $productMatches
+        $is2002 = if ($algoId) { $algoId -match "986" } else { $gId -ge 0x40 }
+        return New-Object PSObject -Property @{
+            Profile      = $profileName
+            ConfigPath   = $configPath
+            Matches      = $productMatches
+            Bink         = if ($is2002) { "Bink2002" } else { "Bink1998" }
+            ChannelId    = $channel
+            Sequence     = $seq
+            AlgorithmId  = if ($is2002) { "msft:rm/algorithm/pkey/986" } else { "msft:rm/algorithm/pkey/980" }
+            LabelId      = $labelId
+            IsValid      = if ($isBlocked) { "false" } else { "true" }
+            IsRandomized = if ($isRandomized) { "true" } else { "false" }
         }
     }
 
-    if (-not $SkipPreVista) {
-        $preVistaMatches = @(Get-PreVistaProductMatch $GroupId $KeyId)
-        if ($preVistaMatches.Count -gt 0) {
-            $is2002 = $gId -ge 0x40
+    $buildPKeyConfigObj = {
+        param($info, [string]$cfgPath, $profileName, [bool]$allowCustom, [bool]$checkCsv)
+        if (-not $info -or -not $info.Description) { return $null }
+        if ($algoTag -and $info.AlgorithmId -notmatch $algoTag) { return $null }
 
+        if ($info.Description -eq "CustomMade") {
+            if (-not $allowCustom) { return $null }
+            if ($info.AlgorithmId -match "980|986") {
+                $csv = if ($checkCsv) { @(Get-PreVistaProductMatch $gId $kId) } else { @() }
+                return (& $createPreVistaObj $csv $profileName $cfgPath $info.AlgorithmId)
+            }
             return New-Object PSObject -Property @{
-                Matches     = $preVistaMatches
-                Bink        = if ($is2002) { "Bink2002" } else { "Bink1998" }
-                ChannelId   = $channel
-                Sequence    = $seq
-                AlgorithmId = if ($is2002) { "msft:rm/algorithm/pkey/986" } else { "msft:rm/algorithm/pkey/980" }
+                Profile     = $profileName
+                ConfigPath  = $cfgPath
+                AlgorithmId = $info.AlgorithmId
                 LabelId     = $labelId
             }
         }
+
+        $isPreVistaAlgo = $info.AlgorithmId -match "980|986"
+        return New-Object PSObject -Property @{
+            Profile      = $profileName
+            ConfigPath   = $cfgPath
+            Description  = $info.Description
+            Edition      = $info.Edition
+            KeyType      = $info.KeyType
+            EULA         = $info.EULA
+            Bink         = if ($isPreVistaAlgo) { if ($info.AlgorithmId -match "980") { "Bink1998" } else { "Bink2002" } } else { $null }
+            ChannelId    = if ($isPreVistaAlgo) { $channel } else { $null }
+            Sequence     = if ($isPreVistaAlgo) { $seq } else { $null }
+            PartNumber   = $info.PartNumber
+            AlgorithmId  = $info.AlgorithmId
+            ActivationId = if ($info.ActivationId) { $info.ActivationId.Trim('{', '}').ToLower() } else { '' }
+            LabelId      = $labelId
+            IsValid      = $info.IsValid
+            IsRandomized = $info.IsRandomized
+        }
     }
 
+    if ($PKeyConfigPath) {
+        $info = Get-PKeyConfigInfo -FilePath $PKeyConfigPath -GroupId $gId -KeyId $kId
+        $cfgResult = & $buildPKeyConfigObj $info $PKeyConfigPath $ProfileName $true $true
+        if ($cfgResult) { return $cfgResult }
+        return New-Object PSObject -Property @{ LabelId = $labelId }
+    }
+
+    # 1. Search PreVistaRanges.csv first for stable pre-Vista products (BinkID_Dec 0..137)
+    if ($gId -le 137 -and ($algoTag -notmatch "2005|2009")) {
+        $csvMatches = @(Get-PreVistaProductMatch $gId $kId)
+        if ($csvMatches.Count -gt 0) {
+            return (& $createPreVistaObj $csvMatches)
+        }
+    }
+
+    # 2. Fallback to PKeyConfigs (for post-Vista, beta Longhorn, or optional custom fallback)
+    $pkeyConfigsDir = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\..\PKeyConfigs"))
+    if ($global:PKeyConfigsMap -and (Test-Path -LiteralPath $pkeyConfigsDir)) {
+        $gStr = [string]$gId
+
+        # Search standard configs first, then custom configs if IncludeCustom is set
+        $passes = if ($IncludeCustom) { $false, $true } else { @($false) }
+        foreach ($isCustomPass in $passes) {
+            foreach ($entry in $global:PKeyConfigsMap) {
+                if (-not $entry.Algorithms -or ($entry.Profile -match "custom") -ne $isCustomPass) { continue }
+
+                $matched = $false
+                foreach ($algoKey in $entry.Algorithms.Keys) {
+                    if ($algoTag -and $algoKey -notmatch $algoTag) { continue }
+                    $ranges = $entry.Algorithms[$algoKey][$gStr]
+                    if (-not $ranges) { continue }
+                    foreach ($range in $ranges) {
+                        if ($kId -ge $range[0] -and $kId -le $range[1]) { $matched = $true; break }
+                    }
+                    if ($matched) { break }
+                }
+                if (-not $matched) { continue }
+
+                $cfgPath = Join-Path $pkeyConfigsDir $entry.Path.TrimStart('\')
+                if (-not (Test-Path -LiteralPath $cfgPath)) { continue }
+
+                $info = Get-PKeyConfigInfo -FilePath $cfgPath -GroupId $gId -KeyId $kId
+                $cfgResult = & $buildPKeyConfigObj $info $cfgPath $entry.Profile $IncludeCustom $false
+                if ($cfgResult) { return $cfgResult }
+            }
+        }
+    }
+
+    # 3. Pre-Vista generic details fallback when neither CSV nor PKeyConfig matched a product
+    if (($gId -le 137 -or ($algoTag -match "980|986")) -and ($algoTag -notmatch "2005|2009")) {
+        return (& $createPreVistaObj @())
+    }
+
+    # 4. Fallback for unmapped / post-Vista keys
     return New-Object PSObject -Property @{
         LabelId = $labelId
     }
 }
 
+# ===============================================================================================================================
+# Product Details Display
+# ===============================================================================================================================
+
+# Formats and writes retrieved product details to the console output.
+
 function Write-ProductDetails($ProductDetails, $f, [string[]]$Exclude = @()) {
 
     if (-not $ProductDetails) { return }
 
-    if ($ProductDetails.Matches) {
+    if ($ProductDetails.Profile -and ($Exclude -notcontains "Profile")) { Write-Output ($f -f "Profile", $ProductDetails.Profile) }
+    if ("$($ProductDetails.IsValid)" -eq "false" -and ($Exclude -notcontains "IsValid")) { Write-Color ($f -f "Result", "Blocked") "BgRed" }
+    if ("$($ProductDetails.IsRandomized)" -eq "true" -and ($Exclude -notcontains "IsRandomized")) { Write-Color ($f -f "Randomized PID", "Yes") "FgYellow" }
+
+    if ($ProductDetails.Matches -and ($Exclude -notcontains "Matches")) {
         foreach ($m in $ProductDetails.Matches) {
             Write-Color ($f -f "Product Match", $m) "BgGreen"
         }
-        if ($ProductDetails.Bink -and ($Exclude -notcontains "Bink")) { Write-Output ($f -f "Bink", $ProductDetails.Bink) }
-        if ($null -ne $ProductDetails.ChannelId -and ($Exclude -notcontains "ChannelId")) { Write-Output ($f -f "Channel ID", ("{0} (0x{0:X})" -f $ProductDetails.ChannelId)) }
-        if ($null -ne $ProductDetails.Sequence -and ($Exclude -notcontains "Sequence")) { Write-Output ($f -f "Sequence", ("{0} (0x{0:X})" -f $ProductDetails.Sequence)) }
-        if ($ProductDetails.LabelId -and ($Exclude -notcontains "LabelId")) { Write-Output ($f -f "Label ID", $ProductDetails.LabelId) }
-        if ($ProductDetails.AlgorithmId -and ($Exclude -notcontains "AlgorithmId")) { Write-Output ($f -f "Algorithm ID", $ProductDetails.AlgorithmId) }
     }
-    else {
-        if ($ProductDetails.Profile -and ($Exclude -notcontains "Profile")) { Write-Output ($f -f "Profile", $ProductDetails.Profile) }
-        if ($ProductDetails.Description -and ($Exclude -notcontains "Description")) { Write-Color ($f -f "Description", $ProductDetails.Description) "BgGreen" }
-        if ($ProductDetails.Edition -and ($Exclude -notcontains "Edition")) { Write-Output ($f -f "Edition", $ProductDetails.Edition) }
-        if ($ProductDetails.KeyType -and ($Exclude -notcontains "KeyType")) { Write-Output ($f -f "Key Type", $ProductDetails.KeyType) }
-        if ($ProductDetails.EULA -and ($Exclude -notcontains "EULA")) { Write-Output ($f -f "EULA", $ProductDetails.EULA) }
-        if ($ProductDetails.PartNumber -and ($Exclude -notcontains "PartNumber")) { Write-Output ($f -f "Part number", $ProductDetails.PartNumber) }
-        if ($ProductDetails.LabelId -and ($Exclude -notcontains "LabelId")) { Write-Output ($f -f "Label ID", $ProductDetails.LabelId) }
-        if ($ProductDetails.AlgorithmId -and ($Exclude -notcontains "AlgorithmId")) { Write-Output ($f -f "Algorithm ID", $ProductDetails.AlgorithmId) }
-        if ($ProductDetails.ActivationId -and ($Exclude -notcontains "ActivationId")) { Write-Output ($f -f "Activation ID", $ProductDetails.ActivationId) }
-    }
+    if ($ProductDetails.Description -and ($Exclude -notcontains "Description")) { Write-Color ($f -f "Description", $ProductDetails.Description) "BgGreen" }
+    if ($ProductDetails.Edition -and ($Exclude -notcontains "Edition")) { Write-Output ($f -f "Edition", $ProductDetails.Edition) }
+    if ($ProductDetails.KeyType -and ($Exclude -notcontains "KeyType")) { Write-Output ($f -f "Key Type", $ProductDetails.KeyType) }
+    if ($ProductDetails.EULA -and ($Exclude -notcontains "EULA")) { Write-Output ($f -f "EULA", $ProductDetails.EULA) }
+    if ($ProductDetails.Bink -and ($Exclude -notcontains "Bink")) { Write-Output ($f -f "Bink", $ProductDetails.Bink) }
+    if ($null -ne $ProductDetails.ChannelId -and ($Exclude -notcontains "ChannelId")) { Write-Output ($f -f "Channel ID", ("{0} (0x{0:X})" -f $ProductDetails.ChannelId)) }
+    if ($null -ne $ProductDetails.Sequence -and ($Exclude -notcontains "Sequence")) { Write-Output ($f -f "Sequence", ("{0} (0x{0:X})" -f $ProductDetails.Sequence)) }
+    if ($ProductDetails.PartNumber -and ($Exclude -notcontains "PartNumber")) { Write-Output ($f -f "Part number", $ProductDetails.PartNumber) }
+    if ($ProductDetails.LabelId -and ($Exclude -notcontains "LabelId")) { Write-Output ($f -f "Label ID", $ProductDetails.LabelId) }
+    if ($ProductDetails.AlgorithmId -and ($Exclude -notcontains "AlgorithmId")) { Write-Output ($f -f "Algorithm ID", $ProductDetails.AlgorithmId) }
+    if ($ProductDetails.ActivationId -and ($Exclude -notcontains "ActivationId")) { Write-Output ($f -f "Activation ID", $ProductDetails.ActivationId) }
 }
 
 # ===============================================================================================================================
@@ -577,6 +682,7 @@ function Write-ProductDetails($ProductDetails, $f, [string[]]$Exclude = @()) {
 # ===============================================================================================================================
 
 # Run a script with PassThru and return the result object.
+
 function Invoke-PassThruScript([string]$ScriptPath, [hashtable]$Params = @{}) {
     $path = Join-Path (Split-Path -Parent $PSScriptRoot) $ScriptPath
     if (-not (Test-Path $path)) {
@@ -587,4 +693,3 @@ function Invoke-PassThruScript([string]$ScriptPath, [hashtable]$Params = @{}) {
 }
 
 # ===============================================================================================================================
-

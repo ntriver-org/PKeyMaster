@@ -16,7 +16,7 @@
     The Extended Product ID string to decode (e.g. '00000-00105-123-456789-02-1033-19045.0000-3042026').
 
 .PARAMETER GroupId
-    The group ID (Bink ID).
+    The group ID (Bink ID). Supports values from 0 to 999999.
 
 .PARAMETER Serial
     The product key serial number (Key ID).
@@ -94,11 +94,11 @@ if (-not $Encode -and -not $Decode) {
 $mode = if ($Encode) { "Encode" } else { "Decode" }
 
 if ($mode -eq "Decode") {
-    if (-not $ExtendedProductId) {
+    $cleanEpid = if ($ExtendedProductId) { $ExtendedProductId.Trim() } else { "" }
+    if (-not $cleanEpid) {
         Write-Color "Please provide -ExtendedProductId to decode." "BgRed"
         return
     }
-    $cleanEpid = $ExtendedProductId.Trim()
     $pattern = '^(\d{5})-(\d{5})-(\d{3})-(\d{6})-(\d{2})-(\d+)-(\d+(?:\.\d+)?)-(\d{7})$'
 
     if ($cleanEpid -notmatch $pattern) {
@@ -117,7 +117,7 @@ if ($mode -eq "Decode") {
     $year = [int]$matches[8].Substring(3, 4)
 
     $Serial = [long]$channel * 1000000 + $sequence
-    $Date = (Get-Date -Year $year -Month 1 -Day 1).AddDays($dayOfYear - 1)
+    $Date = try { (Get-Date -Year $year -Month 1 -Day 1).AddDays($dayOfYear - 1) } catch { }
     $ExtendedProductId = $cleanEpid
 }
 else {
@@ -125,8 +125,8 @@ else {
         Write-Color "Serial must be between 0 and 999999999." "BgRed"
         return
     }
-    if ($GroupId -lt 0 -or $GroupId -gt 99999) {
-        Write-Color "Group ID must be between 0 and 99999." "BgRed"
+    if ($GroupId -lt 0 -or $GroupId -gt 999999) {
+        Write-Color "Group ID must be between 0 and 999999." "BgRed"
         return
     }
     if (@(0, 1, 2, 3, 4, 6) -notcontains $LicenseType) {
@@ -150,9 +150,14 @@ else {
     $dayOfYear = [int]$Date.DayOfYear
     $year = [int]$Date.Year
 
+    $epidGroupId = [int]($GroupId % 100000)
+    $encodeNote = if ($GroupId -gt 99999) {
+        "Only the last 5 digits of the Group ID are encoded."
+    }
+
     $ExtendedProductId = "{0}-{1:D5}-{2:D3}-{3:D6}-{4:D2}-{5:D4}-{6}-{7:D3}{8:D4}" -f (
         $MPC,
-        $GroupId,
+        $epidGroupId,
         $channel,
         $sequence,
         $LicenseType,
@@ -173,34 +178,51 @@ $langName = try { [System.Globalization.CultureInfo]::GetCultureInfo($LangId).Di
 $candidates = @()
 
 if ($GetProductDetails) {
-    # Group ID 2 exists in both PKey980 (Windows 98) and PKey2005 (Windows Redpill)
-    if ($GroupId -eq 2) {
-        $dPre = Get-ProductDetails -GroupId $GroupId -KeyId $Serial -SkipVistaAndLater
-        if ($dPre -and $dPre.Matches) {
+    # 1. Pre-Vista (PKey980 / PKey986): valid for Group IDs 0..137
+    if ($GroupId -le 137) {
+        $dPre = Get-ProductDetails -GroupId $GroupId -KeyId $Serial -Algorithm "PKey980"
+        if ($dPre -and $dPre.AlgorithmId -and ($dPre.Matches.Count -gt 0 -or $dPre.Description)) {
             $algoPre = if ($dPre.AlgorithmId -match "986") { "PKey986" } else { "PKey980" }
-            $candidates += @{ Algorithm = $algoPre; ProductDetails = $dPre }
-        }
-
-        $dPost = Get-ProductDetails -GroupId $GroupId -KeyId $Serial -SkipPreVista
-        if ($dPost -and $dPost.Description) {
-            $algoPost = if ($dPost.AlgorithmId -match "2009") { "PKey2009" } else { "PKey2005" }
-            $candidates += @{ Algorithm = $algoPost; ProductDetails = $dPost }
+            $candidates += @{
+                Algorithm      = $algoPre
+                GroupId        = $GroupId
+                ProductDetails = $dPre
+            }
         }
     }
-    else {
-        $d = Get-ProductDetails -GroupId $GroupId -KeyId $Serial
-        if ($d -and ($d.Description -or $d.Matches)) {
-            $algo = if ($d.AlgorithmId -match "2009") { "PKey2009" }
-            elseif ($d.AlgorithmId -match "2005") { "PKey2005" }
-            elseif ($d.AlgorithmId -match "986") { "PKey986" }
-            else { "PKey980" }
-            $candidates += @{ Algorithm = $algo; ProductDetails = $d }
+
+    # 2. PKey2005: valid for standard 1-to-3 digit Group IDs (<= 999)
+    if ($GroupId -le 999) {
+        $d2005 = Get-ProductDetails -GroupId $GroupId -KeyId $Serial -Algorithm "PKey2005"
+        if ($d2005 -and $d2005.AlgorithmId -and $d2005.Description) {
+            $candidates += @{
+                Algorithm      = "PKey2005"
+                GroupId        = $GroupId
+                ProductDetails = $d2005
+            }
+        }
+    }
+
+    # 3. PKey2009: handles 6-digit Group IDs (100000..100063 and 999999) as well as standard Group IDs
+    $g2009 = if ($GroupId -le 63) { 100000 + $GroupId } elseif ($GroupId -eq 99999) { 999999 } else { $GroupId }
+    $d2009 = Get-ProductDetails -GroupId $g2009 -KeyId $Serial -Algorithm "PKey2009"
+    if ($d2009 -and $d2009.AlgorithmId -and $d2009.Description) {
+        $candidates += @{
+            Algorithm      = "PKey2009"
+            GroupId        = $g2009
+            ProductDetails = $d2009
+            Note           = if ($g2009 -gt 99999) { "Only the last 5 digits of the Group ID are encoded." }
         }
     }
 }
 
 if ($candidates.Count -eq 0) {
-    $candidates = @( @{ Algorithm = $null; ProductDetails = $null } )
+    $candidates = @( @{
+            Algorithm      = $null
+            GroupId        = $GroupId
+            ProductDetails = $null
+            Note           = $encodeNote
+        } )
 }
 
 # ===============================================================================================================================
@@ -226,12 +248,16 @@ for ($i = 0; $i -lt $candidates.Count; $i++) {
     }
     Write-Color ($f -f "Extended PID", $ExtendedProductId) "BgGreen"
     Write-Output ($f -f "MPC", $MPC)
-    Write-Output ($f -f "Group ID", ("{0} (0x{0:X})" -f $GroupId))
+    $displayGid = if ($null -ne $c.GroupId) { $c.GroupId } else { $GroupId }
+    Write-Output ($f -f "Group ID", ("{0} (0x{0:X})" -f $displayGid))
     Write-Output ($f -f "Key ID", ("{0} (0x{0:X})" -f $Serial))
     Write-Output ($f -f "License Type", ("{0} ({1})" -f $LicenseType, $ltName))
     Write-Output ($f -f "Language ID", ("{0} ({1})" -f $LangId, $langName))
     Write-Output ($f -f "OS Build", $OSBuild)
-    Write-Output ($f -f "Date", ($Date.ToString("yyyy-MM-dd") + " (Day $dayOfYear, $year)"))
+    Write-Output ($f -f "Date", "$(if ($Date) { $Date.ToString('yyyy-MM-dd ') })(Day $dayOfYear, $year)")
+    if ($c.Note) {
+        Write-Color ($f -f "Note", $c.Note) "BgGray"
+    }
     if ($c.ProductDetails) {
         Write-Output ""
         Write-ProductDetails $c.ProductDetails $f
@@ -246,11 +272,12 @@ Write-Output ""
 if ($PassThru) {
     $results = @()
     foreach ($c in $candidates) {
+        $displayGid = if ($null -ne $c.GroupId) { $c.GroupId } else { $GroupId }
         $results += New-Object PSObject -Property @{
             ExtendedProductId = $ExtendedProductId
             Algorithm         = $c.Algorithm
             MPC               = $MPC
-            GroupId           = $GroupId
+            GroupId           = $displayGid
             Serial            = $Serial
             LicenseType       = $LicenseType
             LicenseTypeName   = $ltName
@@ -261,6 +288,7 @@ if ($PassThru) {
             DayOfYear         = $dayOfYear
             Year              = $year
             Date              = $Date
+            Note              = $c.Note
             ProductDetails    = $c.ProductDetails
         }
     }

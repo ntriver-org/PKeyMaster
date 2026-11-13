@@ -134,6 +134,7 @@ if ($baseConfigsDir -and (Test-Path -LiteralPath $baseConfigsDir) -and $global:P
                 AlgorithmId  = $info.AlgorithmId
                 ActivationId = $info.ActivationId.Trim('{', '}')
                 IsValid      = $info.IsValid
+                IsRandomized = $info.IsRandomized
                 ConfigFile   = $entry.Path.TrimStart('\')
                 Source       = "PKeyConfigs"
             }

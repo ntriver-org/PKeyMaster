@@ -180,7 +180,7 @@ function Add-KeyToCsv([string[]]$OutputLines, [string[]]$Columns, [string]$CsvPa
 $colsPre98 = @("Product Key", "Result", "Product Match", "Query Time")
 
 $colsPidGenX = @(
-    "Product Key", "Profile", "Result",
+    "Product Key", "Profile", "Result", "Randomized PID",
     "Description", "Product Match", "Edition", "Key Type", "EULA", "Upgrade Key",
     "Bink", "Group ID", "Key ID", "Channel ID", "Sequence", "Hash", "Auth", "Signature", "Security", "PKey2009 Extra",
     "License Type", "Part number", "Label ID", "Product ID", "Algorithm ID", "Activation ID", "Extended PID", "Installation ID", "ActConfig ID",
