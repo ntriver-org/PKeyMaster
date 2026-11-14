@@ -186,11 +186,11 @@ if ($PSEdition -eq 'Core') {
 # Verify .NET 3.5+ works.
 $NetOk = $false
 try {
-    $null = [System.Reflection.Assembly]::LoadWithPartialName('System.Core')
-    $null = [System.Linq.Enumerable].GetMethods()
+    $null = [System.Reflection.Assembly]::LoadWithPartialName('System.Web.Extensions')
+    $null = [System.Web.Script.Serialization.JavaScriptSerializer].GetMethods()
     $NetOk = $true
 }
-catch { $NetOk = $false }
+catch {}
 
 if (-not $NetOk) {
     if ([Environment]::Version.Major -eq 2) {
@@ -202,7 +202,12 @@ if (-not $NetOk) {
         Show-Msg "${BaseUrl}dotnet-framework-downloads"
     }
     else {
-        Write-Host "ERROR: .NET seems to be broken in your system. Aborting..." -ForegroundColor Red
+        if (Test-Path "$SysPath\wpeutil.exe") {
+            Write-Host "ERROR: WinPE is not supported. Aborting..." -ForegroundColor Red
+        }
+        else {
+            Write-Host "ERROR: .NET seems to be broken in your system. Aborting..." -ForegroundColor Red
+        }
         Show-Msg "${BaseUrl}troubleshoot"
     }
     return
