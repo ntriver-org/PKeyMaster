@@ -76,6 +76,7 @@ be615309cf848549b3a07fa1306fa71725f9be2669329b4ed779f73a73d8b1a1 *BIN\PKeyConfig
 78c4ee7ddf8a7a5247fdae4bb6dce1c6462f9b50d22bf222ef1baac5a5dea9d3 *BIN\PKeyConfigs\Games\Production\Shadowrun\07.xrm-ms
 7c7ef40793509a9272596f534804fe480c3c38b9ecc359eefdf7d6b52903b353 *BIN\PKeyConfigs\Misc\Windows Redpill\pkeyconfig-rp.xrm-ms
 cf2933d2075769e7d6c9fc5e8e85067a3ac9de81850a5c04f2f1a974bece0b2c *BIN\PKeyConfigs\Notes.txt
+d4025af1f7b9abc1cf5660d11df302d8ac969be75179c24f2cbe1cd06f2f9484 *BIN\PKeyConfigs\Office\Beta\KMS Host\Office 2016 - Beta - KMS Host\pkeyconfig-office-kmshost.xrm-ms
 51e01ed73d315e5c73a367e8edae64d0c998d75e6410239ba8c71d4250cf6881 *BIN\PKeyConfigs\Office\Beta\Main\14.0.4417.1000 - Beta - Office 2010\pkeyconfig-office.xrm-ms
 d278ce4228552f4de79bab18ffb394a73ff3705f9b3bfe9433b81b3b78147b82 *BIN\PKeyConfigs\Office\Beta\Main\15.0.4025.1000 - Beta - Office 2013\pkeyconfig-office.xrm-ms
 1092f13fcc6b08aa2dc5fcab54f5966724bb86598f0b1c2a88c3eb6a45a29666 *BIN\PKeyConfigs\Office\Beta\Main\16.0.14326.20454 - Beta - Office 2019-2021\pkeyconfig-office.xrm-ms
@@ -155,7 +156,7 @@ d74dfb370a19a2adb41bb9880935c0a8db9d475b81edf383427023bd81d15c55 *BIN\PKeyConfig
 d758ff8c9511aad5648b429bc74c076438cee26a8778a8b0db53b498cd4bcbf4 *BIN\PKeyConfigs\Windows - Server\Production\Main\7601 - Windows 7 - Server 2008 R2\pkeyconfig.xrm-ms
 d310e0c0e45d08db12a6010954ffd6400154a206060cb7910af52697aef31be0 *BIN\PKeyConfigs\Windows - Server\Production\Main\9200 - Windows 8 - Server 2012\pkeyconfig.xrm-ms
 b8e8b0ff5c1066562497aede3702089c248382c5d38cd26a70ecfbc8fea90aeb *BIN\PKeyConfigs\Windows - Server\Production\Main\9600 - Windows 8.1 - Server 2012 R2\pkeyconfig.xrm-ms
-c75cac92dcec384b83e68ec534a9760538e3d4a9c7097c12fd53abe0cfd2aeda *BIN\PKeyConfigsMap.json
+93bd3705636d679055dee2b5c79d01d63cf95d8df6289c029336c0ae66dfba1c *BIN\PKeyConfigsMap.json
 89bc2d22e2d162a3981d224702f6c2ffe9fdfe13be58282d0d16a98d15f37034 *BIN\PreVistaRanges.csv
 c622301660b0f5568d81dffe24a156866643b5f3da89b070f471db21ac1e636d *BIN\PublishLicense.xml
 070d7f65ed14275e784fd73200e9839002eed57210c9ffcf45483ba4e9867d7b *BIN\Scripts\DecodePKey2009.ps1

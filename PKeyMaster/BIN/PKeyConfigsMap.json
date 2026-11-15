@@ -9443,6 +9443,17 @@
 		}
 	},
 	{
+		"Profile": "Office 2016 - Beta - KMS Host",
+		"Path": "Office\\Beta\\KMS Host\\Office 2016 - Beta - KMS Host\\pkeyconfig-office-kmshost.xrm-ms",
+		"Algorithms": {
+			"PKey2009": {
+				"3472": [[0, 21999999]]
+			},
+			"PKey2005": {},
+			"PKey986-980": {}
+		}
+	},
+	{
 		"Profile": "16.0.14326.20454 - Beta - Office 2019-2021",
 		"Path": "Office\\Beta\\Main\\16.0.14326.20454 - Beta - Office 2019-2021\\pkeyconfig-office.xrm-ms",
 		"Algorithms": {
