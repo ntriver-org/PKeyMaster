@@ -109,7 +109,8 @@ $candidates = @()
 if ($GetProductDetails) {
     # 1. Pre-Vista (PKey980 / PKey986): valid for Group IDs 0..137
     if ($GroupId -le 137) {
-        $dPre = Get-ProductDetails -GroupId $GroupId -KeyId $Serial -Algorithm "PKey980"
+        $algoPre = if ($GroupId -ge 0x40) { "PKey986" } else { "PKey980" }
+        $dPre = Get-ProductDetails -GroupId $GroupId -KeyId $Serial -Algorithm $algoPre
         if ($dPre -and $dPre.AlgorithmId -and ($dPre.Matches.Count -gt 0 -or $dPre.Description)) {
             $algoPre = if ($dPre.AlgorithmId -match "986") { "PKey986" } else { "PKey980" }
             $candidates += @{
