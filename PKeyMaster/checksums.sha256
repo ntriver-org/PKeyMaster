@@ -1,6 +1,6 @@
 9d5d40c09a2358aa63dc895c9ef4189fc9ead943b4599af8393a72a7294576cc *BIN\icon.ico
-e28f3fe6e918620433969c1e62f28277552af0b7bcbb6c30e81046042245913b *BIN\pidgenx32.dll
-d16f212289fe29c019a6c4e9cebb424aec0255094fd00ccfd3360260be008dd8 *BIN\pidgenx64.dll
+0492b456e1cfd8cb82ed68cfebbdae09df40b75be9a22dee41512495a8a9a4c6 *BIN\pidgenx32.dll
+81575e8622948119b4348f2b654b56665c18f24bf08f7ab17c65b86eaf5a99d2 *BIN\pidgenx64.dll
 ac95a95d7c655dd29ae7d2ba33b1d4fba56fd16b113ba1408a4402d8117eacab *BIN\PKeyConfigs\Apps\Beta\SQL Server\SQL Server 2016 Beta\PidPrivateConfigObjectMaps.xml
 2770960fb8a79a82e16681e4d9b2bad57b0825b0d518251d8dc11874e71de34c *BIN\PKeyConfigs\Apps\Beta\SQL Server\SQL Server 2017 Beta\PidPrivateConfigObjectMaps.xml
 eea64072e789d74d7f3bcbdf218f9cbfd1c3ace0a51d330e82e72465d7eb64d6 *BIN\PKeyConfigs\Apps\Beta\SQL Server\SQL Server 2019 Beta\PidPrivateConfigObjectMaps.xml
@@ -94,7 +94,7 @@ be615309cf848549b3a07fa1306fa71725f9be2669329b4ed779f73a73d8b1a1 *BIN\PKeyConfig
 4738218f3a9bec6c52332450536c743880eb35b46b22fc066f1addcb0868014c *BIN\PKeyConfigs\Games\Production\Halo 2 for Windows Vista\07.xrm-ms
 78c4ee7ddf8a7a5247fdae4bb6dce1c6462f9b50d22bf222ef1baac5a5dea9d3 *BIN\PKeyConfigs\Games\Production\Shadowrun\07.xrm-ms
 7c7ef40793509a9272596f534804fe480c3c38b9ecc359eefdf7d6b52903b353 *BIN\PKeyConfigs\Misc\Windows Redpill\pkeyconfig-rp.xrm-ms
-cf2933d2075769e7d6c9fc5e8e85067a3ac9de81850a5c04f2f1a974bece0b2c *BIN\PKeyConfigs\Notes.txt
+b18f540c0143ff1b3a6b0560f41855d2d3e49e27be37b31f55d2f0c7e9bbae4b *BIN\PKeyConfigs\Notes.txt
 d4025af1f7b9abc1cf5660d11df302d8ac969be75179c24f2cbe1cd06f2f9484 *BIN\PKeyConfigs\Office\Beta\KMS Host\Office 2016 - Beta - KMS Host\pkeyconfig-office-kmshost.xrm-ms
 51e01ed73d315e5c73a367e8edae64d0c998d75e6410239ba8c71d4250cf6881 *BIN\PKeyConfigs\Office\Beta\Main\14.0.4417.1000 - Beta - Office 2010\pkeyconfig-office.xrm-ms
 d278ce4228552f4de79bab18ffb394a73ff3705f9b3bfe9433b81b3b78147b82 *BIN\PKeyConfigs\Office\Beta\Main\15.0.4025.1000 - Beta - Office 2013\pkeyconfig-office.xrm-ms

@@ -8,6 +8,11 @@ Following folders are added just because of extra key ranges, not because of ext
 
 ----------------------------
 
+The latest updated Windows Vista (6003) PKeyConfig isn't supported by any PidGenX.dll from Windows 7 onward due to a key range overlap bug in that PKeyConfig.
+PKeyMaster uses a patched PidGenX.dll to handle that.
+
+----------------------------
+
 Missing pkeyconfig files for MapPoint, AutoRoute, Streets and Trips:
 We have pkeyconfig files for the volume editions of the following products, but not for the retail editions:
 
