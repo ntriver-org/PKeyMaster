@@ -132,9 +132,15 @@ function Find-KeysInFile {
                 $val = $m.Value
                 if (-not $seen.ContainsKey($val)) {
                     $seen[$val] = $true
-                    $hash = @{}
-                    foreach ($c in $val.ToCharArray()) { if ($c -ne '-') { $hash[$c] = $true } }
-                    if ($hash.Count -ge 3) { $keys += $val }
+                    # Minimum 3 distinct characters rule applies only to 5x5 keys to filter out binary dummy/padding sequences
+                    if ($val.Length -eq 29 -and $val -match '^([A-Z0-9]{5}-){4}[A-Z0-9]{5}$') {
+                        $hash = @{}
+                        foreach ($c in $val.ToCharArray()) { if ($c -ne '-') { $hash[$c] = $true } }
+                        if ($hash.Count -ge 3) { $keys += $val }
+                    }
+                    else {
+                        $keys += $val
+                    }
                 }
             }
 
