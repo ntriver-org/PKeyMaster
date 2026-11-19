@@ -8,6 +8,14 @@
     and matches them against local WMI classes (SoftwareLicensingProduct and
     OfficeSoftwareProtectionProduct) to show names, descriptions, and IIDs.
 
+.PARAMETER StorePath
+    Optional path to an SPP trusted store file (e.g. data.dat).
+    If specified, only this store file is scanned (skipping WMI matching and OSPP).
+    If omitted, the active system SPP and OSPP stores are automatically detected.
+
+.PARAMETER PassThru
+    Returns structured PSObjects for each discovered product key.
+
 .NOTES
     Compatible with PowerShell 2.0 and later.
     Requires Administrator rights to stop the Software licensing service if the store is locked.
@@ -15,7 +23,19 @@
 
 .EXAMPLE
     .\ScanKeysInTrustedStore.ps1
+
+.EXAMPLE
+    .\ScanKeysInTrustedStore.ps1 -StorePath "D:\Windows.old\Windows\System32\spp\store\2.0\data.dat"
+
+.EXAMPLE
+    .\ScanKeysInTrustedStore.ps1 -PassThru
 #>
+[CmdletBinding()]
+param(
+    [string]$StorePath = '',
+    [switch]$PassThru
+)
+
 $PROD_KEY_BYTES = [byte[]](
     0x07, 0x02, 0x00, 0x00, 0x00, 0xA4, 0x00, 0x00, 0x52, 0x53, 0x41, 0x32, 0x00, 0x04, 0x00, 0x00,
     0x01, 0x00, 0x01, 0x00, 0x29, 0x87, 0xBA, 0x3F, 0x52, 0x90, 0x57, 0xD8, 0x12, 0x26, 0x6B, 0x38,
@@ -111,58 +131,54 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 if (-not $scriptDir) { $scriptDir = "." }
 Import-Module "$scriptDir\Libs\Common.psm1"
 
-$script:Build = [System.Environment]::OSVersion.Version.Build
-$script:SysPath = "$env:SystemRoot\System32"
+$sysPath = "$env:SystemRoot\System32"
 if (Test-Path "$env:SystemRoot\Sysnative\reg.exe") {
-    $script:SysPath = "$env:SystemRoot\Sysnative"
+    $sysPath = "$env:SystemRoot\Sysnative"
 }
-$script:IsVista = $script:Build -lt 7600 -and (Test-Path (Join-Path $script:SysPath 'slsvc.exe'))
-$script:SvcName = if ($script:IsVista) { 'slsvc' } else { 'sppsvc' }
-$script:WmiErrors = New-Object System.Collections.Generic.List[object]
+$build = [System.Environment]::OSVersion.Version.Build
+$isVista = $build -lt 7600 -and (Test-Path (Join-Path $sysPath 'slsvc.exe'))
+$svcName = if ($isVista) { 'slsvc' } else { 'sppsvc' }
+$wmiErrors = New-Object System.Collections.Generic.List[object]
+$foundKeys = New-Object System.Collections.ArrayList
 
 # ===============================================================================================================================
 # Helper functions
 # ===============================================================================================================================
 
 function Get-StorePath {
-    # Find the tokens.dat/data.dat path based on Windows version.
-    $script:Script_StorePath = $null
+    # Find the active data.dat or trusted store path based on Windows version.
+    param([string]$SystemPath = $sysPath)
 
     foreach ($relativePath in @('spp\store\2.0', 'spp\store_test\2.0', 'spp\store', 'spp\store_test')) {
-        $path = Join-Path (Join-Path $script:SysPath $relativePath) 'data.dat'
+        $path = Join-Path (Join-Path $SystemPath $relativePath) 'data.dat'
         if (Test-Path -LiteralPath $path) {
-            $script:Script_StorePath = $path
-            return
+            return $path
         }
     }
 
-    $files = [System.IO.Directory]::GetFiles(
-        $script:SysPath,
-        '7B296FB0-376B-497e-B012-9C450E1B7327-*.C7483456-A289-439d-8115-601632D005A0'
-    )
-
-    foreach ($file in $files) {
-        if ([System.IO.Path]::GetFileName($file) -like '*-0.*') {
-            $script:Script_StorePath = $file
-            return
+    try {
+        $files = [System.IO.Directory]::GetFiles($SystemPath, '7B296FB0-376B-497e-B012-9C450E1B7327-*.C7483456-A289-439d-8115-601632D005A0')
+        foreach ($file in $files) {
+            if ($file -like '*-0.*') { return $file }
         }
+        if ($files.Length -gt 0) { return $files[0] }
     }
+    catch {}
 
-    if ($files.Length -gt 0) {
-        $script:Script_StorePath = $files[0]
-        return
-    }
-
-    Write-Color "Failed to locate trusted store (Build - $script:Build)." "BgRed"
+    return $null
 }
 
 # ===============================================================================================================================
 
-function Read-StoreBytes([string]$Path) {
+function Read-StoreBytes {
     # Read raw trusted store bytes with a shared-read file stream.
-    $script:Script_StoreBytes = $null
-    $stream = $null
+    param([string]$Path)
 
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return $null
+    }
+
+    $stream = $null
     try {
         $stream = [System.IO.File]::Open(
             $Path,
@@ -170,6 +186,10 @@ function Read-StoreBytes([string]$Path) {
             [System.IO.FileAccess]::Read,
             [System.IO.FileShare]::ReadWrite
         )
+
+        if ($stream.Length -le 0) {
+            return $null
+        }
 
         $bytes = New-Object byte[] ([int]$stream.Length)
         $offset = 0
@@ -183,11 +203,13 @@ function Read-StoreBytes([string]$Path) {
         }
 
         if ($offset -ne $bytes.Length) {
-            Write-Color 'Failed to read trusted store.' "BgRed"
-            return
+            return $null
         }
 
-        $script:Script_StoreBytes = $bytes
+        return , $bytes
+    }
+    catch {
+        return $null
     }
     finally {
         if ($stream) {
@@ -198,11 +220,12 @@ function Read-StoreBytes([string]$Path) {
 
 # ===============================================================================================================================
 
-function Invoke-SpSysControl([bool]$Start) {
+function Invoke-SpSysControl {
     # https://github.com/InvoxiPlayGames/vistaspctl 
     # On Windows Vista / Server 2008, token store files are locked by the spsys kernel driver, so we need to unlock them.
+    param([bool]$Start)
 
-    if (-not ([System.Management.Automation.PSTypeName]'SpSysHelper').Type) {
+    if (-not ('SpSysHelper' -as [type])) {
         Add-Type -TypeDefinition @'
 using System;
 using System.Runtime.InteropServices;
@@ -236,52 +259,22 @@ public class SpSysHelper {
 
 # ===============================================================================================================================
 
-function Get-TrustedStoreBytes([string]$Path) {
-    # Try to read the store directly; stop sppsvc if that fails.
-    $script:Script_StoreBytes = $null
-
-    try {
-        Read-StoreBytes $Path
-    }
-    catch {}
-    if ($null -ne $script:Script_StoreBytes) {
-        return
-    }
-
-    $isAdmin = (New-Object System.Security.Principal.WindowsPrincipal([System.Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)
-
-    if (-not $isAdmin) {
-        Write-Color 'Software licensing service needs to stop. Please run the script with admin rights.' "BgRed"
-        return
-    }
-
-    Stop-Service $script:SvcName -Force -ErrorAction SilentlyContinue
-    if ($script:IsVista) { Invoke-SpSysControl $false }
-
-    try {
-        Read-StoreBytes $Path
-    }
-    catch {}
-    if ($null -eq $script:Script_StoreBytes) {
-        Write-Color 'Failed to read trusted store.' "BgRed"
-    }
-}
-
-# ===============================================================================================================================
-
-function ConvertFrom-EncryptedTrustedStore([byte[]]$Raw, [byte[]]$RsaKey) {
+function ConvertFrom-EncryptedTrustedStore {
     # Decrypt the store blob with the given RSA key + AES-CBC; returns $null on failure.
-    if ($Raw.Length -lt 0x110) {
+    param(
+        [byte[]]$Raw,
+        [byte[]]$RsaKey
+    )
+
+    if (-not $Raw -or $Raw.Length -lt 0x110 -or -not $RsaKey) {
         return $null
     }
 
     $signature = New-Object byte[] 0x80
     $encryptedAesKey = New-Object byte[] 0x80
-    $cipherText = New-Object byte[] ($Raw.Length - 0x110)
 
     [System.Buffer]::BlockCopy($Raw, 0x10, $signature, 0, $signature.Length)
     [System.Buffer]::BlockCopy($Raw, 0x90, $encryptedAesKey, 0, $encryptedAesKey.Length)
-    [System.Buffer]::BlockCopy($Raw, 0x110, $cipherText, 0, $cipherText.Length)
 
     $rsa = $null
     $sha1 = $null
@@ -301,6 +294,9 @@ function ConvertFrom-EncryptedTrustedStore([byte[]]$Raw, [byte[]]$RsaKey) {
         }
 
         $aesKey = $rsa.Decrypt($encryptedAesKey, $false)
+
+        $cipherText = New-Object byte[] ($Raw.Length - 0x110)
+        [System.Buffer]::BlockCopy($Raw, 0x110, $cipherText, 0, $cipherText.Length)
 
         $aes = New-Object System.Security.Cryptography.RijndaelManaged
         $aes.Key = $aesKey
@@ -335,9 +331,14 @@ function ConvertFrom-EncryptedTrustedStore([byte[]]$Raw, [byte[]]$RsaKey) {
 
 # ===============================================================================================================================
 
-function ConvertFrom-EncryptedOsppPage([byte[]]$Raw, [byte[]]$AesKey) {
+function ConvertFrom-EncryptedOsppPage {
     # Decrypt an OSPP registry page blob using AES-128-CBC.
     # First 16 bytes is IV, remainder is ciphertext.
+    param(
+        [byte[]]$Raw,
+        [byte[]]$AesKey
+    )
+
     if (-not $Raw -or $Raw.Length -lt 32 -or -not $AesKey) {
         return $null
     }
@@ -436,25 +437,63 @@ function Get-OsppStorePages {
 
 # ===============================================================================================================================
 
-function Resolve-StoreKeys([System.Collections.ICollection]$DecryptedTexts, [string]$WmiClass, [string]$ServiceName) {
-    # Extract unique 5x5 product keys
+function Resolve-StoreKeys {
+    # Extract unique 5x5 product keys and match against local WMI products.
+    param(
+        [System.Collections.ICollection]$DecryptedTexts,
+        [string]$WmiClass,
+        [string]$ServiceName,
+        [System.Collections.IList]$Errors = $null,
+        [string]$UnmatchedLabel = 'Previously Installed Keys:',
+        [string]$StoreType = 'SPP',
+        [System.Collections.IList]$CollectedKeys = $null,
+        [switch]$SkipWmi
+    )
+
     $keys = @(
-        foreach ($text in $DecryptedTexts) {
-            if ($text) {
-                foreach ($m in [regex]::Matches($text, '[BCDFGHJKMPQRTVWXY2346789N]{5}(-[BCDFGHJKMPQRTVWXY2346789N]{5}){4}')) {
-                    $m.Value
+        @(
+            foreach ($text in $DecryptedTexts) {
+                if ($text) {
+                    foreach ($m in [regex]::Matches($text, '(?i)[BCDFGHJKMPQRTVWXY2346789N]{5}(-[BCDFGHJKMPQRTVWXY2346789N]{5}){4}')) {
+                        $m.Value.ToUpper()
+                    }
                 }
             }
-        }
-    ) | Select-Object -Unique
+        ) | Select-Object -Unique
+    )
 
     if (-not $keys -or $keys.Count -eq 0) {
         Write-Color 'No keys found in trusted store.' "BgRed"
         return
     }
 
+    if ($SkipWmi -or -not $WmiClass) {
+        Write-Color $UnmatchedLabel "BgGray"
+        Write-Output $keys
+        Write-Output ''
+
+        if ($null -ne $CollectedKeys) {
+            foreach ($key in $keys) {
+                [void]$CollectedKeys.Add((New-Object PSObject -Property @{
+                            ProductKey     = $key
+                            ProductName    = $null
+                            Description    = $null
+                            KeyType        = $null
+                            InstallationId = $null
+                            StoreType      = $StoreType
+                            ClassName      = $null
+                            Status         = 'Found'
+                        }))
+            }
+        }
+        return
+    }
+
     if ($ServiceName) {
-        Start-Service $ServiceName -ErrorAction SilentlyContinue
+        $svc = Get-Service $ServiceName -ErrorAction SilentlyContinue
+        if ($svc -and $svc.Status -ne 'Running') {
+            Start-Service $ServiceName -ErrorAction SilentlyContinue
+        }
     }
 
     # Query local WMI products by PartialProductKey
@@ -475,8 +514,8 @@ function Resolve-StoreKeys([System.Collections.ICollection]$DecryptedTexts, [str
     }
     catch {
         $errObj = Get-WmiSppError -Exception $_.Exception
-        if ($errObj) {
-            $script:WmiErrors.Add((New-Object PSObject -Property @{
+        if ($errObj -and $null -ne $Errors) {
+            $Errors.Add((New-Object PSObject -Property @{
                         ClassName    = $WmiClass
                         ErrorCode    = $errObj.ErrorCode
                         ErrorMessage = $errObj.ErrorMessage
@@ -484,7 +523,7 @@ function Resolve-StoreKeys([System.Collections.ICollection]$DecryptedTexts, [str
         }
     }
 
-    # Format and display active matches, collect previously installed keys
+    # Format and display active matches, collect previously installed / unmatched keys
     $f = "{0,-18}: {1}"
     $previous = New-Object System.Collections.ArrayList
 
@@ -504,11 +543,41 @@ function Resolve-StoreKeys([System.Collections.ICollection]$DecryptedTexts, [str
         Write-Output ($f -f 'Installation ID', $product[3])
         Write-Color ($f -f 'Installed Key', $key) "BgGreen"
         Write-Output ''
+
+        if ($null -ne $CollectedKeys) {
+            [void]$CollectedKeys.Add((New-Object PSObject -Property @{
+                        ProductKey     = $key
+                        ProductName    = $product[0]
+                        Description    = $product[1]
+                        KeyType        = $product[2]
+                        InstallationId = $product[3]
+                        StoreType      = $StoreType
+                        ClassName      = $WmiClass
+                        Status         = 'Installed'
+                    }))
+        }
     }
 
     if ($previous.Count -gt 0) {
-        Write-Color "Previously Installed Keys:" "BgGray"
+        Write-Color $UnmatchedLabel "BgGray"
         Write-Output $previous
+        Write-Output ''
+
+        if ($null -ne $CollectedKeys) {
+            $unmatchedStatus = if ($UnmatchedLabel -match 'Previously') { 'Previously Installed' } else { 'Unmatched' }
+            foreach ($prevKey in $previous) {
+                [void]$CollectedKeys.Add((New-Object PSObject -Property @{
+                            ProductKey     = $prevKey
+                            ProductName    = $null
+                            Description    = $null
+                            KeyType        = $null
+                            InstallationId = $null
+                            StoreType      = $StoreType
+                            ClassName      = $WmiClass
+                            Status         = $unmatchedStatus
+                        }))
+            }
+        }
     }
 }
 
@@ -522,13 +591,69 @@ Write-Output "Checking keys in SPP trusted store..."
 Write-Output "________________________________________"
 Write-Output ""
 
-Get-StorePath
-if ($script:Script_StorePath) {
-    Get-TrustedStoreBytes $script:Script_StorePath
-    if ($script:Script_StoreBytes) {
+$targetStorePath = $null
+$isActiveSystemStore = $false
+$cleanStorePath = if ($StorePath) { $StorePath.Trim(" `'`"") } else { '' }
+
+if ($cleanStorePath) {
+    if (Test-Path -LiteralPath $cleanStorePath -PathType Leaf) {
+        $resolved = Resolve-Path -LiteralPath $cleanStorePath
+        $targetStorePath = if ($resolved.ProviderPath) { $resolved.ProviderPath } else { $resolved.Path }
+        Write-Output "Store Path: $targetStorePath"
+        Write-Output ""
+    }
+    else {
+        Write-Color "Specified store file does not exist or is invalid: $StorePath" "BgRed"
+    }
+}
+else {
+    $targetStorePath = Get-StorePath -SystemPath $sysPath
+    if (-not $targetStorePath) {
+        Write-Color "Failed to locate trusted store (Build - $build)." "BgRed"
+    }
+    else {
+        $isActiveSystemStore = $true
+    }
+}
+
+if ($targetStorePath) {
+    $storeBytes = Read-StoreBytes -Path $targetStorePath
+
+    if ($null -eq $storeBytes -or $storeBytes.Length -eq 0) {
+        if ($isActiveSystemStore) {
+            $isAdmin = (New-Object System.Security.Principal.WindowsPrincipal(
+                    [System.Security.Principal.WindowsIdentity]::GetCurrent()
+                )).IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)
+
+            if (-not $isAdmin) {
+                Write-Color 'Software licensing service needs to stop. Please run the script with admin rights.' "BgRed"
+            }
+            else {
+                Stop-Service $svcName -Force -ErrorAction SilentlyContinue
+                if ($isVista) { Invoke-SpSysControl $false }
+
+                try {
+                    $storeBytes = Read-StoreBytes -Path $targetStorePath
+                }
+                finally {
+                    if ($isVista) { Invoke-SpSysControl $true }
+                    Start-Service $svcName -ErrorAction SilentlyContinue
+                }
+
+                if ($null -eq $storeBytes -or $storeBytes.Length -eq 0) {
+                    Write-Color 'Failed to read trusted store.' "BgRed"
+                }
+            }
+        }
+        else {
+            Write-Color "Failed to read trusted store: $targetStorePath" "BgRed"
+        }
+    }
+
+    if ($storeBytes -and $storeBytes.Length -gt 0) {
         $store = $null
         foreach ($rsaKey in @($PROD_KEY_BYTES, $TEST_KEY_BYTES)) {
-            $store = ConvertFrom-EncryptedTrustedStore $script:Script_StoreBytes $rsaKey
+            $store = ConvertFrom-EncryptedTrustedStore -Raw $storeBytes -RsaKey $rsaKey
             if ($store) { break }
         }
 
@@ -536,7 +661,16 @@ if ($script:Script_StorePath) {
             Write-Color 'Failed to decrypt trusted store.' "BgRed"
         }
         else {
-            Resolve-StoreKeys @([System.Text.Encoding]::Unicode.GetString($store)) 'SoftwareLicensingProduct' $script:SvcName
+            $unmatchedLabel = if ($isActiveSystemStore) { 'Previously Installed Keys:' } else { 'Keys in Store:' }
+            Resolve-StoreKeys `
+                -DecryptedTexts @([System.Text.Encoding]::Unicode.GetString($store)) `
+                -WmiClass 'SoftwareLicensingProduct' `
+                -ServiceName $svcName `
+                -Errors $wmiErrors `
+                -UnmatchedLabel $unmatchedLabel `
+                -StoreType 'SPP' `
+                -CollectedKeys $foundKeys `
+                -SkipWmi:(-not $isActiveSystemStore)
         }
     }
 }
@@ -545,46 +679,62 @@ if ($script:Script_StorePath) {
 # OSPP trusted store scan
 # ===============================================================================================================================
 
-Write-Output "________________________________________"
-Write-Output ""
-Write-Output "Checking keys in OSPP trusted store..."
-Write-Output "________________________________________"
-Write-Output ""
+if (-not $cleanStorePath) {
+    Write-Output "________________________________________"
+    Write-Output ""
+    Write-Output "Checking keys in OSPP trusted store..."
+    Write-Output "________________________________________"
+    Write-Output ""
 
-$osppPages = Get-OsppStorePages
+    $osppPages = Get-OsppStorePages
 
-if (-not $osppPages -or $osppPages.Count -eq 0) {
-    if (-not (Get-Service 'osppsvc' -ErrorAction SilentlyContinue)) {
-        Write-Color "OSPP based Office is not installed." "BgGray"
-    }
-    else {
-        Write-Color "OSPP trusted store not found." "BgRed"
-    }
-}
-else {
-    $decryptedTexts = New-Object System.Collections.ArrayList
-    foreach ($page in $osppPages) {
-        $plain = ConvertFrom-EncryptedOsppPage $page $OSPP_AES_KEY
-        if ($plain) {
-            [void]$decryptedTexts.Add([System.Text.Encoding]::Unicode.GetString($plain))
+    if (-not $osppPages -or $osppPages.Count -eq 0) {
+        if (-not (Get-Service 'osppsvc' -ErrorAction SilentlyContinue)) {
+            Write-Color "OSPP based Office is not installed." "BgGray"
+        }
+        else {
+            Write-Color "OSPP trusted store not found." "BgRed"
         }
     }
+    else {
+        $decryptedTexts = New-Object System.Collections.ArrayList
+        foreach ($page in $osppPages) {
+            $plain = ConvertFrom-EncryptedOsppPage -Raw $page -AesKey $OSPP_AES_KEY
+            if ($plain) {
+                [void]$decryptedTexts.Add([System.Text.Encoding]::Unicode.GetString($plain))
+            }
+        }
 
-    Resolve-StoreKeys $decryptedTexts 'OfficeSoftwareProtectionProduct' 'osppsvc'
+        Resolve-StoreKeys `
+            -DecryptedTexts $decryptedTexts `
+            -WmiClass 'OfficeSoftwareProtectionProduct' `
+            -ServiceName 'osppsvc' `
+            -Errors $wmiErrors `
+            -StoreType 'OSPP' `
+            -CollectedKeys $foundKeys
+    }
 }
 
 # ===============================================================================================================================
 # Query errors
 # ===============================================================================================================================
 
-if ($script:WmiErrors.Count -gt 0) {
+if ($wmiErrors.Count -gt 0) {
     Write-Output ""
     Write-Color "--- Query Errors ---" "BgRed"
-    foreach ($err in $script:WmiErrors) {
+    foreach ($err in $wmiErrors) {
         Write-Color ("{0,-18}: 0x{1:X8} - {2}" -f $err.ClassName, $err.ErrorCode, $err.ErrorMessage) "BgRed"
     }
 }
 
 Write-Output ""
+
+# ===============================================================================================================================
+# Object return (PassThru)
+# ===============================================================================================================================
+
+if ($PassThru) {
+    return $foundKeys
+}
 
 # ===============================================================================================================================

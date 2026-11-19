@@ -1273,6 +1273,7 @@ if (Test-Path `$kc) {
     $minimumActionWidth = Get-ScaledDpi 114
 
     $defaultKeyFilter = '*.ini,*.txt,*.xml,*.exe,*.dll'
+    $defaultTsFilter = '*.dat,*.C7483456-A289-439d-8115-601632D005A0'
     $defaultDpidFilter = '*.reg,*.bin'
 
     # ===============================================================================================================================
@@ -1480,6 +1481,7 @@ if (Test-Path `$kc) {
     $scanRecurseCheckBox = New-FormCheckBox -Text 'Recurse' -Tooltip 'When checked, searches subfolders recursively.' -AutoSize $false
     $scanKeyCheckBox = New-FormCheckBox -Text 'Key' -Tooltip 'Scans files for product keys.' -AutoSize $false
     $scanKeyCheckBox.Checked = $true
+    $scanTsCheckBox = New-FormCheckBox -Text 'TS' -Tooltip 'Scans files for product keys in SPP trusted stores (e.g. data.dat).' -AutoSize $false
     $scanDpidCheckBox = New-FormCheckBox -Text 'DPID' -Tooltip 'Scans files for Digital Product ID (DPID) blobs.' -AutoSize $false
     $scanLogsCheckBox = New-FormCheckBox -Text 'Logs' -Tooltip 'Saves the scan results to log files on the Desktop.' -AutoSize $false
     $scanButton = New-FormButton -Text 'Scan' -Tooltip 'Scans the selected file or folder for product keys or Digital Product IDs.'
@@ -1489,7 +1491,7 @@ if (Test-Path `$kc) {
     $scanOfficeRegistryButton = New-FormButton -Text 'Get Office Keys From Registry' -Tooltip 'Extracts the Office (MSI version) product keys from the registry Digital Product ID blobs.' -Width (Get-ScaledDpi 210)
     $scanOtherRegistryButton = New-FormButton -Text 'Get Other Product Keys From Registry' -Tooltip 'Scans the registry for product keys from other Microsoft products.' -Width (Get-ScaledDpi 210)
     $scanMsdmButton = New-FormButton -Text 'Get MSDM (BIOS/UEFI) Key' -Tooltip 'Reads the OEM product key embedded in the BIOS/UEFI MSDM table.' -Width (Get-ScaledDpi 210)
-    $scanKeysTopPanel.Controls.AddRange(@($scanFileLabel, $scanFileTextBox, $scanFolderLabel, $scanFolderTextBox, $scanFilterLabel, $scanFilterTextBox, $scanRecurseCheckBox, $scanKeyCheckBox, $scanDpidCheckBox, $scanLogsCheckBox, $scanButton, $scanKeysSeparator, $scanInstalledKeysButton, $scanWindowsRegistryButton, $scanOfficeRegistryButton, $scanOtherRegistryButton, $scanMsdmButton))
+    $scanKeysTopPanel.Controls.AddRange(@($scanFileLabel, $scanFileTextBox, $scanFolderLabel, $scanFolderTextBox, $scanFilterLabel, $scanFilterTextBox, $scanRecurseCheckBox, $scanKeyCheckBox, $scanTsCheckBox, $scanDpidCheckBox, $scanLogsCheckBox, $scanButton, $scanKeysSeparator, $scanInstalledKeysButton, $scanWindowsRegistryButton, $scanOfficeRegistryButton, $scanOtherRegistryButton, $scanMsdmButton))
 
     $scanKeysBottomPanel = New-FormPanel
     $scanKeysOutputBox = New-OutputBox
@@ -1685,7 +1687,7 @@ if (Test-Path `$kc) {
         Set-LabeledControlBounds -Label $scanFileLabel -Control $scanFileTextBox -Top $scanRow1Top -LabelWidth $scanLabelWidth -ControlLeft $scanInputLeft -ControlWidth $scanInputWidth
         Set-LabeledControlBounds -Label $scanFolderLabel -Control $scanFolderTextBox -Top $scanRow2Top -LabelWidth $scanLabelWidth -ControlLeft $scanInputLeft -ControlWidth $scanInputWidth
         Set-LabeledControlBounds -Label $scanFilterLabel -Control $scanFilterTextBox -Top $scanRow3Top -LabelWidth $scanLabelWidth -ControlLeft $scanInputLeft -ControlWidth $scanInputWidth
-        Set-CheckboxRowBounds -CheckBoxes @($scanKeyCheckBox, $scanDpidCheckBox, $scanRecurseCheckBox, $scanLogsCheckBox) -Left $scanInputLeft -Top $scanRow4Top -Width $scanInputWidth -Gap 2
+        Set-CheckboxRowBounds -CheckBoxes @($scanKeyCheckBox, $scanTsCheckBox, $scanDpidCheckBox, $scanRecurseCheckBox, $scanLogsCheckBox) -Left $scanInputLeft -Top $scanRow4Top -Width $scanInputWidth -Gap 2
         $scanButton.SetBounds($scanInputLeft, $scanRow5Top, $scanInputWidth, $controlHeight)
 
         $visibleProfiles = [Math]::Min(25, ([Math]::Max(1, $profileComboBox.Items.Count)))
@@ -2281,25 +2283,35 @@ if (Test-Path `$kc) {
             }
         })
 
+    $updateScanModeUi = {
+        if ($scanTsCheckBox.Checked) {
+            $scanFilterTextBox.Text = $defaultTsFilter
+        }
+        elseif ($scanDpidCheckBox.Checked) {
+            $scanFilterTextBox.Text = $defaultDpidFilter
+        }
+        else {
+            $scanFilterTextBox.Text = $defaultKeyFilter
+        }
+    }
+
     $scanKeyCheckBox.Add_Click({
-            if ($scanKeyCheckBox.Checked) {
-                $scanDpidCheckBox.Checked = $false
-                $scanFilterTextBox.Text = $defaultKeyFilter
-            }
-            elseif (-not $scanDpidCheckBox.Checked) {
-                $scanKeyCheckBox.Checked = $true
-                $scanFilterTextBox.Text = $defaultKeyFilter
-            }
+            $scanKeyCheckBox.Checked = $true
+            $scanTsCheckBox.Checked = $false
+            $scanDpidCheckBox.Checked = $false
+            & $updateScanModeUi
+        })
+    $scanTsCheckBox.Add_Click({
+            $scanTsCheckBox.Checked = $true
+            $scanKeyCheckBox.Checked = $false
+            $scanDpidCheckBox.Checked = $false
+            & $updateScanModeUi
         })
     $scanDpidCheckBox.Add_Click({
-            if ($scanDpidCheckBox.Checked) {
-                $scanKeyCheckBox.Checked = $false
-                $scanFilterTextBox.Text = $defaultDpidFilter
-            }
-            elseif (-not $scanKeyCheckBox.Checked) {
-                $scanDpidCheckBox.Checked = $true
-                $scanFilterTextBox.Text = $defaultDpidFilter
-            }
+            $scanDpidCheckBox.Checked = $true
+            $scanKeyCheckBox.Checked = $false
+            $scanTsCheckBox.Checked = $false
+            & $updateScanModeUi
         })
 
     $scanFileTextBox.Add_MouseDown({
@@ -2337,6 +2349,7 @@ if (Test-Path `$kc) {
         $scanFilterTextBox,
         $scanRecurseCheckBox,
         $scanKeyCheckBox,
+        $scanTsCheckBox,
         $scanDpidCheckBox,
         $scanLogsCheckBox,
         $scanButton,
@@ -2352,6 +2365,7 @@ if (Test-Path `$kc) {
                 $patterns = @($scanFilterTextBox.Text.Trim() -split '[,; ]+' | Where-Object { $_ } | ForEach-Object { $_.Trim().ToLower() })
                 $filePath = $scanFileTextBox.Text.Trim()
                 $folderPath = $scanFolderTextBox.Text.Trim()
+
                 $arguments = @{
                     IncludeExtensions = $patterns
                     Recurse           = $scanRecurseCheckBox.Checked
@@ -2360,13 +2374,18 @@ if (Test-Path `$kc) {
                     Folder            = if (Test-SelectedPathText -PathText $folderPath) { $folderPath } else { '' }
                 }
 
-                if (-not ($scanKeyCheckBox.Checked -or $scanDpidCheckBox.Checked)) {
-                    $scanKeyCheckBox.Checked = $true
-                    $scanFilterTextBox.Text = $defaultKeyFilter
+                if ($scanTsCheckBox.Checked) {
+                    $arguments['TrustedStore'] = $true
+                    $scriptName = 'ScanKeysInFiles.ps1'
+                }
+                elseif ($scanKeyCheckBox.Checked) {
+                    $scriptName = 'ScanKeysInFiles.ps1'
+                }
+                else {
+                    $scriptName = 'ScanKeysInDPID.ps1'
                 }
 
-                $scriptName = if ($scanKeyCheckBox.Checked) { 'ScanKeysInFiles.ps1' } else { 'ScanKeysInDPID.ps1' }
-                Start-ToolTask -ScriptName $scriptName -Arguments $arguments -OutputBox $scanKeysOutputBox -ControlsToDisable $scanTaskControls -Completed $null
+                Start-ToolTask -ScriptName $scriptName -Arguments $arguments -OutputBox $scanKeysOutputBox -ControlsToDisable $scanTaskControls -Completed $updateScanModeUi
             }
         })
 

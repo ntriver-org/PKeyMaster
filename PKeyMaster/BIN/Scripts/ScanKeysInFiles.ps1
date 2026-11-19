@@ -4,13 +4,17 @@
 
 .DESCRIPTION
     Searches a file or folder for 5x5 product keys by reading raw bytes as
-    UTF-8, Unicode, and Big-Endian Unicode. Unique keys are extracted per source file.
+    UTF-8, Unicode, and Big-Endian Unicode, or by decrypting SPP trusted store files.
+    Unique keys are extracted per source file.
 
 .PARAMETER File
     Path to a single file to scan.
 
 .PARAMETER Folder
     Path to a folder to scan.
+
+.PARAMETER TrustedStore
+    Scans files as SPP trusted store files (e.g. data.dat).
 
 .PARAMETER Recurse
     Recursively scan subdirectories when using -Folder.
@@ -27,11 +31,18 @@
 
 .EXAMPLE
     .\ScanKeysInFiles.ps1 -Folder "C:\Backups" -Recurse -Logs
+
+.EXAMPLE
+    .\ScanKeysInFiles.ps1 -File "C:\Windows\System32\spp\store\2.0\data.dat" -TrustedStore -Logs
+
+.EXAMPLE
+    .\ScanKeysInFiles.ps1 -Folder "C:\Backups\spp" -TrustedStore -Recurse -Logs
 #>
 [CmdletBinding()]
 param(
     [string]   $File,
     [string]   $Folder,
+    [switch]   $TrustedStore,
     [switch]   $Recurse,
     [string[]] $IncludeExtensions,
     [switch]   $Logs
@@ -56,15 +67,21 @@ $KEY_PATTERN = "(?i)([$KeyChars]{5}-){4}[$KeyChars]{4}[${KeyChars}Z]"
 function Invoke-FileKeyScan {
     # Scan a file for keys, print them, and optionally save them.
     param([string]$FilePath)
-    
-    $keys = @(Find-KeysInFile -FilePath $FilePath -Pattern $KEY_PATTERN)
-    if ($keys.Count -eq 0) { return }
 
-    $global:filesWithKeys++
-    $global:totalKeys += $keys.Count
+    if ($TrustedStore) {
+        $results = @(Invoke-PassThruScript "ScanKeysInTrustedStore.ps1" @{ StorePath = $FilePath })
+        $Keys = @($results | ForEach-Object { $_.ProductKey } | Where-Object { $_ } | Select-Object -Unique)
+    }
+    else {
+        $Keys = @(Find-KeysInFile -FilePath $FilePath -Pattern $KEY_PATTERN)
+    }
+    if ($Keys.Count -eq 0) { return }
+
+    $script:filesWithKeys++
+    $script:totalKeys += $Keys.Count
 
     Write-Output "[$FilePath]"
-    foreach ($k in $keys) { Write-Output $k }
+    foreach ($k in $Keys) { Write-Output $k }
     Write-Output ""
 
     if ($Logs) {
@@ -72,62 +89,78 @@ function Invoke-FileKeyScan {
         $fullPath = [System.IO.Path]::GetFullPath($FilePath)
         $safeName = $fullPath -replace '[:\\/]', '-'
         $outPath = Join-Path $logRoot "$safeName.txt"
-        ($keys -join "`r`n") | Out-File $outPath -Encoding UTF8
-        $global:savedFiles += $outPath
+        ($Keys -join "`r`n") | Out-File $outPath -Encoding UTF8
+        $script:savedFiles += $outPath
     }
 }
 
 # ===============================================================================================================================
-
 # Main execution
 # ===============================================================================================================================
 
 $sw = [System.Diagnostics.Stopwatch]::StartNew()
 
-$global:savedFiles = @()
+$script:savedFiles = @()
+$script:totalKeys = 0
+$script:filesWithKeys = 0
 $base = Join-Path ([Environment]::GetFolderPath("Desktop")) "PKeyMaster-Logs"
 $logRoot = Join-Path $base ("ScanKeys\" + (Get-Date -Format "yyyy-MM-dd_HH-mm-ss_fff"))
 
-if ($File) {
-
-    if (-not (Test-Path $File -PathType Leaf -ErrorAction SilentlyContinue)) {
-        Write-Color "Error: File does not exist: $File" "BgRed"; return
-    }
-
-    Write-Output "File    : $([System.IO.Path]::GetFileName($File))"
-    Write-Output "Scanning, please wait..."
-    Write-Output ""
-
-    $global:totalKeys = 0
-    $global:filesWithKeys = 0
-    Invoke-FileKeyScan -FilePath $File
-
-    $sw.Stop()
-    Write-Output ""
-    Write-Output "File  : $([System.IO.Path]::GetFileName($File))"
-    Write-Output "Keys  : $($global:totalKeys)"
-    Write-Output ("Time  : {0:N3} s" -f $sw.Elapsed.TotalSeconds)
-
+if ($File -and $Folder) {
+    Write-Color "Error: Specify either -File or -Folder, not both." "BgRed"; return
 }
-elseif ($Folder) {
+if (-not $File -and -not $Folder) {
+    Write-Color "Error: Specify -File or -Folder." "BgRed"; return
+}
 
-    if (-not (Test-Path $Folder -PathType Container -ErrorAction SilentlyContinue)) {
-        Write-Color "Error: Folder does not exist: $Folder" "BgRed"; return
+$isFolder = [bool]$Folder
+$target = if ($isFolder) { $Folder } else { $File }
+$pathType = if ($isFolder) { 'Container' } else { 'Leaf' }
+
+if (-not (Test-Path -LiteralPath $target -PathType $pathType -ErrorAction SilentlyContinue)) {
+    Write-Color ("Error: {0} does not exist: {1}" -f $(if ($isFolder) { 'Folder' } else { 'File' }), $target) "BgRed"; return
+}
+
+$targetPath = (Resolve-Path -LiteralPath $target).ProviderPath
+
+if ($isFolder) {
+    if ($TrustedStore -and (-not $PSBoundParameters.ContainsKey('IncludeExtensions'))) {
+        $IncludeExtensions = @('*.dat', '*.C7483456-A289-439d-8115-601632D005A0')
     }
-
     Write-Output "Folder  : $Folder"
     Write-Output "Recurse : $(if ($Recurse) { 'Yes' } else { 'No' })"
     Write-Output "Filter  : $(if ($IncludeExtensions) { $IncludeExtensions -join ', ' } else { '(all files)' })"
-    Write-Output "Scanning, please wait..."
-    Write-Output ""
+}
+else {
+    Write-Output "File    : $([System.IO.Path]::GetFileName($targetPath))"
+}
 
-    $patterns = @($IncludeExtensions | Where-Object { $_ -and $_.Trim() } | ForEach-Object { $_.Trim() })
+if ($TrustedStore -and ($targetPath -like "$env:SystemRoot\System32*" -or $targetPath -like "$env:SystemRoot\Sysnative*")) {
+    Write-Color "Note    : Store files on the live system may be locked." "FgYellow"
+    Write-Color "          Use 'Get Installed Windows/Office Keys' option instead." "FgYellow"
+}
+
+Write-Output "Scanning, please wait..."
+Write-Output ""
+
+$script:totalKeys = 0
+$script:filesWithKeys = 0
+
+if (-not $isFolder) {
+    Invoke-FileKeyScan -FilePath $targetPath
+
+    $sw.Stop()
+    Write-Output ""
+    Write-Output "File  : $([System.IO.Path]::GetFileName($targetPath))"
+    Write-Output "Keys  : $($script:totalKeys)"
+    Write-Output ("Time  : {0:N3} s" -f $sw.Elapsed.TotalSeconds)
+}
+else {
+    $patterns = @($IncludeExtensions | ForEach-Object { $_ -split '[,;]+' } | Where-Object { $_ -and $_.Trim() } | ForEach-Object { $_.Trim() })
     $fileCount = 0
-    $global:filesWithKeys = 0
-    $global:totalKeys = 0
 
     $stack = New-Object 'System.Collections.Generic.Stack[string]'
-    $stack.Push($Folder)
+    $stack.Push($targetPath)
 
     while ($stack.Count -gt 0) {
         $currentDir = $stack.Pop()
@@ -159,20 +192,16 @@ elseif ($Folder) {
     $sw.Stop()
     Write-Output ""
     Write-Output "Files scanned   : $fileCount"
-    Write-Output "Files with keys : $($global:filesWithKeys)"
-    Write-Output "Total keys      : $($global:totalKeys)"
+    Write-Output "Files with keys : $($script:filesWithKeys)"
+    Write-Output "Total keys      : $($script:totalKeys)"
     Write-Output ("Time            : {0:N3} s" -f $sw.Elapsed.TotalSeconds)
-
-}
-else {
-    Write-Color "Error: Specify -File or -Folder." "BgRed"
 }
 
 # ===============================================================================================================================
 # Log summary
 # ===============================================================================================================================
 
-if ($global:savedFiles.Count -gt 0) {
+if ($script:savedFiles.Count -gt 0) {
     Write-Output ""
     Write-Output "Logs saved to   : $logRoot"
     if (Test-Path $logRoot -PathType Container) {
