@@ -132,6 +132,9 @@ function Invoke-RegScan {
             if ($excluded) { continue }
         }
 
+        # Skip Perflib paths (performance counter queries can trigger extensible counter DLL collection and hang/deadlock)
+        if ($currentPath -match '\\Perflib($|\\)') { continue }
+
         # Skip already-visited paths to avoid duplicates
         if ($processed.ContainsKey($fullPath)) { continue }
         $processed[$fullPath] = $true
@@ -149,21 +152,25 @@ function Invoke-RegScan {
             if (-not $key) { continue }
 
             # Check for DPID values and decode any blobs found
+            $valNames = $key.GetValueNames()
             foreach ($valName in @("DigitalProductId", "DigitalProductId4")) {
-                $blob = $key.GetValue($valName, $null)
-                if ($blob -is [byte[]]) {
-                    $parsed = Get-DigitalProductId -Blob $blob -VerifyHash:$VerifyHash
-                    if ($parsed) {
-                        Write-Output ""
-                        Format-RegistryKeyResult -Path $fullPath -ValueName $valName -ParsedObj $parsed
-                        Write-Output "________________________________________________________"
-                        if ($Tracker) { $Tracker.FoundAny = $true }
+                if ($valNames -contains $valName) {
+                    $blob = $key.GetValue($valName, $null)
+                    if ($blob -is [byte[]]) {
+                        $parsed = Get-DigitalProductId -Blob $blob -VerifyHash:$VerifyHash
+                        if ($parsed) {
+                            Write-Output ""
+                            Format-RegistryKeyResult -Path $fullPath -ValueName $valName -ParsedObj $parsed
+                            Write-Output "________________________________________________________"
+                            if ($Tracker) { $Tracker.FoundAny = $true }
+                        }
                     }
                 }
             }
 
-            # Push subkeys onto the stack for continued traversal
+            # Push subkeys onto the stack for continued traversal (skip Perflib)
             foreach ($sub in $key.GetSubKeyNames()) {
+                if ($sub -eq 'Perflib') { continue }
                 $nextPath = if ($currentPath -eq '') { $sub } else { "$currentPath\$sub" }
                 $stack.Push($nextPath)
             }

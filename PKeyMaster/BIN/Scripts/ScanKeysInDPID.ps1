@@ -77,7 +77,7 @@ function Find-DPIDInFile {
         $text = [System.IO.File]::ReadAllText($FilePath)
         $text = $text -replace "\\\r?\n\s*", ""
         foreach ($m in [regex]::Matches($text, '(?:hex:\s*)?((?:[0-9a-fA-F]{2}[,\s]+)+[0-9a-fA-F]{2})')) {
-            $strArr = $m.Groups[1].Value.Split(@(',', ' ', "`t", "`r", "`n"), [System.StringSplitOptions]::RemoveEmptyEntries)
+            $strArr = $m.Groups[1].Value.Split([char[]]@(',', ' ', "`t", "`r", "`n"), [System.StringSplitOptions]::RemoveEmptyEntries)
             
             $isValid = $false
             if ($strArr.Count -eq 50) { $isValid = $true }

@@ -176,13 +176,6 @@ if ($ExecutionContext.SessionState.LanguageMode.value__ -ne 0) {
     return
 }
 
-# Must be Windows PowerShell, not PowerShell Core.
-if ($PSEdition -eq 'Core') {
-    Write-Host "ERROR: Windows PowerShell is needed for the script, but it seems to be running with PowerShell Core." -ForegroundColor Red
-    Show-Msg "${BaseUrl}troubleshoot"
-    return
-}
-
 # Verify .NET 3.5+ works.
 $NetOk = $false
 try {

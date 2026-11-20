@@ -57,7 +57,7 @@ function Get-SlInteropType([string]$LibraryName) {
     if (-not $interopType) {
         $asmName = $typeName + 'Assembly'
         $modName = $typeName + 'Module'
-        $TB = [AppDomain]::CurrentDomain.DefineDynamicAssembly((New-Object System.Reflection.AssemblyName($asmName)), 1).DefineDynamicModule($modName, $False).DefineType($typeName)
+        $TB = $(if ($PSEdition -eq 'Core') { [System.Reflection.Emit.AssemblyBuilder]::DefineDynamicAssembly((New-Object System.Reflection.AssemblyName($asmName)), 1) } else { [AppDomain]::CurrentDomain.DefineDynamicAssembly((New-Object System.Reflection.AssemblyName($asmName)), 1) }).DefineDynamicModule($modName).DefineType($typeName)
 
         [void]$TB.DefinePInvokeMethod('SLOpen', $LibraryName, 22, 1, [int], @([IntPtr].MakeByRefType()), 1, 4).SetImplementationFlags(128)
         [void]$TB.DefinePInvokeMethod('SLClose', $LibraryName, 22, 1, [int], @([IntPtr]), 1, 4).SetImplementationFlags(128)

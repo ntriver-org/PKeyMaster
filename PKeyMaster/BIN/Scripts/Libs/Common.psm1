@@ -197,7 +197,7 @@ function Get-WmiSppError {
         }
 
         if (-not $interopType) {
-            $TB = [AppDomain]::CurrentDomain.DefineDynamicAssembly((New-Object System.Reflection.AssemblyName('SPPInteropAssembly')), 1).DefineDynamicModule('SPPInteropModule', $False).DefineType($typeName)
+            $TB = $(if ($PSEdition -eq 'Core') { [System.Reflection.Emit.AssemblyBuilder]::DefineDynamicAssembly((New-Object System.Reflection.AssemblyName('SPPInteropAssembly')), 1) } else { [AppDomain]::CurrentDomain.DefineDynamicAssembly((New-Object System.Reflection.AssemblyName('SPPInteropAssembly')), 1) }).DefineDynamicModule('SPPInteropModule').DefineType($typeName)
             [void]$TB.DefinePInvokeMethod('LoadLibrary', 'kernel32.dll', 22, 1, [IntPtr], @([string]), 1, 4).SetImplementationFlags(128)
             [void]$TB.DefinePInvokeMethod('FreeLibrary', 'kernel32.dll', 22, 1, [bool], @([IntPtr]), 1, 4).SetImplementationFlags(128)
             [void]$TB.DefinePInvokeMethod('FormatMessage', 'kernel32.dll', 22, 1, [int], @([int], [IntPtr], [int], [int], [System.Text.StringBuilder], [int], [IntPtr]), 1, 4).SetImplementationFlags(128)
@@ -421,16 +421,27 @@ function Get-PKeyConfigInfo {
 # ===============================================================================================================================
 
 $jsonSerializer = $null
-try {
-    Add-Type -AssemblyName System.Web.Extensions | Out-Null
-    $jsonSerializer = New-Object System.Web.Script.Serialization.JavaScriptSerializer
-    $jsonSerializer.MaxJsonLength = [int]::MaxValue
+if ($PSEdition -ne 'Core') {
+    try {
+        Add-Type -AssemblyName System.Web.Extensions -ErrorAction SilentlyContinue | Out-Null
+        $jsonSerializer = New-Object System.Web.Script.Serialization.JavaScriptSerializer
+        $jsonSerializer.MaxJsonLength = [int]::MaxValue
+    }
+    catch { }
 }
-catch { }
 
 function Read-Json([string]$JsonText) {
-    if (-not $jsonSerializer -or -not $JsonText) { return $null }
-    return $jsonSerializer.DeserializeObject($JsonText)
+    if (-not $JsonText) { return $null }
+
+    if ($jsonSerializer) {
+        return $jsonSerializer.DeserializeObject($JsonText)
+    }
+
+    if ($PSEdition -eq 'Core') {
+        return ($JsonText | ConvertFrom-Json -AsHashtable)
+    }
+
+    return ($JsonText | ConvertFrom-Json)
 }
 
 # ===============================================================================================================================

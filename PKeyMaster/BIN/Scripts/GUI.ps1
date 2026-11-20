@@ -53,7 +53,7 @@ function Get-HostValue {
 
 function Initialize-WinForms {
     try {
-        $TB = [AppDomain]::CurrentDomain.DefineDynamicAssembly((Get-Random), 1).DefineDynamicModule((Get-Random), $false).DefineType((Get-Random))
+        $TB = $(if ($PSEdition -eq 'Core') { [System.Reflection.Emit.AssemblyBuilder]::DefineDynamicAssembly((Get-Random), 1) } else { [AppDomain]::CurrentDomain.DefineDynamicAssembly((Get-Random), 1) }).DefineDynamicModule((Get-Random)).DefineType((Get-Random))
 
         [void]$TB.DefinePInvokeMethod('SetProcessDPIAware', 'user32.dll', 22, 1, [bool], @(), 1, 4).SetImplementationFlags(128)
         [void]$TB.DefinePInvokeMethod('ShowWindow', 'user32.dll', 22, 1, [bool], @([IntPtr], [int]), 1, 4).SetImplementationFlags(128)

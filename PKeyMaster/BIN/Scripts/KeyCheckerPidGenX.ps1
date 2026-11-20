@@ -110,7 +110,7 @@ if (-not $pidGenXNativeType) {
     }
 
     try {
-        $TB = [AppDomain]::CurrentDomain.DefineDynamicAssembly((New-Object System.Reflection.AssemblyName('PidGenXAssembly')), 1).DefineDynamicModule('PidGenXModule', $False).DefineType($typeName)
+        $TB = $(if ($PSEdition -eq 'Core') { [System.Reflection.Emit.AssemblyBuilder]::DefineDynamicAssembly((New-Object System.Reflection.AssemblyName('PidGenXAssembly')), 1) } else { [AppDomain]::CurrentDomain.DefineDynamicAssembly((New-Object System.Reflection.AssemblyName('PidGenXAssembly')), 1) }).DefineDynamicModule('PidGenXModule').DefineType($typeName)
 
         $iidParams = @([string], [string], [string], [string], [UInt64], [string].MakeByRefType(), [string].MakeByRefType(), [string].MakeByRefType(), [string].MakeByRefType(), [IntPtr])
 
