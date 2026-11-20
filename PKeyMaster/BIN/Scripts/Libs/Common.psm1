@@ -14,20 +14,21 @@
 #>
 
 # ===============================================================================================================================
-# ANSI / VT support detection
+# ANSI / VT support detection & color configuration
 # ===============================================================================================================================
 
-$global:AnsiSupported = $false
-$global:ColorLineBuffer = ""
-if ([System.Environment]::OSVersion.Version.Build -ge 10586) {
+$AnsiSupported = $false
+$colorLineBuffer = @{ Value = "" }
+
+if ($Host.Name -ne 'Windows PowerShell ISE Host' -and [System.Environment]::OSVersion.Version.Build -ge 10586) {
     $forceV2 = (Get-ItemProperty -Path 'HKCU:\Console' -Name 'ForceV2' -ErrorAction SilentlyContinue).ForceV2
     if ($null -eq $forceV2 -or $forceV2 -ne 0) {
-        $global:AnsiSupported = $true
+        $AnsiSupported = $true
     }
 }
 
 # Color name -> @(AnsiCode, GUI-ForegroundColor, GUI-BackgroundColor)
-$global:ColorMap = @{
+$colorMap = @{
     'BgRed'    = @("41;97", "White", "DarkRed")
     'BgGray'   = @("100;97", "White", "Gray")
     'BgGreen'  = @("42;97", "White", "Green")
@@ -59,13 +60,13 @@ function Write-Color {
         [switch]$NoNewline
     )
 
-    $colorData = $global:ColorMap[$Color]
+    $colorData = $colorMap[$Color]
     $piece = ""
 
-    if ($global:IsGuiRunspace) {
+    if ($IsGuiRunspace) {
         $piece = "[c:$($colorData[1]):$($colorData[2])]$Text"
     }
-    elseif ($global:AnsiSupported) {
+    elseif ($AnsiSupported) {
         $piece = "$([char]27)[$($colorData[0])m$Text$([char]27)[0m"
     }
     else {
@@ -73,12 +74,17 @@ function Write-Color {
     }
 
     if ($NoNewline) {
-        $global:ColorLineBuffer += $piece
+        $colorLineBuffer.Value += $piece
+        return
+    }
+
+    if ($colorLineBuffer.Value) {
+        $fullLine = $colorLineBuffer.Value + $piece
+        $colorLineBuffer.Value = ""
+        Write-Output $fullLine
     }
     else {
-        $fullLine = $global:ColorLineBuffer + $piece
-        $global:ColorLineBuffer = ""
-        Write-Output $fullLine
+        Write-Output $piece
     }
 }
 
@@ -184,10 +190,14 @@ function Get-WmiSppError {
     if ($hres -ne 0) {
         # Build interop type once per session to avoid recompiling
         $typeName = 'SPPInterop'
-        $interopType = $typeName -as [type]
+        $interopType = $null
+        foreach ($a in [AppDomain]::CurrentDomain.GetAssemblies()) {
+            $interopType = $a.GetType($typeName, $false)
+            if ($interopType) { break }
+        }
 
         if (-not $interopType) {
-            $TB = [AppDomain]::CurrentDomain.DefineDynamicAssembly((Get-Random), 1).DefineDynamicModule((Get-Random), $False).DefineType($typeName)
+            $TB = [AppDomain]::CurrentDomain.DefineDynamicAssembly((New-Object System.Reflection.AssemblyName('SPPInteropAssembly')), 1).DefineDynamicModule('SPPInteropModule', $False).DefineType($typeName)
             [void]$TB.DefinePInvokeMethod('LoadLibrary', 'kernel32.dll', 22, 1, [IntPtr], @([string]), 1, 4).SetImplementationFlags(128)
             [void]$TB.DefinePInvokeMethod('FreeLibrary', 'kernel32.dll', 22, 1, [bool], @([IntPtr]), 1, 4).SetImplementationFlags(128)
             [void]$TB.DefinePInvokeMethod('FormatMessage', 'kernel32.dll', 22, 1, [int], @([int], [IntPtr], [int], [int], [System.Text.StringBuilder], [int], [IntPtr]), 1, 4).SetImplementationFlags(128)
@@ -407,40 +417,50 @@ function Get-PKeyConfigInfo {
 }
 
 # ===============================================================================================================================
-# JSON Serializer Global Cache
+# JSON Serializer Cache
 # ===============================================================================================================================
 
-if (-not $global:JsonSerializer) {
-    try {
-        Add-Type -AssemblyName System.Web.Extensions | Out-Null
-        $global:JsonSerializer = New-Object System.Web.Script.Serialization.JavaScriptSerializer
-        $global:JsonSerializer.MaxJsonLength = [int]::MaxValue
-    }
-    catch { }
+$jsonSerializer = $null
+try {
+    Add-Type -AssemblyName System.Web.Extensions | Out-Null
+    $jsonSerializer = New-Object System.Web.Script.Serialization.JavaScriptSerializer
+    $jsonSerializer.MaxJsonLength = [int]::MaxValue
+}
+catch { }
+
+function Read-Json([string]$JsonText) {
+    if (-not $jsonSerializer -or -not $JsonText) { return $null }
+    return $jsonSerializer.DeserializeObject($JsonText)
 }
 
 # ===============================================================================================================================
-# PKeyConfigsMap JSON Global Cache
+# PKeyConfigsMap JSON Cache
 # ===============================================================================================================================
 
-if (-not $global:PKeyConfigsMap) {
-    $jsonPath = Join-Path $PSScriptRoot "..\..\PKeyConfigsMap.json"
+$pKeyConfigsMap = $null
+$jsonPath = Join-Path $PSScriptRoot "..\..\PKeyConfigsMap.json"
 
-    if (Test-Path $jsonPath) {
-        $global:PKeyConfigsMap = $global:JsonSerializer.DeserializeObject([System.IO.File]::ReadAllText($jsonPath))
-    }
+if (Test-Path $jsonPath) {
+    $pKeyConfigsMap = Read-Json ([System.IO.File]::ReadAllText($jsonPath))
+}
+
+function Get-PKeyConfigsMap {
+    return $pKeyConfigsMap
 }
 
 # ===============================================================================================================================
-# PreVistaRanges CSV Global Cache
+# PreVistaRanges CSV Cache
 # ===============================================================================================================================
 
-if (-not $global:PreVistaRanges) {
-    $preVistaCsvPath = Join-Path $PSScriptRoot "..\..\PreVistaRanges.csv"
+$preVistaRanges = $null
+$preVistaCsvPath = Join-Path $PSScriptRoot "..\..\PreVistaRanges.csv"
 
-    if (Test-Path $preVistaCsvPath) {
-        $global:PreVistaRanges = @((Get-Content -LiteralPath $preVistaCsvPath) | Where-Object { $_ -notmatch '^\s*sep\s*=' } | ConvertFrom-Csv)
-    }
+if (Test-Path $preVistaCsvPath) {
+    $preVistaRanges = @((Get-Content -LiteralPath $preVistaCsvPath) | Where-Object { $_ -notmatch '^\s*sep\s*=' } | ConvertFrom-Csv)
+}
+
+function Get-PreVistaRanges {
+    return $preVistaRanges
 }
 
 # ===============================================================================================================================
@@ -451,13 +471,14 @@ if (-not $global:PreVistaRanges) {
 
 function Get-PreVistaProductMatch($GroupId, $KeyId) {
 
-    if ($null -eq $GroupId -or $null -eq $KeyId -or -not $global:PreVistaRanges) { return @() }
+    $ranges = Get-PreVistaRanges
+    if ($null -eq $GroupId -or $null -eq $KeyId -or -not $ranges) { return @() }
 
     $gStr = [string][int]$GroupId
     $kId = [int64]$KeyId
     $editionMatches = @{}
 
-    foreach ($row in $global:PreVistaRanges) {
+    foreach ($row in $ranges) {
         if ($row.BinkID_Dec -ne $gStr) { continue }
 
         $min = ([int64]$row.Channel_Min * 1000000) + [int64]$row.Sequence_Min
@@ -609,13 +630,14 @@ function Get-ProductDetails {
 
     # 2. Fallback to PKeyConfigs (for post-Vista, beta Longhorn, or optional custom fallback)
     $pkeyConfigsDir = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\..\PKeyConfigs"))
-    if ($global:PKeyConfigsMap -and (Test-Path -LiteralPath $pkeyConfigsDir)) {
+    $configsMap = Get-PKeyConfigsMap
+    if ($configsMap -and (Test-Path -LiteralPath $pkeyConfigsDir)) {
         $gStr = [string]$gId
 
         # Search standard configs first, then custom configs if IncludeCustom is set
         $passes = if ($IncludeCustom) { $false, $true } else { @($false) }
         foreach ($isCustomPass in $passes) {
-            foreach ($entry in $global:PKeyConfigsMap) {
+            foreach ($entry in $configsMap) {
                 if (-not $entry.Algorithms -or ($entry.Profile -match "custom") -ne $isCustomPass) { continue }
 
                 $matched = $false

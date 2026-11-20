@@ -59,6 +59,8 @@ Import-Module "$scriptDir\Libs\Common.psm1"
 # CSV export helpers
 # ===============================================================================================================================
 
+$lineSeparator = "________________________________________________________________________________`r`n"
+
 $csvHeaders = @("ActConfigID", "RefGroupID", "AlgorithmId", "EditionID", "ProductDescription", "ProductKeyType", "IsRandomized", "PartNumber", "EULAType", "IsValid", "Start", "End", "Total Keys")
 
 # Format a CSV-safe quoted row from an array of values.
@@ -239,7 +241,8 @@ Write-Output ""
 # File processing
 # ===============================================================================================================================
 
-Write-Output "Processing..."
+Write-Output "Processing, please wait..."
+Write-Output $lineSeparator
 
 $mergedLines = New-Object 'System.Collections.Generic.List[string]'
 if ($Merged) {
@@ -300,7 +303,7 @@ if ($Merged -and $successCount -gt 0) {
 # Summary
 # ===============================================================================================================================
 
-Write-Output ""
+Write-Output $lineSeparator
 if ($failureCount -gt 0) {
     Write-Color ("{0,$pad}: Success {1}, Failed {2}" -f "Summary", $successCount, $failureCount) "BgRed"
 }

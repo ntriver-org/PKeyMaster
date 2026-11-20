@@ -60,13 +60,19 @@ Import-Module "$scriptDir\Libs\Common.psm1"
 # Constants & helpers
 # ===============================================================================================================================
 
+$lineSeparator = "________________________________________________________________________________`r`n"
+
 # 5x5 key regex (case-insensitive, includes N for PKey2009, Z for redeem keys)
 $KeyChars = 'BCDFGHJKMPQRTVWXY2346789N'
 $KEY_PATTERN = "(?i)([$KeyChars]{5}-){4}[$KeyChars]{4}[${KeyChars}Z]"
 
 function Invoke-FileKeyScan {
     # Scan a file for keys, print them, and optionally save them.
-    param([string]$FilePath)
+    param(
+        [string]$FilePath,
+        [hashtable]$Tracker,
+        [string]$LogRoot = ''
+    )
 
     if ($TrustedStore) {
         $results = @(Invoke-PassThruScript "ScanKeysInTrustedStore.ps1" @{ StorePath = $FilePath })
@@ -77,20 +83,20 @@ function Invoke-FileKeyScan {
     }
     if ($Keys.Count -eq 0) { return }
 
-    $script:filesWithKeys++
-    $script:totalKeys += $Keys.Count
+    $Tracker.Files++
+    $Tracker.Total += $Keys.Count
 
     Write-Output "[$FilePath]"
     foreach ($k in $Keys) { Write-Output $k }
-    Write-Output ""
+    Write-Output $lineSeparator
 
-    if ($Logs) {
-        if (-not (Test-Path $logRoot)) { New-Item -ItemType Directory -Path $logRoot -Force | Out-Null }
+    if ($Logs -and $LogRoot) {
+        if (-not (Test-Path $LogRoot)) { New-Item -ItemType Directory -Path $LogRoot -Force | Out-Null }
         $fullPath = [System.IO.Path]::GetFullPath($FilePath)
         $safeName = $fullPath -replace '[:\\/]', '-'
-        $outPath = Join-Path $logRoot "$safeName.txt"
+        $outPath = Join-Path $LogRoot "$safeName.txt"
         ($Keys -join "`r`n") | Out-File $outPath -Encoding UTF8
-        $script:savedFiles += $outPath
+        $Tracker.SavedFiles++
     }
 }
 
@@ -99,12 +105,16 @@ function Invoke-FileKeyScan {
 # ===============================================================================================================================
 
 $sw = [System.Diagnostics.Stopwatch]::StartNew()
+$f = "{0,-18}: {1}"
 
-$script:savedFiles = @()
-$script:totalKeys = 0
-$script:filesWithKeys = 0
-$base = Join-Path ([Environment]::GetFolderPath("Desktop")) "PKeyMaster-Logs"
-$logRoot = Join-Path $base ("ScanKeys\" + (Get-Date -Format "yyyy-MM-dd_HH-mm-ss_fff"))
+$tracker = @{
+    Total      = 0
+    Files      = 0
+    SavedFiles = 0
+}
+$logRoot = if ($Logs) {
+    Join-Path ([Environment]::GetFolderPath("Desktop")) ("PKeyMaster-Logs\ScanKeys\" + (Get-Date -Format "yyyy-MM-dd_HH-mm-ss_fff"))
+} else { '' }
 
 if ($File -and $Folder) {
     Write-Color "Error: Specify either -File or -Folder, not both." "BgRed"; return
@@ -127,33 +137,30 @@ if ($isFolder) {
     if ($TrustedStore -and (-not $PSBoundParameters.ContainsKey('IncludeExtensions'))) {
         $IncludeExtensions = @('*.dat', '*.C7483456-A289-439d-8115-601632D005A0')
     }
-    Write-Output "Folder  : $Folder"
-    Write-Output "Recurse : $(if ($Recurse) { 'Yes' } else { 'No' })"
-    Write-Output "Filter  : $(if ($IncludeExtensions) { $IncludeExtensions -join ', ' } else { '(all files)' })"
+    Write-Output ($f -f "Folder", $Folder)
+    Write-Output ($f -f "Recurse", $(if ($Recurse) { 'Yes' } else { 'No' }))
+    Write-Output ($f -f "Filter", $(if ($IncludeExtensions) { $IncludeExtensions -join ', ' } else { '(all files)' }))
 }
 else {
-    Write-Output "File    : $([System.IO.Path]::GetFileName($targetPath))"
+    Write-Output ($f -f "File", $([System.IO.Path]::GetFileName($targetPath)))
 }
 
 if ($TrustedStore -and ($targetPath -like "$env:SystemRoot\System32*" -or $targetPath -like "$env:SystemRoot\Sysnative*")) {
-    Write-Color "Note    : Store files on the live system may be locked." "FgYellow"
-    Write-Color "          Use 'Get Installed Windows/Office Keys' option instead." "FgYellow"
+    Write-Color ($f -f "Note", "Store files on the live system may be locked.") "FgYellow"
+    Write-Color ((" " * 20) + "Use 'Get Installed Windows/Office Keys' option instead.") "FgYellow"
 }
 
-Write-Output "Scanning, please wait..."
 Write-Output ""
-
-$script:totalKeys = 0
-$script:filesWithKeys = 0
+Write-Output "Scanning, please wait..."
+Write-Output $lineSeparator
 
 if (-not $isFolder) {
-    Invoke-FileKeyScan -FilePath $targetPath
+    Invoke-FileKeyScan -FilePath $targetPath -Tracker $tracker -LogRoot $logRoot
 
     $sw.Stop()
-    Write-Output ""
-    Write-Output "File  : $([System.IO.Path]::GetFileName($targetPath))"
-    Write-Output "Keys  : $($script:totalKeys)"
-    Write-Output ("Time  : {0:N3} s" -f $sw.Elapsed.TotalSeconds)
+    Write-Output ($f -f "File", $([System.IO.Path]::GetFileName($targetPath)))
+    Write-Output ($f -f "Keys", $tracker.Total)
+    Write-Output ($f -f "Time", ("{0:N3} s" -f $sw.Elapsed.TotalSeconds))
 }
 else {
     $patterns = @($IncludeExtensions | ForEach-Object { $_ -split '[,;]+' } | Where-Object { $_ -and $_.Trim() } | ForEach-Object { $_.Trim() })
@@ -166,8 +173,8 @@ else {
         $currentDir = $stack.Pop()
 
         try {
-            foreach ($f in [System.IO.Directory]::GetFiles($currentDir)) {
-                $name = [System.IO.Path]::GetFileName($f)
+            foreach ($file in [System.IO.Directory]::GetFiles($currentDir)) {
+                $name = [System.IO.Path]::GetFileName($file)
 
                 if ($patterns.Count -gt 0) {
                     $matched = $false
@@ -176,7 +183,7 @@ else {
                 }
 
                 $fileCount++
-                Invoke-FileKeyScan -FilePath $f
+                Invoke-FileKeyScan -FilePath $file -Tracker $tracker -LogRoot $logRoot
             }
         }
         catch { }
@@ -190,20 +197,18 @@ else {
     }
 
     $sw.Stop()
-    Write-Output ""
-    Write-Output "Files scanned   : $fileCount"
-    Write-Output "Files with keys : $($script:filesWithKeys)"
-    Write-Output "Total keys      : $($script:totalKeys)"
-    Write-Output ("Time            : {0:N3} s" -f $sw.Elapsed.TotalSeconds)
+    Write-Output ($f -f "Files scanned", $fileCount)
+    Write-Output ($f -f "Files with keys", $tracker.Files)
+    Write-Output ($f -f "Total keys", $tracker.Total)
+    Write-Output ($f -f "Time", ("{0:N3} s" -f $sw.Elapsed.TotalSeconds))
 }
 
 # ===============================================================================================================================
 # Log summary
 # ===============================================================================================================================
 
-if ($script:savedFiles.Count -gt 0) {
-    Write-Output ""
-    Write-Output "Logs saved to   : $logRoot"
+if ($tracker.SavedFiles -gt 0) {
+    Write-Output ($f -f "Logs", $logRoot)
     if (Test-Path $logRoot -PathType Container) {
         Invoke-Item -LiteralPath $logRoot
     }

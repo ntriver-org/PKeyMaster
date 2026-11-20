@@ -123,7 +123,7 @@ function Get-AccessToken {
     }
 
     try {
-        $tokenJson = $global:JsonSerializer.DeserializeObject($ResponseFull)
+        $tokenJson = Read-Json $ResponseFull
         $token = $tokenJson["token"]
         if ($token) {
             if (-not (Test-AccessTokenFormat $token)) {
@@ -285,7 +285,7 @@ function Invoke-VisualApiRequest($cleanIid) {
     
     try {
         # Parse the JSON response
-        $json = $global:JsonSerializer.DeserializeObject($ResponseFull)
+        $json = Read-Json $ResponseFull
 
         $productName = [string]$json["productName"]
         if ($productName -and $productName.Trim() -and $productName.Trim() -ne "unknown") {

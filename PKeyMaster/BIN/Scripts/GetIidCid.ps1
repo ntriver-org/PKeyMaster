@@ -43,16 +43,30 @@ Import-Module "$scriptDir\Libs\Common.psm1"
 # ===============================================================================================================================
 
 function Get-SlInteropType([string]$LibraryName) {
-    # Build a .NET type with P/Invoke for the given SL library (slc.dll or OSPPC.dll).
+    # Build or retrieve cached P/Invoke type for the given SL library (slc.dll or OSPPC.dll).
     if (-not $LibraryName -or $LibraryName -match '^\s*$') { return $null }
 
-    $TB = [AppDomain]::CurrentDomain.DefineDynamicAssembly((Get-Random), 1).DefineDynamicModule((Get-Random), $False).DefineType((Get-Random))
+    $typeName = if ($LibraryName -match '(?i)osppc') { 'OsppcInterop' } else { 'SlcInterop' }
 
-    [void]$TB.DefinePInvokeMethod('SLOpen', $LibraryName, 22, 1, [int], @([IntPtr].MakeByRefType()), 1, 4).SetImplementationFlags(128)
-    [void]$TB.DefinePInvokeMethod('SLClose', $LibraryName, 22, 1, [int], @([IntPtr]), 1, 4).SetImplementationFlags(128)
-    [void]$TB.DefinePInvokeMethod('SLGetProductSkuInformation', $LibraryName, 22, 1, [int], @([IntPtr], [Guid].MakeByRefType(), [string], [uint32].MakeByRefType(), [uint32].MakeByRefType(), [IntPtr].MakeByRefType()), 1, 4).SetImplementationFlags(128)
+    $interopType = $null
+    foreach ($a in [AppDomain]::CurrentDomain.GetAssemblies()) {
+        $interopType = $a.GetType($typeName, $false)
+        if ($interopType) { break }
+    }
 
-    return $TB.CreateType()
+    if (-not $interopType) {
+        $asmName = $typeName + 'Assembly'
+        $modName = $typeName + 'Module'
+        $TB = [AppDomain]::CurrentDomain.DefineDynamicAssembly((New-Object System.Reflection.AssemblyName($asmName)), 1).DefineDynamicModule($modName, $False).DefineType($typeName)
+
+        [void]$TB.DefinePInvokeMethod('SLOpen', $LibraryName, 22, 1, [int], @([IntPtr].MakeByRefType()), 1, 4).SetImplementationFlags(128)
+        [void]$TB.DefinePInvokeMethod('SLClose', $LibraryName, 22, 1, [int], @([IntPtr]), 1, 4).SetImplementationFlags(128)
+        [void]$TB.DefinePInvokeMethod('SLGetProductSkuInformation', $LibraryName, 22, 1, [int], @([IntPtr], [Guid].MakeByRefType(), [string], [uint32].MakeByRefType(), [uint32].MakeByRefType(), [IntPtr].MakeByRefType()), 1, 4).SetImplementationFlags(128)
+
+        $interopType = $TB.CreateType()
+    }
+
+    return $interopType
 }
 
 # ===============================================================================================================================

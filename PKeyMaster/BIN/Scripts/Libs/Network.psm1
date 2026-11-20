@@ -22,7 +22,8 @@
 # Initialization & Helper functions
 # ===============================================================================================================================
 
-$script:WgetPath = Join-Path $PSScriptRoot "..\..\wget.exe"
+Import-Module (Join-Path $PSScriptRoot "Common.psm1")
+$wgetPath = Join-Path $PSScriptRoot "..\..\wget.exe"
 
 # ===============================================================================================================================
 
@@ -51,7 +52,7 @@ function Get-NetworkMode {
         return "WebRequest"
     }
 
-    if (Test-Path $script:WgetPath) {
+    if (Test-Path $wgetPath) {
         return "Wget"
     }
 
@@ -106,7 +107,7 @@ function Test-Json([string]$Text) {
     if (-not $Text) { return $false }
     if ($Text -match '</html>') { return $false }
     try {
-        $global:JsonSerializer.DeserializeObject($Text) | Out-Null
+        Read-Json $Text | Out-Null
 
         if ($Text -match '"(cid|message|reasonCode|token|Pkpn|Product|Products|detail|name)"\s*:') {
             return $true
@@ -125,7 +126,7 @@ function Test-Json([string]$Text) {
 
 function Invoke-WgetTextRequest($Method, $Url, $Body, $Headers, $ContentType, $UserAgent) {
     # Make the request via wget.exe.
-    $wget = $script:WgetPath
+    $wget = $wgetPath
     $tempOut = "$env:SystemRoot\Temp\$([Guid]::NewGuid())"
     $tempErr = "$env:SystemRoot\Temp\$([Guid]::NewGuid())"
     $tempPath = "$env:SystemRoot\Temp\$([Guid]::NewGuid())"

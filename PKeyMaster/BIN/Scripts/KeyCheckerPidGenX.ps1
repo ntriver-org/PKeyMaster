@@ -96,14 +96,21 @@ if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM') {
     return
 }
 
-if (-not $global:PidGenXNativeType) {
+$typeName = 'PidGenXNativeMethods'
+$pidGenXNativeType = $null
+foreach ($a in [AppDomain]::CurrentDomain.GetAssemblies()) {
+    $pidGenXNativeType = $a.GetType($typeName, $false)
+    if ($pidGenXNativeType) { break }
+}
+
+if (-not $pidGenXNativeType) {
     if (-not (Test-Path $dllPath)) {
         Write-Color "PidGenX DLL not found: $dllPath" "BgRed"
         return
     }
 
     try {
-        $TB = [AppDomain]::CurrentDomain.DefineDynamicAssembly((Get-Random), 1).DefineDynamicModule((Get-Random), $False).DefineType('NativeMethods')
+        $TB = [AppDomain]::CurrentDomain.DefineDynamicAssembly((New-Object System.Reflection.AssemblyName('PidGenXAssembly')), 1).DefineDynamicModule('PidGenXModule', $False).DefineType($typeName)
 
         $iidParams = @([string], [string], [string], [string], [UInt64], [string].MakeByRefType(), [string].MakeByRefType(), [string].MakeByRefType(), [string].MakeByRefType(), [IntPtr])
 
@@ -111,14 +118,13 @@ if (-not $global:PidGenXNativeType) {
         [void]$TB.DefinePInvokeMethod('GetPKeyData', $dllPath, 22, 1, [int], $iidParams, 1, 3).SetImplementationFlags(128)
         [void]$TB.DefinePInvokeMethod('GetModuleHandle', 'kernel32.dll', 22, 1, [IntPtr], @([string]), 1, 3).SetImplementationFlags(128)
 
-        $global:PidGenXNativeType = $TB.CreateType()
+        $pidGenXNativeType = $TB.CreateType()
     }
     catch {
         Write-Color "Failed to initialize native methods: $($_.Exception.Message)" "BgRed"
         return
     }
 }
-$Script:PidGenXNativeType = $global:PidGenXNativeType
 
 # ===============================================================================================================================
 # Helper functions
@@ -153,7 +159,7 @@ function Invoke-RedeemStatus($RedeemKey, $LogFolder, $f, $scriptDir) {
 
 # ===============================================================================================================================
 
-function Invoke-KeyCertification($ProductKey, $ActConfigId, $LogFolder, $f, $scriptDir) {
+function Invoke-KeyCertification($ProductKey, $ActConfigId, $LogFolder, $f, $scriptDir, [hashtable]$State) {
     # Run KeyCertification.ps1 and display the result.
     $params = @{ ProductKey = $ProductKey; ActConfigId = $ActConfigId }
     if ($LogFolder) { $params['LogPath'] = $LogFolder }
@@ -161,13 +167,13 @@ function Invoke-KeyCertification($ProductKey, $ActConfigId, $LogFolder, $f, $scr
     if (-not $certObj -or -not $certObj.Status) { return }
     
     if ($certObj.Status -eq "Succeeded") {
-        if ($script:SubActionLastState -eq 'error') { Write-Output "" }
-        $script:SubActionLastState = 'success'
+        if ($State -and $State.Last -eq 'error') { Write-Output "" }
+        if ($State) { $State.Last = 'success' }
         Write-Color ($f -f "Key Certification", $certObj.Status) "BgGreen"
     }
     else {
-        if ($script:SubActionLastState) { Write-Output "" }
-        $script:SubActionLastState = 'error'
+        if ($State -and $State.Last) { Write-Output "" }
+        if ($State) { $State.Last = 'error' }
         Write-Color ($f -f "Key Certification", $certObj.Status) "BgRed"
         Write-Color ($f -f "Cert Error Code", $certObj.ErrorCode) "BgRed"
         Write-Color ($f -f "Cert Error Msg", $certObj.ErrorDetail) "BgRed"
@@ -176,7 +182,7 @@ function Invoke-KeyCertification($ProductKey, $ActConfigId, $LogFolder, $f, $scr
 
 # ===============================================================================================================================
 
-function Invoke-KeyActivation($ProductKey, $ActConfigId, $LogFolder, $f, $scriptDir) {
+function Invoke-KeyActivation($ProductKey, $ActConfigId, $LogFolder, $f, $scriptDir, [hashtable]$State) {
     # Run KeyActivation.ps1 and display the result.
     $params = @{ ProductKey = $ProductKey; ActConfigId = $ActConfigId }
     if ($LogFolder) { $params['LogPath'] = $LogFolder }
@@ -184,13 +190,13 @@ function Invoke-KeyActivation($ProductKey, $ActConfigId, $LogFolder, $f, $script
     if (-not $actObj -or -not $actObj.Status) { return }
     
     if ($actObj.Status -eq "Succeeded") {
-        if ($script:SubActionLastState -eq 'error') { Write-Output "" }
-        $script:SubActionLastState = 'success'
+        if ($State -and $State.Last -eq 'error') { Write-Output "" }
+        if ($State) { $State.Last = 'success' }
         Write-Color ($f -f "Key Activation", $actObj.Status) "BgGreen"
     }
     else {
-        if ($script:SubActionLastState) { Write-Output "" }
-        $script:SubActionLastState = 'error'
+        if ($State -and $State.Last) { Write-Output "" }
+        if ($State) { $State.Last = 'error' }
         Write-Color ($f -f "Key Activation", $actObj.Status) "BgRed"
         Write-Color ($f -f "Act Error Code", $actObj.ErrorCode) "BgRed"
         Write-Color ($f -f "Act Error Msg", $actObj.ErrorDetail) "BgRed"
@@ -199,7 +205,7 @@ function Invoke-KeyActivation($ProductKey, $ActConfigId, $LogFolder, $f, $script
 
 # ===============================================================================================================================
 
-function Invoke-MakCount($AdvancedPid, $LogFolder, $f, $scriptDir) {
+function Invoke-MakCount($AdvancedPid, $LogFolder, $f, $scriptDir, [hashtable]$State) {
     # Run MakCount.ps1 and show the remaining activation count.
     $params = @{ AdvancedPid = $AdvancedPid }
     if ($LogFolder) { $params['LogPath'] = $LogFolder }
@@ -207,13 +213,13 @@ function Invoke-MakCount($AdvancedPid, $LogFolder, $f, $scriptDir) {
     if (-not $makObj -or -not $makObj.Result) { return }
     
     if ($makObj.Result -eq "SUCCESS") {
-        if ($script:SubActionLastState -eq 'error') { Write-Output "" }
-        $script:SubActionLastState = 'success'
+        if ($State -and $State.Last -eq 'error') { Write-Output "" }
+        if ($State) { $State.Last = 'success' }
         Write-Color ($f -f "MAK Count", $makObj.RemainingCount) "BgGreen"
     }
     else {
-        if ($script:SubActionLastState) { Write-Output "" }
-        $script:SubActionLastState = 'error'
+        if ($State -and $State.Last) { Write-Output "" }
+        if ($State) { $State.Last = 'error' }
         Write-Color ($f -f "MAK Count", $makObj.RemainingCount) "BgRed"
         Write-Color ($f -f "MAK Error Code", $makObj.ErrorCode) "BgRed"
         Write-Color ($f -f "MAK Error Msg", $makObj.ErrorDetail) "BgRed"
@@ -222,7 +228,7 @@ function Invoke-MakCount($AdvancedPid, $LogFolder, $f, $scriptDir) {
 
 # ===============================================================================================================================
 
-function Invoke-GetConfirmationId($IID, $LogFolder, $f, $scriptDir) {
+function Invoke-GetConfirmationId($IID, $LogFolder, $f, $scriptDir, [hashtable]$State) {
     # Run GetCID.ps1 to get a CID for this IID.
     $params = @{ InstallationId = $IID }
     if ($LogFolder) {
@@ -236,13 +242,13 @@ function Invoke-GetConfirmationId($IID, $LogFolder, $f, $scriptDir) {
     if ($cidObj) {
         if ($cidObj.VisualResult) {
             if ($cidObj.VisualResult -eq "SUCCESS") {
-                if ($script:SubActionLastState -eq 'error') { Write-Output "" }
-                $script:SubActionLastState = 'success'
+                if ($State -and $State.Last -eq 'error') { Write-Output "" }
+                if ($State) { $State.Last = 'success' }
                 Write-Color ($f -f "CID Visual Api", $cidObj.VisualCID) "BgGreen"
             }
             else {
-                if ($script:SubActionLastState) { Write-Output "" }
-                $script:SubActionLastState = 'error'
+                if ($State -and $State.Last) { Write-Output "" }
+                if ($State) { $State.Last = 'error' }
                 Write-Color ($f -f "CID Visual Api", "Failed") "BgRed"
                 Write-Color ($f -f "Visual Error Code", $cidObj.VisualErrorCode) "BgRed"
                 Write-Color ($f -f "Visual Error Msg", $cidObj.VisualErrorDetail) "BgRed"
@@ -251,13 +257,13 @@ function Invoke-GetConfirmationId($IID, $LogFolder, $f, $scriptDir) {
 
         if ($cidObj.BatchResult) {
             if ($cidObj.BatchResult -eq "SUCCESS") {
-                if ($script:SubActionLastState -eq 'error') { Write-Output "" }
-                $script:SubActionLastState = 'success'
+                if ($State -and $State.Last -eq 'error') { Write-Output "" }
+                if ($State) { $State.Last = 'success' }
                 Write-Color ($f -f "CID Batch Api", $cidObj.BatchCID) "BgGreen"
             }
             else {
-                if ($script:SubActionLastState) { Write-Output "" }
-                $script:SubActionLastState = 'error'
+                if ($State -and $State.Last) { Write-Output "" }
+                if ($State) { $State.Last = 'error' }
                 Write-Color ($f -f "CID Batch Api", "Failed") "BgRed"
                 Write-Color ($f -f "Batch Error Code", $cidObj.BatchErrorCode) "BgRed"
                 Write-Color ($f -f "Batch Error Msg", $cidObj.BatchErrorDetail) "BgRed"
@@ -272,7 +278,7 @@ function Read-PidGenXPKey2005Security {
     # Read the PKey2005 security value captured by the patched PIDGenX DLL.
     # This offset must be verified if PIDGenX is updated.
     $securityOffset = if ([IntPtr]::Size -eq 8) { 0xAF900 } else { 0x8F600 }
-    $hModule = $Script:PidGenXNativeType::GetModuleHandle($dllName)
+    $hModule = $pidGenXNativeType::GetModuleHandle($dllName)
     if ($hModule -eq [IntPtr]::Zero) { return $null }
 
     $securityPtr = [IntPtr]($hModule.ToInt64() + $securityOffset)
@@ -291,7 +297,7 @@ function Invoke-GetInstallationId($Key, $Config) {
     $HWID = 0
 
     # Call GetPKeyData
-    $hr = $Script:PidGenXNativeType::GetPKeyData($Key, $Config, "00000", $null, $HWID, [ref]$IID, [ref]$Edition, [ref]$Channel, [ref]$Partnum, [IntPtr]::Zero)
+    $hr = $pidGenXNativeType::GetPKeyData($Key, $Config, "00000", $null, $HWID, [ref]$IID, [ref]$Edition, [ref]$Channel, [ref]$Partnum, [IntPtr]::Zero)
 
     if ($hr -eq 0 -and $IID) {
         return $IID
@@ -354,7 +360,8 @@ function Show-RedeemKeyStatus {
 # Main execution
 # ===============================================================================================================================
 
-if (-not $global:PKeyConfigsMap) { Write-Color "PKeyConfigsMap cache not found." "BgRed"; return }
+$configsMap = Get-PKeyConfigsMap
+if (-not $configsMap) { Write-Color "PKeyConfigsMap cache not found." "BgRed"; return }
 
 # ===============================================================================================================================
 
@@ -370,7 +377,7 @@ if ($ProductKey -notmatch 'Z') {
     }
     elseif ($ProductKey -notmatch 'N') {
         $pkeyConfigsDir = Join-Path $dllDir "PKeyConfigs"
-        foreach ($entry in $global:PKeyConfigsMap) {
+        foreach ($entry in $configsMap) {
             if ($entry.Profile -match "custom") {
                 $configTargets += @{ Path = Join-Path $pkeyConfigsDir $entry.Path.TrimStart('\'); Profile = $entry.Profile }
             }
@@ -395,7 +402,7 @@ if ($configTargets.Count -gt 0) {
         foreach ($target in $configTargets) {
             if (-not (Test-Path -LiteralPath $target.Path)) { continue }
 
-            $hr = $Script:PidGenXNativeType::PidGenX($ProductKey, $target.Path, "00000", "", [IntPtr]::Zero, $gh3.AddrOfPinnedObject(), $gh4.AddrOfPinnedObject())
+            $hr = $pidGenXNativeType::PidGenX($ProductKey, $target.Path, "00000", "", [IntPtr]::Zero, $gh3.AddrOfPinnedObject(), $gh4.AddrOfPinnedObject())
             if ($hr -ne 0) { continue }
 
             $parsedDpid3 = Get-DigitalProductIdV3 $d3
@@ -604,12 +611,12 @@ if ($hasFullDetails -and ($algorithmId -match "2005|2009")) {
         Write-Output ""
     }
 
-    $script:SubActionLastState = $null
+    $subActionState = @{ Last = $null }
 
-    if ($doCert) { Invoke-KeyCertification $ProductKey $pkActConfigId $LogFolder $f $scriptDir }
-    if ($doAct) { Invoke-KeyActivation $ProductKey $pkActConfigId $LogFolder $f $scriptDir }
-    if ($doMak) { Invoke-MakCount $advPid $LogFolder $f $scriptDir }
-    if ($doCid) { Invoke-GetConfirmationId $iid $LogFolder $f $scriptDir }
+    if ($doCert) { Invoke-KeyCertification $ProductKey $pkActConfigId $LogFolder $f $scriptDir $subActionState }
+    if ($doAct) { Invoke-KeyActivation $ProductKey $pkActConfigId $LogFolder $f $scriptDir $subActionState }
+    if ($doMak) { Invoke-MakCount $advPid $LogFolder $f $scriptDir $subActionState }
+    if ($doCid) { Invoke-GetConfirmationId $iid $LogFolder $f $scriptDir $subActionState }
 }
 
 Show-RedeemKeyStatus -NoProfile:(-not $hasProductMatch) -Eula $details.EULA -GroupId $groupId

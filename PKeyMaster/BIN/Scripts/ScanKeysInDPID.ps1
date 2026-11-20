@@ -57,6 +57,8 @@ Import-Module "$scriptDir\Libs\DigitalProductId.psm1"
 # Helper functions
 # ===============================================================================================================================
 
+$lineSeparator = "________________________________________________________________________________`r`n"
+
 function Find-DPIDInFile {
     # Search file for DPID blobs - raw bytes and hex-encoded text.
     param([string]$FilePath)
@@ -99,38 +101,37 @@ function Find-DPIDInFile {
 
 # ===============================================================================================================================
 
-$global:savedFiles = @()
-$base = Join-Path ([Environment]::GetFolderPath("Desktop")) "PKeyMaster-Logs"
-$logRoot = Join-Path $base ("ScanDPID\" + (Get-Date -Format "yyyy-MM-dd_HH-mm-ss_fff"))
-
 function Invoke-DPIDFileScan {
     # Scan a file for DPIDs, print results, optionally save them.
-    param([string]$FilePath)
+    param(
+        [string]$FilePath,
+        [hashtable]$Tracker,
+        [string]$LogRoot = ''
+    )
     
     $blobs = @(Find-DPIDInFile -FilePath $FilePath)
     if ($blobs.Count -eq 0) { return }
 
-    $global:filesWithObjects++
-    $global:totalObjects += $blobs.Count
+    $Tracker.Files++
+    $Tracker.Total += $blobs.Count
 
     $formattedStrs = @()
     for ($i = 0; $i -lt $blobs.Count; $i++) { 
         $str = Get-DigitalProductIdDisplay -Blob $blobs[$i] -VerifyHash:$VerifyHash
-        $block = "[$FilePath]`r`n$str"
-        $block += "`r`n`r`n________________________________________________________________________________`r`n"
+        $block = "[$FilePath]`r`n$str`r`n"
+        $block += $lineSeparator
         Write-Output $block
         $formattedStrs += $block
     }
 
-    if ($Logs) {
-        if (-not (Test-Path $logRoot)) { New-Item -ItemType Directory -Path $logRoot -Force | Out-Null }
+    if ($Logs -and $LogRoot) {
+        if (-not (Test-Path $LogRoot)) { New-Item -ItemType Directory -Path $LogRoot -Force | Out-Null }
         $fullPath = [System.IO.Path]::GetFullPath($FilePath)
         $safeName = $fullPath -replace '[:\\/]', '-'
-        $outPath = Join-Path $logRoot "$safeName.txt"
+        $outPath = Join-Path $LogRoot "$safeName.txt"
         $formattedStrs | Out-File $outPath -Encoding UTF8
-        $global:savedFiles += $outPath
+        $Tracker.SavedFiles++
     }
-
 }
 
 # ===============================================================================================================================
@@ -138,51 +139,68 @@ function Invoke-DPIDFileScan {
 # ===============================================================================================================================
 
 $sw = [System.Diagnostics.Stopwatch]::StartNew()
+$f = "{0,-18}: {1}"
 
-if ($File) {
-    if (-not (Test-Path $File -PathType Leaf -ErrorAction SilentlyContinue)) {
-        Write-Color "Error: File does not exist: $File" "BgRed"; return
-    }
+$tracker = @{
+    Total      = 0
+    Files      = 0
+    SavedFiles = 0
+}
+$logRoot = if ($Logs) {
+    Join-Path ([Environment]::GetFolderPath("Desktop")) ("PKeyMaster-Logs\ScanDPID\" + (Get-Date -Format "yyyy-MM-dd_HH-mm-ss_fff"))
+} else { '' }
 
-    Write-Output "File    : $([System.IO.Path]::GetFileName($File))"
-    Write-Output "Scanning, please wait..."
-    Write-Output ""
+if ($File -and $Folder) {
+    Write-Color "Error: Specify either -File or -Folder, not both." "BgRed"; return
+}
+if (-not $File -and -not $Folder) {
+    Write-Color "Error: Specify -File or -Folder." "BgRed"; return
+}
 
-    $global:totalObjects = 0
-    $global:filesWithObjects = 0
-    Invoke-DPIDFileScan -FilePath $File
+$isFolder = [bool]$Folder
+$target = if ($isFolder) { $Folder } else { $File }
+$pathType = if ($isFolder) { 'Container' } else { 'Leaf' }
+
+if (-not (Test-Path -LiteralPath $target -PathType $pathType -ErrorAction SilentlyContinue)) {
+    Write-Color ("Error: {0} does not exist: {1}" -f $(if ($isFolder) { 'Folder' } else { 'File' }), $target) "BgRed"; return
+}
+
+$targetPath = (Resolve-Path -LiteralPath $target).ProviderPath
+
+if ($isFolder) {
+    Write-Output ($f -f "Folder", $Folder)
+    Write-Output ($f -f "Recurse", $(if ($Recurse) { 'Yes' } else { 'No' }))
+    Write-Output ($f -f "Filter", $(if ($IncludeExtensions) { $IncludeExtensions -join ', ' } else { '(all files)' }))
+}
+else {
+    Write-Output ($f -f "File", $([System.IO.Path]::GetFileName($targetPath)))
+}
+
+Write-Output ""
+Write-Output "Scanning, please wait..."
+Write-Output $lineSeparator
+
+if (-not $isFolder) {
+    Invoke-DPIDFileScan -FilePath $targetPath -Tracker $tracker -LogRoot $logRoot
 
     $sw.Stop()
-    Write-Output "File    : $([System.IO.Path]::GetFileName($File))"
-    Write-Output "DPIDs   : $($global:totalObjects)"
-    Write-Output ("Time    : {0:N3} s" -f $sw.Elapsed.TotalSeconds)
-
+    Write-Output ($f -f "File", $([System.IO.Path]::GetFileName($targetPath)))
+    Write-Output ($f -f "DPIDs", $tracker.Total)
+    Write-Output ($f -f "Time", ("{0:N3} s" -f $sw.Elapsed.TotalSeconds))
 }
-elseif ($Folder) {
-    if (-not (Test-Path $Folder -PathType Container -ErrorAction SilentlyContinue)) {
-        Write-Color "Error: Folder does not exist: $Folder" "BgRed"; return
-    }
-
-    Write-Output "Folder  : $Folder"
-    Write-Output "Recurse : $(if ($Recurse) { 'Yes' } else { 'No' })"
-    Write-Output "Filter  : $(if ($IncludeExtensions) { $IncludeExtensions -join ', ' } else { '(all files)' })"
-    Write-Output "Scanning, please wait..."
-    Write-Output ""
-
-    $patterns = @($IncludeExtensions | Where-Object { $_ -and $_.Trim() } | ForEach-Object { $_.Trim() })
+else {
+    $patterns = @($IncludeExtensions | ForEach-Object { $_ -split '[,;]+' } | Where-Object { $_ -and $_.Trim() } | ForEach-Object { $_.Trim() })
     $fileCount = 0
-    $global:filesWithObjects = 0
-    $global:totalObjects = 0
 
     $stack = New-Object 'System.Collections.Generic.Stack[string]'
-    $stack.Push($Folder)
+    $stack.Push($targetPath)
 
     while ($stack.Count -gt 0) {
         $currentDir = $stack.Pop()
 
         try {
-            foreach ($f in [System.IO.Directory]::GetFiles($currentDir)) {
-                $name = [System.IO.Path]::GetFileName($f)
+            foreach ($file in [System.IO.Directory]::GetFiles($currentDir)) {
+                $name = [System.IO.Path]::GetFileName($file)
 
                 if ($patterns.Count -gt 0) {
                     $matched = $false
@@ -191,7 +209,7 @@ elseif ($Folder) {
                 }
 
                 $fileCount++
-                Invoke-DPIDFileScan -FilePath $f
+                Invoke-DPIDFileScan -FilePath $file -Tracker $tracker -LogRoot $logRoot
             }
         }
         catch { }
@@ -205,23 +223,18 @@ elseif ($Folder) {
     }
 
     $sw.Stop()
-    Write-Output "Files scanned      : $fileCount"
-    Write-Output "Files with DPIDs   : $($global:filesWithObjects)"
-    Write-Output "Total DPIDs        : $($global:totalObjects)"
-    Write-Output ("Time               : {0:N3} s" -f $sw.Elapsed.TotalSeconds)
-
-}
-else {
-    Write-Color "Error: Specify -File or -Folder." "BgRed"
+    Write-Output ($f -f "Files scanned", $fileCount)
+    Write-Output ($f -f "Files with DPIDs", $tracker.Files)
+    Write-Output ($f -f "Total DPIDs", $tracker.Total)
+    Write-Output ($f -f "Time", ("{0:N3} s" -f $sw.Elapsed.TotalSeconds))
 }
 
 # ===============================================================================================================================
 # Log summary
 # ===============================================================================================================================
 
-if ($global:savedFiles.Count -gt 0) {
-    Write-Output ""
-    Write-Output "Logs saved to      : $logRoot"
+if ($tracker.SavedFiles -gt 0) {
+    Write-Output ($f -f "Logs", $logRoot)
     if (Test-Path $logRoot -PathType Container) {
         Invoke-Item -LiteralPath $logRoot
     }

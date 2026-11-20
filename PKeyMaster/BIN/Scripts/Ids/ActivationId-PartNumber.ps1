@@ -58,7 +58,7 @@ function Get-StoreTitleByToken($token) {
     $res = Invoke-GetTextRequest $url $null "" "" "json"
     if ($res -and $res.Body) {
         try {
-            $obj = $global:JsonSerializer.DeserializeObject($res.Body)
+            $obj = Read-Json $res.Body
             if ($obj -and $obj.Products -and $obj.Products.Count -gt 0) {
                 return $obj.Products[0].LocalizedProperties[0].ProductTitle
             }
@@ -111,8 +111,9 @@ else {
 $result = $null
 
 $baseConfigsDir = Join-Path $scriptDir "..\..\PKeyConfigs"
-if ($baseConfigsDir -and (Test-Path -LiteralPath $baseConfigsDir) -and $global:PKeyConfigsMap) {
-    foreach ($entry in ($global:PKeyConfigsMap | Where-Object { $_.Profile -notmatch "custom" })) {
+$configsMap = Get-PKeyConfigsMap
+if ($baseConfigsDir -and (Test-Path -LiteralPath $baseConfigsDir) -and $configsMap) {
+    foreach ($entry in ($configsMap | Where-Object { $_.Profile -notmatch "custom" })) {
         $configPath = Join-Path $baseConfigsDir $entry.Path.TrimStart('\')
         if (-not (Test-Path -LiteralPath $configPath)) { continue }
 

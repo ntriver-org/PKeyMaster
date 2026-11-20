@@ -192,9 +192,10 @@ if ($Decode) {
             }
             else {
                 $isP2005 = ($baseGroup -ge 138)
-                if (-not $isP2005 -and $global:PKeyConfigsMap) {
+                $configsMap = Get-PKeyConfigsMap
+                if (-not $isP2005 -and $configsMap) {
                     $gStr = [string]$baseGroup
-                    foreach ($entry in $global:PKeyConfigsMap) {
+                    foreach ($entry in $configsMap) {
                         if ($entry.Algorithms -and $entry.Algorithms.ContainsKey("PKey2005")) {
                             if ($entry.Algorithms["PKey2005"].ContainsKey($gStr)) {
                                 $isP2005 = $true
@@ -288,7 +289,6 @@ foreach ($c in $candidates) {
 
 $f = "{0,-18}: {1}"
 $lineSeparator = @(
-    "",
     "______________________________________________________________"
 )
 

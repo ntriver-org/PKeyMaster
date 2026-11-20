@@ -103,7 +103,8 @@ function Invoke-RegScan {
     param(
         [string[]]$QueryPaths,
         [string[]]$ExcludePrefixes,
-        [Microsoft.Win32.RegistryKey]$BaseKey
+        [Microsoft.Win32.RegistryKey]$BaseKey,
+        [hashtable]$Tracker
     )
 
     # Seed the stack with normalized relative paths
@@ -155,9 +156,8 @@ function Invoke-RegScan {
                     if ($parsed) {
                         Write-Output ""
                         Format-RegistryKeyResult -Path $fullPath -ValueName $valName -ParsedObj $parsed
-                        Write-Output ""
                         Write-Output "________________________________________________________"
-                        $script:FoundAny = $true
+                        if ($Tracker) { $Tracker.FoundAny = $true }
                     }
                 }
             }
@@ -179,7 +179,9 @@ function Invoke-RegScan {
 # Main execution
 # ===============================================================================================================================
 
-$script:FoundAny = $false
+$tracker = @{
+    FoundAny = $false
+}
 
 # Open a 64-bit registry view on systems that support it; fall back to the default hive on older versions
 $viewType = "Microsoft.Win32.RegistryView" -as [type]
@@ -210,7 +212,7 @@ try {
         if ([Environment]::OSVersion.Version.Build -lt 6001) {
             $winPaths += 'HKLM\SYSTEM\WPA'
         }
-        Invoke-RegScan -QueryPaths $winPaths -BaseKey $baseKey
+        Invoke-RegScan -QueryPaths $winPaths -BaseKey $baseKey -Tracker $tracker
     }
 
     # Office paths: MSI-based installations only
@@ -219,7 +221,7 @@ try {
         Invoke-RegScan -QueryPaths @(
             'HKLM\SOFTWARE\Microsoft\Office',
             'HKLM\SOFTWARE\WOW6432Node\Microsoft\Office'
-        ) -BaseKey $baseKey
+        ) -BaseKey $baseKey -Tracker $tracker
     }
 
     # Other: full HKLM scan excluding paths already covered above
@@ -227,7 +229,8 @@ try {
         Write-Output "Scanning registry for Microsoft product keys other than Windows/Office..."
         Invoke-RegScan -QueryPaths @('HKLM') `
             -ExcludePrefixes $ExcludedPrefixes `
-            -BaseKey $baseKey
+            -BaseKey $baseKey `
+            -Tracker $tracker
     }
 }
 finally {
@@ -241,7 +244,7 @@ finally {
 # ===============================================================================================================================
 
 Write-Output ""
-if (-not $script:FoundAny) { 
+if (-not $tracker.FoundAny) { 
     if ($Windows) {
         Write-Color "No keys found." "BgRed"
     }

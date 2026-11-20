@@ -87,7 +87,7 @@ function Invoke-ProductApi([string]$url, [string]$prefix) {
 
     if ($res.Body) {
         try {
-            return $global:JsonSerializer.DeserializeObject($res.Body)
+            return Read-Json $res.Body
         }
         catch {}
     }
@@ -173,12 +173,13 @@ function Resolve-ProductName([string]$pkpn) {
 # ===============================================================================================================================
 
 function Resolve-PKeyConfigProductName([string]$ActivationId, [string]$PartNumber) {
-    if (-not $global:PKeyConfigsMap) { return $null }
+    $configsMap = Get-PKeyConfigsMap
+    if (-not $configsMap) { return $null }
     if (-not $ActivationId -and -not $PartNumber) { return $null }
 
     $baseConfigsDir = Join-Path (Split-Path -Parent $scriptDir) "PKeyConfigs"
 
-    foreach ($entry in $global:PKeyConfigsMap) {
+    foreach ($entry in $configsMap) {
         $configPath = Join-Path $baseConfigsDir $entry.Path.TrimStart('\')
         if (-not (Test-Path -LiteralPath $configPath)) { continue }
 
@@ -221,7 +222,7 @@ function Resolve-SignupProductName([string]$Key) {
 
     if ($res.Body) {
         try {
-            $json = $global:JsonSerializer.DeserializeObject($res.Body)
+            $json = Read-Json $res.Body
             $validationResult = $json["prepaidKeysValidationResult"]
             $descriptionResult = $json["prepaidKeysDescriptionResult"]
             $product = $null
@@ -276,7 +277,7 @@ function Invoke-RedeemKeyRequest($Key) {
     }
 
     try {
-        $json = $global:JsonSerializer.DeserializeObject($responseFull)
+        $json = Read-Json $responseFull
         if (-not $json) {
             $out.Status = "Failed: JSON parse returned null"
             return $out

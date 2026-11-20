@@ -288,6 +288,7 @@ function Show-PKeyMasterGui {
             }
             $Script:TaskRunspace = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspace()
             $Script:TaskRunspace.Open()
+            $Script:TaskRunspace.SessionStateProxy.SetVariable('IsGuiRunspace', $true)
         }
         return $Script:TaskRunspace
     }
@@ -299,7 +300,6 @@ function Show-PKeyMasterGui {
         $Script:WarmupPipeline.Runspace = Get-TaskRunspace
 
         $initScript = @"
-`$global:IsGuiRunspace = `$true
 # Warm up KeyChecker to pre-compile scriptblocks and preload modules, PidGenX DLL, and caches into the runspace
 `$kc = Join-Path '$($Script:GuiScriptRoot -replace "'", "''")' 'KeyChecker.ps1'
 if (Test-Path `$kc) {
@@ -397,7 +397,6 @@ if (Test-Path `$kc) {
             }
         }
 
-        [void]$powerShellPipeline.AddScript('$global:IsGuiRunspace = $true')
         [void]$powerShellPipeline.AddScript($runner.ToString())
         [void]$powerShellPipeline.AddArgument($toolScriptPath)
         [void]$powerShellPipeline.AddArgument($Arguments)
@@ -1144,9 +1143,10 @@ if (Test-Path `$kc) {
         [void]$items.Add((New-ProfileItem -Label 'Automatic detection (5x5 keys)' -Mode 'PidGenX' -Path ''))
         [void]$items.Add((New-ProfileItem -Label 'Pre-98 (Windows 95 - NT 4.0 - Office 95-97 - etc)' -Mode 'Pre-98' -Path ''))
 
-        if ($global:PKeyConfigsMap) {
+        $configsMap = Get-PKeyConfigsMap
+        if ($configsMap) {
             try {
-                foreach ($entry in $global:PKeyConfigsMap) {
+                foreach ($entry in $configsMap) {
                     if ($entry.Path -and $entry.Path.Trim()) {
                         $relativePath = $entry.Path.TrimStart('\')
                         $configPath = Join-Path $Script:ApplicationRoot ("PKeyConfigs\" + $relativePath)
