@@ -822,7 +822,7 @@ if (Test-Path `$kc) {
         [void]$linkLabel.Links.Add(0, $Url.Length, $Url)
         $linkLabel.Add_LinkClicked({
                 try {
-                    [System.Diagnostics.Process]::Start([string]$_.Link.LinkData) | Out-Null
+                    Start-Process ([string]$_.Link.LinkData)
                 }
                 catch { }
             }.GetNewClosure())
@@ -985,7 +985,7 @@ if (Test-Path `$kc) {
         $OutputBox.DetectUrls = $true
         $OutputBox.Add_LinkClicked({
                 try {
-                    [System.Diagnostics.Process]::Start($_.LinkText) | Out-Null
+                    Start-Process $_.LinkText
                 }
                 catch {
                     Show-ErrorMessage -ErrorObject $_
