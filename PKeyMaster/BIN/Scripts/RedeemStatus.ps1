@@ -109,14 +109,6 @@ function Get-StoreTitle([string]$id) {
     return $null
 }
 
-function Get-StoreTitleByGuid([string]$guid) {
-    $obj = Invoke-ProductApi "https://displaycatalog.mp.microsoft.com/v7.0/products/lookup?alternateId=LegacyXboxProductId&value=${guid}&market=US&languages=en-us" "RedeemStatusProductName_Store"
-    if ($obj -and $obj.Products -and $obj.Products.Count -gt 0) {
-        return $obj.Products[0].LocalizedProperties[0].ProductTitle
-    }
-    return $null
-}
-
 function Get-StoreTitleByToken([string]$token) {
     $obj = Invoke-ProductApi "https://displaycatalog.mp.microsoft.com/v7.0/products/lookup?alternateId=LegacyTokenIdentifier&value=${token}&market=US&languages=en-us" "RedeemStatusProductName_Store"
     if ($obj -and $obj.Products -and $obj.Products.Count -gt 0) {
@@ -136,7 +128,7 @@ function Resolve-ProductName([string]$pkpn) {
     # 2. Product GUID
     if ($pkpn -match '^[0-9A-F-]{36}$') {
         # 2a. Modern Store DLC / Package GUID
-        $title = Get-StoreTitleByGuid $pkpn
+        $title = Get-StoreTitleByToken $pkpn
         if ($title) { return $title }
 
         # 2b. Legacy Title ID GUID (ends with 8-character Title ID)
