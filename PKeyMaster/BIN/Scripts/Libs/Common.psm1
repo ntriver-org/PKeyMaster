@@ -441,7 +441,7 @@ function Read-Json([string]$JsonText) {
         return ($JsonText | ConvertFrom-Json -AsHashtable)
     }
 
-    return ($JsonText | ConvertFrom-Json)
+    return $null
 }
 
 # ===============================================================================================================================
