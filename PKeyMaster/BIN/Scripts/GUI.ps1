@@ -1728,20 +1728,23 @@ if (Test-Path `$kc) {
         $promptForm = New-Object System.Windows.Forms.Form
         $promptForm.Text = 'PKeyMaster - Batch Processing'
         $promptForm.StartPosition = 'CenterParent'
-        $promptForm.FormBorderStyle = 'FixedDialog'
+        $promptForm.FormBorderStyle = 'Sizable'
+        $promptForm.SizeGripStyle = 'Show'
         $promptForm.MaximizeBox = $false
         $promptForm.MinimizeBox = $false
         $promptForm.ShowInTaskbar = $false
+        $promptForm.ShowIcon = $false
         $promptForm.Size = New-Size -Width (Get-ScaledDpi 700) -Height (Get-ScaledDpi 480)
+        $promptForm.MinimumSize = New-Size -Width (Get-ScaledDpi 450) -Height (Get-ScaledDpi 300)
         $promptForm.Font = $uiFont
         $promptForm.AutoScaleMode = 'None'
 
-        $buttonWidth = $minimumActionWidth
+        $buttonWidth = Get-ScaledDpi 88
         $buttonHeight = $controlHeight
         $buttonTop = $promptForm.ClientSize.Height - $buttonHeight - $uiPadding
 
         $promptTextBox = New-WinFormsControl -TypeName 'TextBox' -Properties @{
-            ReadOnly   = $true
+            ReadOnly   = $false
             Multiline  = $true
             ScrollBars = 'Both'
             WordWrap   = $false
@@ -1792,7 +1795,7 @@ if (Test-Path `$kc) {
 
         try {
             if ((Show-OwnedDialog -Dialog $promptForm -OwnerWindow $mainWindow) -eq [System.Windows.Forms.DialogResult]::OK) {
-                return $displayText
+                return $promptTextBox.Text
             }
         }
         finally {
