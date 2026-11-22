@@ -50,18 +50,6 @@ Import-Module "$scriptDir\Libs\Network.psm1"
 # Helper functions
 # ===============================================================================================================================
 
-function Format-Cid([string]$CID) {
-    # Formats a Confirmation ID into 6-digit groups separated by dashes.
-    if (-not $CID) { return "" }
-    $clean = $CID.Trim() -replace '\D', ''
-    if ($clean.Length -gt 0) {
-        return ($clean -replace '(\d{6})(?=\d)', '$1-')
-    }
-    return $CID
-}
-
-# ===============================================================================================================================
-
 function New-ResponseObject {
     # Standard VisualApi response object.
     return @{
@@ -313,7 +301,7 @@ function Invoke-VisualApiRequest($cleanIid) {
         $cid = [string]$json["cid"]
         if ($cid -and $cid.Trim()) {
             $out.Success = $true
-            $out.CID = Format-Cid $cid.Trim()
+            $out.CID = ($cid.Trim() -replace '(\d{6})(?=\d)', '$1-')
         }
 
         # Resolve exact Product Name (Description) via ProductId.ps1
