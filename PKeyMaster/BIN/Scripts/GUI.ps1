@@ -1043,7 +1043,7 @@ if (Test-Path `$kc) {
         $iidCidText = "IID/CID Retrieval & Deposit`r`n" +
         "`r`nUpper Section: Manual CID Retrieval" +
         "`r`n  Retrieves the CID via VisualApi, with BatchApi fallback." +
-        "`r`n  Enter a 50, 54, 59, or 63-digit IID, or select an IID file." +
+        "`r`n  Enter a 50, 54, or 63-digit IID, or select an IID file." +
         "`r`n  Example: 442875505090948411270215934376216135091582729253066826014283446`r`n" +
         "`r`nLower Section: Installed Product Activation" +
         "`r`n  1. Click 'Get IID/CID...' to scan for products." +
@@ -1408,13 +1408,13 @@ if (Test-Path `$kc) {
 
     $iidCidTopPanel = New-FormPanel -Height (Get-ScaledDpi 189)
     $installationIdLabel = New-FormLabel -Text 'IID(s)'
-    $installationIdTextBox = New-FormTextBox -Tooltip 'Enter a 50, 54, 59, or 63-digit Installation ID, or paste multiple IIDs from clipboard.' -UseMonospaceFont $true
+    $installationIdTextBox = New-FormTextBox -Tooltip 'Enter a 50, 54, or 63-digit Installation ID, or paste multiple IIDs from clipboard.' -UseMonospaceFont $true
     $installationIdTextBox.Multiline = $true
     $installationIdTextBox.AcceptsReturn = $false
     $installationIdTextBox.WordWrap = $false
     $installationIdTextBox.MaxLength = [int]::MaxValue
     $installationIdFileLabel = New-FormLabel -Text 'IID File'
-    $installationIdFileTextBox = New-FormTextBox -ReadOnly $true -Tooltip 'Select a text file that contains one or more 50, 54, 59, or 63-digit Installation IDs.' -Placeholder $browsePlaceholder
+    $installationIdFileTextBox = New-FormTextBox -ReadOnly $true -Tooltip 'Select a text file that contains one or more 50, 54, or 63-digit Installation IDs.' -Placeholder $browsePlaceholder
     $manualCidLogsCheckBox = New-FormCheckBox -Text 'CID Logs' -Tooltip 'Saves the result files and the request and response logs to the PKeyMaster-Logs folder on the Desktop.' -AutoSize $false
     $installedProductLogsCheckBox = New-FormCheckBox -Text 'CID Logs' -Tooltip 'Saves the result files and the request and response logs to the PKeyMaster-Logs folder on the Desktop.' -AutoSize $false
     $getCidButton = New-FormButton -Text 'Get CID' -Tooltip 'Retrieves the Confirmation ID using the Microsoft VisualApi, fallbacks to BatchApi. This consumes an activation slot. Works with all kinds of CID supported Windows and Office products.'

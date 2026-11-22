@@ -185,7 +185,7 @@ foreach ($q in $queries) {
     foreach ($item in $items) {
         $iid = ""
         if ($item.OfflineInstallationId) { $iid = $item.OfflineInstallationId -replace '\D', '' }
-        if ($iid -notmatch '^\d{50}$|^\d{54}$|^\d{59}$|^\d{63}$') { continue }
+        if ($iid -notmatch '^\d{50}$|^\d{54}$|^\d{63}$') { continue }
 
         if (Test-PhoneActivationSupport $q.Library $item.ID) {
             $found = $true

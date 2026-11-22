@@ -12,7 +12,7 @@
     Requires Libs\Network.psm1 for HTTP communication (GET and POST).
 
 .PARAMETER InstallationId
-    The Installation ID string (50, 54, 59, or 63 digits).
+    The Installation ID string (50, 54, or 63 digits).
 
 .PARAMETER LogPath
     Optional folder path where this script saves VisualApi request/response payloads.
@@ -238,8 +238,8 @@ function Invoke-VisualApiRequest($cleanIid) {
     # Send IID to VisualSupport API, pull CID from JSON.
     $out = New-ResponseObject
 
-    if ($cleanIid.Length -ne 50 -and $cleanIid.Length -ne 54 -and $cleanIid.Length -ne 59 -and $cleanIid.Length -ne 63) {
-        $out.ErrorMessage = "Invalid IID length ($($cleanIid.Length)). Must be 50, 54, 59, or 63 digits."
+    if ($cleanIid.Length -ne 50 -and $cleanIid.Length -ne 54 -and $cleanIid.Length -ne 63) {
+        $out.ErrorMessage = "Invalid IID length ($($cleanIid.Length)). Must be 50, 54, or 63 digits."
         return $out
     }
 

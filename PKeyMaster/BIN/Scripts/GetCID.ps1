@@ -8,7 +8,7 @@
     Results can be exported to timestamped or caller-specified log folders.
 
 .PARAMETER InstallationId
-    A single Installation ID string (50, 54, 59, or 63 digits, dashes allowed).
+    A single Installation ID string (50, 54, or 63 digits, dashes allowed).
 
 .PARAMETER IidFile
     Path to a text file containing one or more Installation IDs.
@@ -146,9 +146,9 @@ function Add-IidToCsv([string[]]$OutputLines, [string[]]$Columns, [string]$CsvPa
 # ===============================================================================================================================
 
 function Get-IidFromText([string]$Text) {
-    # Extract unique 50/54/59/63-digit IIDs from text.
+    # Extract unique 50/54/63-digit IIDs from text.
     $clean = $Text -replace '-', ''
-    [regex]::Matches($clean, '\b\d{50}\b|\b\d{54}\b|\b\d{59}\b|\b\d{63}\b') |
+    [regex]::Matches($clean, '\b\d{50}\b|\b\d{54}\b|\b\d{63}\b') |
     ForEach-Object { $_.Value } |
     Select-Object -Unique
 }
@@ -257,8 +257,8 @@ if ($IidFile) {
 elseif ($InstallationId) {
     $clean = Format-Iid $InstallationId
 
-    if ($clean.Length -ne 50 -and $clean.Length -ne 54 -and $clean.Length -ne 59 -and $clean.Length -ne 63) {
-        Write-Color "Invalid Installation ID length ($($clean.Length)). Must be 50, 54, 59, or 63 digits." "BgRed"
+    if ($clean.Length -ne 50 -and $clean.Length -ne 54 -and $clean.Length -ne 63) {
+        Write-Color "Invalid Installation ID length ($($clean.Length)). Must be 50, 54, or 63 digits." "BgRed"
         return
     }
 
