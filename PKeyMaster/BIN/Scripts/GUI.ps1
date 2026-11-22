@@ -1223,7 +1223,7 @@ if (Test-Path `$kc) {
         }
 
         $installedProductState['ConfirmationId'] = $confirmationId
-        $depositCidButton.Enabled = ($confirmationId -match '^\d+$')
+        $depositCidButton.Enabled = ($confirmationId -and (($confirmationId -replace '\D', '') -match '^\d+$'))
     }
 
     # ===============================================================================================================================

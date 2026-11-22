@@ -13,10 +13,10 @@
     The unique GUID string representing the product's Activation ID.
 
 .PARAMETER InstallationId
-    The 54 or 63-digit Installation ID associated with the product.
+    The 54 or 63-digit Installation ID associated with the product (dashes allowed).
 
 .PARAMETER ConfirmationId
-    The Confirmation ID to deposit into the system.
+    The Confirmation ID to deposit into the system (dashes allowed).
 
 .NOTES
     Compatible with PowerShell 2.0 and later.
@@ -77,18 +77,16 @@ if (-not $ActivationId) {
     return 
 }
 
-if (-not $InstallationId) { 
+$cleanInstallationId = if ($InstallationId) { $InstallationId -replace '\D', '' } else { '' }
+$cleanConfirmationId = if ($ConfirmationId) { $ConfirmationId -replace '\D', '' } else { '' }
+
+if (-not $cleanInstallationId) { 
     Write-Color ($f -f "Error", "-InstallationId is required.") "BgRed"
     return 
 }
 
-if ($InstallationId -notmatch '^\d+$') { 
-    Write-Color ($f -f "Error", "-InstallationId must be digits only.") "BgRed"
-    return 
-}
-
-if ($ConfirmationId -notmatch '^\d+$') { 
-    Write-Color ($f -f "Error", "-ConfirmationId must be digits only.") "BgRed"
+if (-not $cleanConfirmationId) { 
+    Write-Color ($f -f "Error", "-ConfirmationId is required.") "BgRed"
     return 
 }
 
@@ -112,7 +110,7 @@ $product = $null
 
 try {
     # Query WMI for the product matching Activation ID and Installation ID
-    $query = "SELECT * FROM $ClassName WHERE ID = '$ActivationId' AND OfflineInstallationId = '$InstallationId'"
+    $query = "SELECT * FROM $ClassName WHERE ID = '$ActivationId' AND OfflineInstallationId = '$cleanInstallationId'"
     $product = ([wmisearcher]$query).Get() | Select-Object -First 1
 }
 catch {
@@ -134,7 +132,7 @@ $returnValue = -1
 
 try {
     # Deposit the confirmation ID via WMI
-    $result = $product.DepositOfflineConfirmationId($InstallationId, $ConfirmationId)
+    $result = $product.DepositOfflineConfirmationId($cleanInstallationId, $cleanConfirmationId)
 
     $returnValue = [int]$result.ReturnValue
 }

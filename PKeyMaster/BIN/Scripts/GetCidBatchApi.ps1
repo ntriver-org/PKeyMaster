@@ -60,6 +60,18 @@ function Get-BatchActivationHashKey {
 
 # ===============================================================================================================================
 
+function Format-Cid([string]$CID) {
+    # Formats a Confirmation ID into 6-digit groups separated by dashes.
+    if (-not $CID) { return "" }
+    $clean = $CID.Trim() -replace '\D', ''
+    if ($clean.Length -gt 0) {
+        return ($clean -replace '(\d{6})(?=\d)', '$1-')
+    }
+    return $CID
+}
+
+# ===============================================================================================================================
+
 function New-ResponseObject {
     # Standard BatchActivation response object.
     return @{
@@ -138,7 +150,7 @@ function Submit-BatchActivationRequest([string]$RequestFull, [string]$RequestInn
             }
             elseif ($cidNode) {
                 $out.Success = $true
-                $out.CID = $cidNode.InnerText
+                $out.CID = Format-Cid $cidNode.InnerText
                 return $out
             }
             else {

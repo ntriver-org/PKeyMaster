@@ -50,6 +50,18 @@ Import-Module "$scriptDir\Libs\Network.psm1"
 # Helper functions
 # ===============================================================================================================================
 
+function Format-Cid([string]$CID) {
+    # Formats a Confirmation ID into 6-digit groups separated by dashes.
+    if (-not $CID) { return "" }
+    $clean = $CID.Trim() -replace '\D', ''
+    if ($clean.Length -gt 0) {
+        return ($clean -replace '(\d{6})(?=\d)', '$1-')
+    }
+    return $CID
+}
+
+# ===============================================================================================================================
+
 function New-ResponseObject {
     # Standard VisualApi response object.
     return @{
@@ -216,9 +228,10 @@ function New-VisualApiDpopToken($Url, $Method) {
 function Get-ProductNameFromPid($IID, $ProductId, $CID = $null) {
     if (-not $ProductId) { return $null }
 
+    $cleanCid = if ($CID) { $CID -replace '\D', '' } else { $null }
     $pattern = if ($IID -and $IID.Length -eq 63) { '2009' }
-    elseif ($CID -and $CID.Length -eq 48) { '2005' }
-    elseif ($CID) { '980|986' }
+    elseif ($cleanCid -and $cleanCid.Length -eq 48) { '2005' }
+    elseif ($cleanCid) { '980|986' }
     else { '.*' }
 
     $candidates = @(Invoke-PassThruScript "Ids\ProductId.ps1" @{ Decode = $true; ProductId = $ProductId; GetProductDetails = $true })
@@ -300,7 +313,7 @@ function Invoke-VisualApiRequest($cleanIid) {
         $cid = [string]$json["cid"]
         if ($cid -and $cid.Trim()) {
             $out.Success = $true
-            $out.CID = $cid.Trim()
+            $out.CID = Format-Cid $cid.Trim()
         }
 
         # Resolve exact Product Name (Description) via ProductId.ps1
